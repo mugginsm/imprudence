@@ -35,6 +35,7 @@
 #include "lldispatcher.h"
 
 #include <algorithm>
+#include <iterator>
 #include "llstl.h"
 #include "message.h"
 

@@ -89,7 +89,7 @@ std::string get_string(IDxDiagContainer *containerp, WCHAR *wszPropName)
 	// Clear the variant (this is needed to free BSTR memory)
 	VariantClear( &var );
 
-	return utf16str_to_utf8str(wszPropValue);
+	return utf16str_to_utf8str((U16*)wszPropValue);
 }
 
 
@@ -647,7 +647,7 @@ LLSD LLDXHardware::getDisplayInfo()
                     // print the value
                     // windows doesn't guarantee to be null terminated
                     release_version[RV_SIZE - 1] = NULL;
-                    ret["DriverVersion"] = utf16str_to_utf8str(release_version);
+                    ret["DriverVersion"] = utf16str_to_utf8str((U16*)release_version);
 
                 }
                 RegCloseKey(hKey);

@@ -39,6 +39,8 @@
 #include "llmemtype.h"
 #include "llstl.h"
 
+#include <iterator>
+
 /** 
  * LLSegment
  */

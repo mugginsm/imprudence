@@ -2487,7 +2487,7 @@ BOOL LLWindowWin32::pasteTextFromClipboard(LLWString &dst)
 				WCHAR *utf16str = (WCHAR*) GlobalLock(h_data);
 				if (utf16str)
 				{
-					dst = utf16str_to_wstring(utf16str);
+					dst = utf16str_to_wstring((U16*)utf16str);
 					LLWStringUtil::removeCRLF(dst);
 					GlobalUnlock(h_data);
 					success = TRUE;
@@ -2927,7 +2927,7 @@ void LLWindowWin32::ShellEx(const std::string& command )
 	sei.fMask = SEE_MASK_FLAG_DDEWAIT;
 	sei.nShow = SW_SHOWNORMAL;
 	sei.lpVerb = L"open";
-	sei.lpFile = url_utf16.c_str();
+	sei.lpFile = (LPCWSTR)url_utf16.c_str();
 	ShellExecuteEx( &sei );
 }
 
@@ -2964,7 +2964,7 @@ void LLWindowWin32::spawnWebBrowser(const std::string& escaped_url )
 	sei.fMask = SEE_MASK_FLAG_DDEWAIT;
 	sei.nShow = SW_SHOWNORMAL;
 	sei.lpVerb = L"open";
-	sei.lpFile = url_utf16.c_str();
+	sei.lpFile = (LPCWSTR)url_utf16.c_str();
 	ShellExecuteEx( &sei );
 
 	//// TODO: LEAVING OLD CODE HERE SO I DON'T BONE OTHER MERGES
@@ -3380,7 +3380,7 @@ void LLWindowWin32::handleCompositionMessage(const U32 indexes)
 			size = LLWinImm::getCompositionString(himc, GCS_RESULTSTR, data, size);
 			if (size > 0)
 			{
-				result_string = utf16str_to_wstring(llutf16string(data, size / sizeof(WCHAR)));
+				result_string = utf16str_to_wstring(llutf16string((U16*)data, size / sizeof(WCHAR)));
 			}
 			delete[] data;
 			needs_update = TRUE;
@@ -3397,7 +3397,7 @@ void LLWindowWin32::handleCompositionMessage(const U32 indexes)
 			if (size > 0)
 			{
 				preedit_string_utf16_length = size / sizeof(WCHAR);
-				preedit_string = utf16str_to_wstring(llutf16string(data, size / sizeof(WCHAR)));
+				preedit_string = utf16str_to_wstring(llutf16string((U16*)data, size / sizeof(WCHAR)));
 			}
 			delete[] data;
 			needs_update = TRUE;

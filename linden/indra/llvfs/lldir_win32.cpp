@@ -57,7 +57,7 @@ LLDir_Win32::LLDir_Win32()
 	// Application Data is where user settings go
 	SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
 
-	mOSUserDir = utf16str_to_utf8str(llutf16string(w_str));
+	mOSUserDir = utf16str_to_utf8str((U16*)w_str);
 
 	// We want cache files to go on the local disk, even if the
 	// user is on a network with a "roaming profile".
@@ -70,7 +70,7 @@ LLDir_Win32::LLDir_Win32()
 	// We used to store the cache in AppData\Roaming, and the installer
 	// cleans up that version on upgrade.  JC
 	SHGetSpecialFolderPath(NULL, w_str, CSIDL_LOCAL_APPDATA, TRUE);
-	mOSCacheDir = utf16str_to_utf8str(llutf16string(w_str));
+	mOSCacheDir = utf16str_to_utf8str((U16*)w_str);
 
 	if (GetTempPath(MAX_PATH, w_str))
 	{
@@ -78,7 +78,7 @@ LLDir_Win32::LLDir_Win32()
 		{
 			w_str[wcslen(w_str)-1] = '\0'; /* Flawfinder: ignore */ // remove trailing slash
 		}
-		mTempDir = utf16str_to_utf8str(llutf16string(w_str));
+		mTempDir = utf16str_to_utf8str((U16*)w_st));
 	}
 	else
 	{
@@ -95,7 +95,7 @@ LLDir_Win32::LLDir_Win32()
 	if (size)
 	{
 		w_str[size] = '\0';
-		mExecutablePathAndName = utf16str_to_utf8str(llutf16string(w_str));
+		mExecutablePathAndName = utf16str_to_utf8str((U16*)w_st));
 		S32 path_end = mExecutablePathAndName.find_last_of('\\');
 		if (path_end != std::string::npos)
 		{
@@ -107,7 +107,7 @@ LLDir_Win32::LLDir_Win32()
 			mExecutableFilename = mExecutablePathAndName;
 		}
 		GetCurrentDirectory(MAX_PATH, w_str);
-		mWorkingDir = utf16str_to_utf8str(llutf16string(w_str));
+		mWorkingDir = utf16str_to_utf8str((U16*)w_str);
 
 	}
 	else
@@ -221,7 +221,7 @@ U32 LLDir_Win32::countFilesInDir(const std::string &dirname, const std::string &
 	llutf16string pathname = utf8str_to_utf16str(dirname);
 	pathname += utf8str_to_utf16str(mask);
 	
-	if ((count_search_h = FindFirstFile(pathname.c_str(), &FileData)) != INVALID_HANDLE_VALUE)   
+	if ((count_search_h = FindFirstFile((LPCWSTR)pathname.c_str(), &FileData)) != INVALID_HANDLE_VALUE)   
 	{
 		file_count++;
 
@@ -265,7 +265,7 @@ BOOL LLDir_Win32::getNextFileInDir(const llutf16string &dirname, const std::stri
 
 		// and open new one
 		// Check error opening Directory structure
-		if ((mDirSearch_h = FindFirstFile(pathname.c_str(), &FileData)) == INVALID_HANDLE_VALUE)   
+		if ((mDirSearch_h = FindFirstFile((LPCWSTR)pathname.c_str(), &FileData)) == INVALID_HANDLE_VALUE)   
 		{
 //			llinfos << "Unable to locate first file" << llendl;
 			return(FALSE);
@@ -302,7 +302,7 @@ BOOL LLDir_Win32::getNextFileInDir(const llutf16string &dirname, const std::stri
 	}
 
 	// convert from TCHAR to char
-	fname = utf16str_to_utf8str(FileData.cFileName);
+ 	fname = utf16str_to_utf8str((U16*)FileData.cFileName);
 	
 	// fname now first name in list
 	return(TRUE);
@@ -337,7 +337,7 @@ void LLDir_Win32::getRandomFileInDir(const std::string &dirname, const std::stri
 
     // which_file now indicates the (zero-based) index to which file to play
 
-	if ((random_search_h = FindFirstFile(pathname.c_str(), &FileData)) != INVALID_HANDLE_VALUE)   
+	if ((random_search_h = FindFirstFile((LPCWSTR)pathname.c_str(), &FileData)) != INVALID_HANDLE_VALUE)   
 	{
 		while (which_file--)
 		{
@@ -348,7 +348,7 @@ void LLDir_Win32::getRandomFileInDir(const std::string &dirname, const std::stri
 		}		   
 		FindClose(random_search_h);
 
-		fname = utf16str_to_utf8str(llutf16string(FileData.cFileName));
+		fname = utf16str_to_utf8str((U16*)FileData.cFileName);
 	}
 }
 
@@ -357,7 +357,7 @@ std::string LLDir_Win32::getCurPath()
 	WCHAR w_str[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, w_str);
 
-	return utf16str_to_utf8str(llutf16string(w_str));
+	return utf16str_to_utf8str((U16*)w_str);
 }
 
 
