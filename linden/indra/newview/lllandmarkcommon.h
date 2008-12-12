@@ -84,7 +84,7 @@ protected:
 	std::list<T*> mFloaters;
 };
 
-std::string build_sl_url( LLString region_name, LLLandmark* landmark );
+std::string build_sl_url( std::string region_name, LLLandmark* landmark );
 
 // parcel info as parsed by LLPanelPlace::processParcelInfoReply()
 struct LLParcelInfo
@@ -92,15 +92,15 @@ struct LLParcelInfo
 	LLUUID		agent_id;
 	LLUUID		parcel_id;
 	LLUUID		owner_id;
-	LLString	name;
-	LLString	desc;
+	std::string	name;
+	std::string	desc;
 	S32			actual_area;
 	S32			billable_area;
 	U8			flags;
 	F32			global_x;
 	F32			global_y;
 	F32			global_z;
-	LLString	sim_name;
+	std::string	sim_name;
 	LLUUID		snapshot_id;
 	F32			dwell;
 	S32			sale_price;
@@ -289,20 +289,20 @@ public:
 	// general data that we show on our add/edit/receive landmark floaters
 	struct LLLandData
 	{
-		LLString mRating;
+		std::string mRating;
 		LLVector3 mRegionPosition;
 		LLVector3d mGlobalPosition;
-		LLString mRegionName;
+		std::string mRegionName;
 		LLUUID mSnapshotID;
 		int mTraffic, mArea; // area in square miles
-		LLString mDescription;
-		LLString mShortDescription;
+		std::string mDescription;
+		std::string mShortDescription;
 
 		// returns a common format for all landmark floaters
-		LLString getFormatedLandDetails();
+		std::string getFormatedLandDetails();
 	};
 
-	LLFloaterCommonLandmark( LLString name, LLString rectangle_ctrl, LLString title );
+	LLFloaterCommonLandmark( std::string name, std::string rectangle_ctrl, std::string title );
 	virtual ~LLFloaterCommonLandmark();
 
 	// called from LLPanelPlace::processParcelInfoReply() notifyObservers()
@@ -329,7 +329,7 @@ public:
 	virtual void populateCombo();
 
 	// gets filename of the client-side metadata file for this landmark
-	LLString getLandmarksMetaDataFile( LLUUID landmark_uuid );
+	std::string getLandmarksMetaDataFile( LLUUID landmark_uuid );
 
 	virtual LLSD loadLandmarkMetaData( LLUUID landmark_uuid );
 	virtual BOOL updateLandmarksMetaData( LLSD landmark_entry, LLUUID landmark_uuid );

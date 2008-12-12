@@ -1101,7 +1101,7 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height, S32 filter_generation)
 
 				if( show_folder_state == LLInventoryFilter::SHOW_ALL_LANDMARK_FOLDERS )
 				{
-					LLString parentName = folderp->getParent()->getName();
+					std::string parentName = folderp->getParent()->getName();
 					if( parentName != "My Inventory" && parentName != "Library" )
 					{	// this folder is not a direct child of the inventory or library
 						// it will inherit visibility, and if its a descendant of the Landmarks folder it will be visible by default
@@ -4644,7 +4644,7 @@ BOOL LLInventoryFilter::check(LLFolderViewItem* item)
 	// if the item doesnt pass the full filter test (wrong inventory type, wrong date, etc)
 	// then clear the sub-string match offset, in order to avoid rendering the search-helper-bubble over items that only have matching names
 	if( ! passed )
-		mSubStringMatchOffset = LLString::npos;
+		mSubStringMatchOffset = std::string::npos;
 
 	return passed;
 }

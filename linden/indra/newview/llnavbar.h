@@ -66,7 +66,7 @@ class LLNavbarComboBox : public LLComboBox
 {
 public:
 
-	LLNavbarComboBox(	const LLString& name, const LLRect &rect, const LLString& label,
+	LLNavbarComboBox(	const std::string& name, const LLRect &rect, const std::string& label,
 		void (*commit_callback)(LLUICtrl*,void*), void *callback_userdata
 		);
 
@@ -74,7 +74,7 @@ public:
 
 	virtual void updateLayout();
 
-	LLScrollListItem* add(const LLString& name, EAddPosition pos = ADD_BOTTOM, BOOL enabled = TRUE);	// add item "name" to menu
+	LLScrollListItem* add(const std::string& name, EAddPosition pos = ADD_BOTTOM, BOOL enabled = TRUE);	// add item "name" to menu
 	// unhide the other inherited overloads of add()
 	using LLComboBox::add;
 
@@ -116,7 +116,7 @@ public:
 	}
 
 	// check for the existance of the item with "name"
-	BOOL isExist(const LLString& name)
+	BOOL isExist(const std::string& name)
 	{
 		BOOL found = FALSE;
 		
@@ -141,9 +141,9 @@ class LLImageFlyoutButton : public LLFlyoutButton
 {
 public:
 	LLImageFlyoutButton(
-		const LLString& name, 
+		const std::string& name, 
 		const LLRect &rect,
-		const LLString& label,
+		const std::string& label,
 		void (*commit_callback)(LLUICtrl*, void*) = NULL,
 		void *callback_userdata = NULL);
 
@@ -185,7 +185,7 @@ public:
 	void layoutButtons();
 
 	// path to the xml file where we store some cross-session persistent data like navigation history
-	static LLString getLocalStoragePath();
+	static std::string getLocalStoragePath();
 
 	// Per-frame refresh call
 	void refresh();
@@ -203,8 +203,8 @@ public:
 	void clearAddressBar();
 	void clearAddressBarHistory();
 	static BOOL is_moving;
-	void setAddressBar(LLString str);
-	LLString getAddressBar();
+	void setAddressBar(std::string str);
+	std::string getAddressBar();
 	LLNavbarComboBox* mSlurlEdit;
 
 	// teleport/search for whatever is currently in the addressbar
@@ -225,7 +225,7 @@ private:
 	void onAgentTeleportMoving();
 	void updateHistoryList();
 
-	void writeToFile(LLString name, LLURI slurl, LLUUID regionId);
+	void writeToFile(std::string name, LLURI slurl, LLUUID regionId);
 	void writeToFile();
 	void loadFromFile();
     void teleportCore(const std::string& address, bool from_history = false);

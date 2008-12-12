@@ -41,7 +41,7 @@
 // common landmark floater data structure
 
 // returns a common format for all landmark floaters
-LLString LLFloaterCommonLandmark::LLLandData::getFormatedLandDetails() 
+std::string LLFloaterCommonLandmark::LLLandData::getFormatedLandDetails() 
 {
 	return llformat(
 		"Location: %s %d, %d, %d (%s)\n"
@@ -54,7 +54,7 @@ LLString LLFloaterCommonLandmark::LLLandData::getFormatedLandDetails()
 //////////////////////////////////////////////////////////////////////////
 // common landmark floater functionality
 
-LLFloaterCommonLandmark::LLFloaterCommonLandmark( LLString name, LLString rectangle_ctrl, LLString title )
+LLFloaterCommonLandmark::LLFloaterCommonLandmark( std::string name, std::string rectangle_ctrl, std::string title )
 :	LLFloater(name,rectangle_ctrl,title), mParcelResponder( NULL ), mLandmark( NULL ),
 	mEditorName( NULL ), mEditorDetails( NULL ), mSelectFolder( NULL ), mInventoryItem(NULL)
 {
@@ -107,10 +107,10 @@ BOOL LLFloaterCommonLandmark::onObserverUpdate( LLParcelInfo& Data )
 }
 
 
-LLString LLFloaterCommonLandmark::getLandmarksMetaDataFile( LLUUID landmark_uuid )
+std::string LLFloaterCommonLandmark::getLandmarksMetaDataFile( LLUUID landmark_uuid )
 {
-	LLString filename = landmark_uuid.asString() + ".xml";
-	LLString path = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + "Landmarks";
+	std::string filename = landmark_uuid.asString() + ".xml";
+	std::string path = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + "Landmarks";
 
 	// make sure we have a folder for storing notes and snapshots
 	LLFile::mkdir( path.c_str() );
@@ -125,7 +125,7 @@ LLSD LLFloaterCommonLandmark::loadLandmarkMetaData( LLUUID landmark_uuid )
 	LLSD landmark_data;
 
 	// add the filename onto the path
-	LLString path = getLandmarksMetaDataFile( landmark_uuid );
+	std::string path = getLandmarksMetaDataFile( landmark_uuid );
 
 	fileIn.open( path.c_str() );
 	if( fileIn.is_open() )
@@ -139,7 +139,7 @@ LLSD LLFloaterCommonLandmark::loadLandmarkMetaData( LLUUID landmark_uuid )
 
 BOOL LLFloaterCommonLandmark::updateLandmarksMetaData( LLSD landmark_entry, LLUUID landmark_uuid )
 {
-	LLString path = getLandmarksMetaDataFile( landmark_uuid );
+	std::string path = getLandmarksMetaDataFile( landmark_uuid );
 
 	BOOL saved = FALSE;
 
@@ -199,7 +199,7 @@ void LLFloaterCommonLandmark::copyUrlToClipboard()
 	gViewerWindow->mWindow->copyTextToClipboard( utf8str_to_wstring( slurl.asString() ) );
 
 	// show copy slurl dialog
-	LLString::format_map_t args;
+	LLStringUtil::format_map_t args;
 	args["[SLURL]"] = slurl.asString();
 	LLAlertDialog::showXml("CopySLURL", args);
 }
@@ -288,7 +288,7 @@ void LLFloaterCommonLandmark::populateComboRecurse( LLInventoryCategory* parentF
 	static int folderDepth = 0;
 	folderDepth ++;
 
-	LLString spaces = "   ";
+	std::string spaces = "   ";
 	for( int i = 0; i < folderDepth; i ++ )
 		spaces += "   ";
 

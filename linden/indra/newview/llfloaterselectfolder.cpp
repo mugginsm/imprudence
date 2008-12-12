@@ -96,11 +96,11 @@
 #include "llfloaterreceivelandmark.h"
 #include "llfloaterselectfolder.h"
 
-const LLString LL_ADD_FOLDER_FLOATER_LINEEDITOR_NAME("folder_name_edit");
-const LLString LL_ADD_FOLDER_FLOATER_FOLDER_FILE_NAME("Folders.xml");
+const std::string LL_ADD_FOLDER_FLOATER_LINEEDITOR_NAME("folder_name_edit");
+const std::string LL_ADD_FOLDER_FLOATER_FOLDER_FILE_NAME("Folders.xml");
 LLUUID parentFolder=LLUUID::null;
-LLString parentName("");
-LLString rootFolderLabel("");
+std::string parentName("");
+std::string rootFolderLabel("");
 
 LLFloaterSelectFolder::LLFloaterSelectFolder()
 :	LLFloater("floater_add_folder"), mSelectedFolder( NULL )
@@ -168,7 +168,7 @@ void LLFloaterSelectFolder::onClickAdd(void* data)
 	LLFloaterSelectFolder* self = static_cast<LLFloaterSelectFolder*>( data );
 
 	LLLineEditor* folderNameEditor = self->getChild<LLLineEditor>(LL_ADD_FOLDER_FLOATER_LINEEDITOR_NAME);
-	LLString folderName = folderNameEditor->getText();
+	std::string folderName = folderNameEditor->getText();
 
 	if( ! self->mSelectedFolder )
 		self->mSelectedFolder = gInventory.getCategory( gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK) );
@@ -182,7 +182,7 @@ void LLFloaterSelectFolder::onClickAdd(void* data)
 	// update the "latest used folders" list
 
 	LLSD folders;
-	LLString filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, LL_ADD_FOLDER_FLOATER_FOLDER_FILE_NAME);
+	std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, LL_ADD_FOLDER_FLOATER_FOLDER_FILE_NAME);
 	
 	llifstream file;
 	int counter=0;
@@ -199,7 +199,7 @@ void LLFloaterSelectFolder::onClickAdd(void* data)
 
 	folders[counter]["folders"]["name"] = folderName;
 	folders[counter]["folders"]["lluuid"] = new_folder_uuid;
-	LLString fullPath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, LL_ADD_FOLDER_FLOATER_FOLDER_FILE_NAME); 
+	std::string fullPath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, LL_ADD_FOLDER_FLOATER_FOLDER_FILE_NAME); 
 	llofstream file_write;
 	file_write.open(fullPath.c_str());
 

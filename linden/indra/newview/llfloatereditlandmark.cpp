@@ -95,16 +95,16 @@
 #include "llfloatereditlandmark.h"
 #include "lllandmarkcommon.h"
 
-const LLString LL_EDIT_LANDMARK_FLOATER_LINEEDITOR_NAME("Name");
-const LLString LL_EDIT_LANDMARK_FLOATER_TEXTURE_SNAPSHOT("snapshot_ctrl");
-const LLString LL_EDIT_LANDMARK_FLOATER_TEXT_NOTES("Mynotes");
-const LLString LL_EDIT_LANDMARK_FLOATER_TEXT_DESCRIPTION("Details");
-const LLString LL_EDIT_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
-const LLString LL_EDIT_LANDMARK_FLOATER_SLURL_ITEM("Copy SLURL");
-const LLString LL_EDIT_LANDMARK_FLOATER_BUTTON_RESET_SNAPSHOT("default_snapshot");
-const LLString LL_EDIT_LANDMARK_FLOATER_LOADING_MESSAGE( "Loading.." );
-const LLString LL_EDIT_LANDMARK_FLOATER_BUTTON_SAVE( "Apply_Changes" );
-const LLString LL_EDIT_LANDMARK_FLOATER_BUTTON_CANCEL( "Discard_Changes" );
+const std::string LL_EDIT_LANDMARK_FLOATER_LINEEDITOR_NAME("Name");
+const std::string LL_EDIT_LANDMARK_FLOATER_TEXTURE_SNAPSHOT("snapshot_ctrl");
+const std::string LL_EDIT_LANDMARK_FLOATER_TEXT_NOTES("Mynotes");
+const std::string LL_EDIT_LANDMARK_FLOATER_TEXT_DESCRIPTION("Details");
+const std::string LL_EDIT_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
+const std::string LL_EDIT_LANDMARK_FLOATER_SLURL_ITEM("Copy SLURL");
+const std::string LL_EDIT_LANDMARK_FLOATER_BUTTON_RESET_SNAPSHOT("default_snapshot");
+const std::string LL_EDIT_LANDMARK_FLOATER_LOADING_MESSAGE( "Loading.." );
+const std::string LL_EDIT_LANDMARK_FLOATER_BUTTON_SAVE( "Apply_Changes" );
+const std::string LL_EDIT_LANDMARK_FLOATER_BUTTON_CANCEL( "Discard_Changes" );
 
 LLFloaterEditLandmark::LLFloaterEditLandmark()
 :	LLFloaterCommonLandmark( "floater_edit_landmark", "CreateLandmarkRect", "" ),
@@ -205,14 +205,14 @@ BOOL LLFloaterEditLandmark::saveLandmark()
 		
 		mSafeToClose = TRUE;
 
-		//LLString::format_map_t args;
+		//std::string::format_map_t args;
 		//args["[FILE_NAME]"] = "Landmark";
 		//gViewerWindow->alertXml("SaveSuccess", args);
 	}
 
 	// perform some sort of name validation? dont let user create empty named landmarks?
 	// check if there is already a landmark with the same name?
-	LLString new_landmark_name = mEditorName->getText();
+	std::string new_landmark_name = mEditorName->getText();
 
 	if( new_landmark_name == "" )
 		new_landmark_name = mLandData.mRegionName;

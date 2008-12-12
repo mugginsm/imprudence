@@ -54,7 +54,7 @@ public:
 	{
 		BOOL folder_chosen;	// whether folder was chosen or user hit cancel
 		LLUUID folder_id;
-		LLString folder_name;
+		std::string folder_name;
 	};
 
 	// called when a folder is selected

@@ -70,8 +70,8 @@ private:
 	static void onSaveDialogResponse(S32 option, void* data);
 
 	BOOL mSafeToClose;
-	LLString mSavedEditorNotes;
-	LLString mSavedEditorDetails;
+	std::string mSavedEditorNotes;
+	std::string mSavedEditorDetails;
 	LLUUID snapshot_previous;
 };
 

@@ -852,7 +852,7 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 					gAssetStorage->getAssetData( ((LLViewerInventoryItem*)item)->getAssetUUID(), LLAssetType::AT_LANDMARK, LLFloaterReceiveLandmark::onGetNewLandmarkInfo, (LLViewerInventoryItem*)item );
 				} else
 				{
-				open_landmark((LLViewerInventoryItem*)item, LLString("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
+				open_landmark((LLViewerInventoryItem*)item, std::string("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
 				}
 				break;
 			case LLAssetType::AT_TEXTURE:

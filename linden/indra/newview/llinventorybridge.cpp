@@ -181,7 +181,7 @@ static void onFetchCopySLURLInfo( LLLandmark* landmark, LLInventoryItem* invento
 	std::string slurl = build_sl_url(info->mName, landmark);
 	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(slurl));
 
-	LLString::format_map_t args;
+	LLStringUtil::format_map_t args;
 	args["[SLURL]"] = slurl;
 	LLAlertDialog::showXml("CopySLURL", args);
 }

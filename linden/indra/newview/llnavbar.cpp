@@ -117,13 +117,13 @@ class LLLineEditor;
 typedef LLMemberListener<LLNavBar> navbar_listener_t;
 
 //Local Constants
-const LLString LL_NAV_BAR_COMBOBOX_NAME("Slurl_edit");
-const LLString LL_NAV_BAR_SCROLLLIST_NAME("location_list");
-const LLString LL_PATH_HISTORY_FILE("locationhistory.xml");
+const std::string LL_NAV_BAR_COMBOBOX_NAME("Slurl_edit");
+const std::string LL_NAV_BAR_SCROLLLIST_NAME("location_list");
+const std::string LL_PATH_HISTORY_FILE("locationhistory.xml");
 
-const LLString LL_NAV_BAR_HISTORY_LIST("more_btn");
+const std::string LL_NAV_BAR_HISTORY_LIST("more_btn");
 
-const LLString LL_NAVBAR_PERSISTENT_DATA( "navbar_history.xml" );
+const std::string LL_NAVBAR_PERSISTENT_DATA( "navbar_history.xml" );
 const int LL_NAVBAR_PERSISTENT_HISTORY_SIZE = 5;
 
 // *TODO: This needs to be localized so we need to move it into the 
@@ -134,11 +134,11 @@ unsigned int LLNavBar::counter = 0;
 BOOL LLNavBar::opened = FALSE;
 BOOL isFileOpen = FALSE;
 BOOL LLNavBar::is_moving = FALSE;
-LLString addressToAdd = "";
+std::string addressToAdd = "";
 double LLNavBar::sCullTime = 4; //default four days
-LLSD LLNavBar::history = NULL;
-LLSD LLNavBar::teleportHistory = NULL;
-LLSD LLNavBar::searchHistory = NULL;
+LLSD LLNavBar::history;
+LLSD LLNavBar::teleportHistory;
+LLSD LLNavBar::searchHistory;
 
 LLImageFlyoutButton* LLNavBar::mFlyout = NULL; 
 
@@ -153,7 +153,7 @@ class LLLocallyPersistentHelper
 {
 public:
 
-	LLLocallyPersistentHelper( LLString Path )
+	LLLocallyPersistentHelper( std::string Path )
 	{
 		mPath = Path;
 	}
@@ -198,19 +198,19 @@ public:
 		return TRUE;
 	}
 
-	LLSD operator[](const LLString& key)
+	LLSD operator[](const std::string& key)
 	{
 		return mData.get( key );
 	}
 
-	bool hasValue( LLString name )
+	bool hasValue( std::string name )
 	{
 		return mData.has( name );
 	}
 
 protected:
 
-	LLString mPath;
+	std::string mPath;
 	LLSD mData;
 };
 
@@ -221,7 +221,7 @@ public:
 
 	struct LLNavBarAddressEntry
 	{
-		LLString Address;
+		std::string Address;
 		LLDate Date;
 	};
 
@@ -300,7 +300,7 @@ public:
 	}
 
 	// UPDATES XML
-	void addBackLocation( LLString address )
+	void addBackLocation( std::string address )
 	{
 		LLSD back_locations = getBackLocations();
 
@@ -331,7 +331,7 @@ LLNavbarComboBox::~LLNavbarComboBox()
 
 }
 
-LLNavbarComboBox::LLNavbarComboBox(	const LLString& name, const LLRect &rect, const LLString& label,
+LLNavbarComboBox::LLNavbarComboBox(	const std::string& name, const LLRect &rect, const std::string& label,
 									void (*commit_callback)(LLUICtrl*,void*), void *callback_userdata )
 :	LLComboBox( name, rect, label, commit_callback, callback_userdata ), mContextMenuCallback(NULL),
 	showSlurl( FALSE )
@@ -341,7 +341,7 @@ LLNavbarComboBox::LLNavbarComboBox(	const LLString& name, const LLRect &rect, co
 	removeChild( mList, TRUE );
 
 	// this is going to be treated as a 20x20 image
-	mButton = new LLButton(label, LLRect(),  LLString::null, NULL, this);
+	mButton = new LLButton(label, LLRect(),  LLStringUtil::null, NULL, this);
 	mButton->setImageUnselected("navbar_input_field_chevron.tga");
 	mButton->setImageSelected("navbar_input_field_chevron.tga");
 	mButton->setImageDisabled("navbar_input_field_chevron.tga");
@@ -424,7 +424,7 @@ void LLNavbarComboBox::updateLayout()
 			LLRect text_entry_rect(0, getRect().getHeight()-1, getRect().getWidth()-20, 0);
 			text_entry_rect.mRight -= llmax(8,mArrowImage->getWidth()) + 2 * LLUI::sConfigGroup->getS32("DropShadowButton");
 			
-			LLString cur_label = mButton->getLabelSelected();
+			std::string cur_label = mButton->getLabelSelected();
 			
 			mTextEntry = new LLLineEditor(
 				"combo_text_entry", text_entry_rect, "", LLFontGL::sSansSerifSmall, 
@@ -465,7 +465,7 @@ void LLNavbarComboBox::updateLayout()
 		}
 
 		// no label needed for our image button
-		setLabel(LLString::null);
+		setLabel(LLStringUtil::null);
 	}
 	else
 	{
@@ -589,7 +589,7 @@ void LLNavbarComboBox::loadHistory()
 	mList->clear();
 	for( int i = 0; i < back_locations.size(); i ++ )
 	{
-		LLString address = back_locations[i]["address"].asString();
+		std::string address = back_locations[i]["address"].asString();
 		//llinfos << "adding address to navbar: " << address << llendl;
 		add(address, ADD_TOP);
 	}
@@ -703,7 +703,7 @@ void LLNavbarComboBox::showList()
 	setUseBoundingRect(TRUE);
 }
 
-LLScrollListItem* LLNavbarComboBox::add(const LLString& name, EAddPosition pos, BOOL enabled)
+LLScrollListItem* LLNavbarComboBox::add(const std::string& name, EAddPosition pos, BOOL enabled)
 {
 	//llinfos << "LLNavbarComboBox::add(); calling the overriden version of add()! :D" << llendl;
 	LLScrollListItem* item = mList->addSimpleElement(name, pos);
@@ -715,10 +715,10 @@ LLView* LLNavbarComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 {
 	llinfos << "LLNavbarComboBox::fromXML();" << llendl;
 
-	LLString name("navbar_combo_box");
+	std::string name("navbar_combo_box");
 	node->getAttributeString("name", name);
 
-	LLString label("");
+	std::string label("");
 	node->getAttributeString("label", label);
 
 	LLRect rect;
@@ -738,7 +738,7 @@ LLView* LLNavbarComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	combo_box->setAllowTextEntry(allow_text_entry, max_chars);
 	combo_box->initFromXML(node, parent);
 
-	const LLString& contents = node->getValue();
+	const std::string& contents = node->getValue();
 
 	if (contents.find_first_not_of(" \n\t") != contents.npos)
 	{
@@ -751,9 +751,9 @@ LLView* LLNavbarComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 		{
 			if (child->hasName("combo_item"))
 			{
-				LLString label = child->getTextContents();
+				std::string label = child->getTextContents();
 
-				LLString value = label;
+				std::string value = label;
 				child->getAttributeString("value", value);
 
 				combo_box->add(label, LLSD(value) );
@@ -776,19 +776,19 @@ static LLRegisterWidget<LLImageFlyoutButton> r3("image_flyout_button");
 const S32 IMAGE_FLYOUT_BUTTON_ARROW_WIDTH = 20;
 
 LLImageFlyoutButton::LLImageFlyoutButton(
-	const LLString& name, 
+	const std::string& name, 
 	const LLRect &rect,
-	const LLString& label,
+	const std::string& label,
 	void (*commit_callback)(LLUICtrl*, void*) ,
 	void *callback_userdata)
-:	LLFlyoutButton(name, rect, LLString::null, commit_callback, callback_userdata),
+:	LLFlyoutButton(name, rect, LLStringUtil::null, commit_callback, callback_userdata),
 	mImageButton(NULL), mListState( FALSE ), nthItem( 0 )
 {
 
 	/*
 	removeChild( mButton, TRUE );
 
-	mImageButton = new LLButton("", LLRect(), LLString::null, NULL, this);
+	mImageButton = new LLButton("", LLRect(), LLStringUtil::null, NULL, this);
 	mImageButton->setScaleImage(FALSE);
 
 	mImageButton->setClickedCallback(onActionButtonClick);
@@ -818,10 +818,10 @@ LLImageFlyoutButton::LLImageFlyoutButton(
 //static 
 LLView* LLImageFlyoutButton::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	LLString name = "image_flyout_button";
+	std::string name = "image_flyout_button";
 	node->getAttributeString("name", name);
 
-	LLString label("");
+	std::string label("");
 	node->getAttributeString("label", label);
 
 	LLRect rect;
@@ -835,7 +835,7 @@ LLView* LLImageFlyoutButton::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrl
 		callback,
 		NULL);
 
-	LLString list_position;
+	std::string list_position;
 	node->getAttributeString("list_position", list_position);
 	if (list_position == "below")
 	{
@@ -854,9 +854,9 @@ LLView* LLImageFlyoutButton::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrl
 	{
 		if (child->hasName("image_flyout_button_item"))
 		{
-			LLString label = child->getTextContents();
+			std::string label = child->getTextContents();
 
-			LLString value = label;
+			std::string value = label;
 			child->getAttributeString("value", value);
 
 			image_flyout_button->add(label, LLSD(value) );
@@ -1103,7 +1103,7 @@ LLNavBar::~LLNavBar()
 }
 
 // static
-LLString LLNavBar::getLocalStoragePath()
+std::string LLNavBar::getLocalStoragePath()
 {
 	return gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + LL_NAVBAR_PERSISTENT_DATA;
 }
@@ -1291,8 +1291,8 @@ void LLNavBar::teleportCore(const std::string& address, bool from_history)
 // and a new slurl is set within the combobox
 void LLNavBar::teleportToCurrentSLURL()
 {
-	LLString address = mSlurlEdit->getSimple();
-	LLString::trim(address);
+	std::string address = mSlurlEdit->getSimple();
+	LLStringUtil::trim(address);
 	if( address == "" )
 	{	// ignore empty lines -- there shouldnt be any in the address bar history list anyway
 		return;
@@ -1326,19 +1326,19 @@ void LLNavBar::onHaveRegionInfoFinishTeleport(U64 region_handle,
 
 	llinfos << "LLNavBar::onHaveRegionInfoFinishTeleport(); url = " << url << llendl;
 
-	LLString addressText = gNavBar->mSlurlEdit->getSimple();
+	std::string addressText = gNavBar->mSlurlEdit->getSimple();
 	gNavBar->teleportCore(addressText);
 }
 
 void LLNavBar::onClickTeleport(void *userdata)
 {
 	LLNavBar* navbar = (LLNavBar*)userdata;
-	LLString addressText = navbar->mSlurlEdit->getSimple();
+	std::string addressText = navbar->mSlurlEdit->getSimple();
 
-	LLString::trim(addressText);
+	LLStringUtil::trim(addressText);
 	navbar->teleportCore(addressText);
 }
-void LLNavBar::writeToFile(LLString name, LLURI slurl, LLUUID regionId)
+void LLNavBar::writeToFile(std::string name, LLURI slurl, LLUUID regionId)
 {
 	time_t date; // Make a time_t object that'll hold the date
 	time(&date); //  Set the date variable to the current date
@@ -1350,7 +1350,7 @@ void LLNavBar::writeToFile(LLString name, LLURI slurl, LLUUID regionId)
 	std::string dir;
 	dir = gDirUtilp->getLindenUserDir();
 	dir += gDirUtilp->getDirDelimiter();
-	LLString filename = dir + LL_PATH_HISTORY_FILE ;
+	std::string filename = dir + LL_PATH_HISTORY_FILE ;
 	llofstream file;
 	file.open(filename.c_str());
 
@@ -1371,7 +1371,7 @@ void LLNavBar::writeToFile()
 	std::string dir;
 	dir = gDirUtilp->getLindenUserDir();
 	dir += gDirUtilp->getDirDelimiter();
-	LLString filename = dir + LL_PATH_HISTORY_FILE ;
+	std::string filename = dir + LL_PATH_HISTORY_FILE ;
 	llofstream file;
 	file.open(filename.c_str());
 
@@ -1389,7 +1389,7 @@ void LLNavBar::loadFromFile()
 	std::string dir;
 	dir = gDirUtilp->getLindenUserDir();
 	dir += gDirUtilp->getDirDelimiter();
-	LLString filename = dir + LL_PATH_HISTORY_FILE ;
+	std::string filename = dir + LL_PATH_HISTORY_FILE ;
 	llifstream file;
 	sCullTime = gSavedSettings.getU32("HistoryDays");
 	file.open(filename.c_str());
@@ -1734,7 +1734,7 @@ void LLNavBar::onChangeSlurlEdit(LLUICtrl* ctrl, void* user_data)
 	{
 		LLNavBar* navbar = (LLNavBar*)user_data;
 		addressToAdd = navbar->mSlurlEdit->getSimple();
-		LLString::trim(addressToAdd);
+		LLStringUtil::trim(addressToAdd);
 
 		// if the address typed into the address bar is the same as we already have in the address bar history
 		// then the address bar history functionality will be activated to teleport there
@@ -1752,7 +1752,7 @@ void LLNavBar::onChangeSlurlEdit(LLUICtrl* ctrl, void* user_data)
 // static
 void LLNavBar::slurlEditTextEntryCallback(LLLineEditor *caller, void *user_data)
 {
-	LLString text = caller->getText();
+	std::string text = caller->getText();
 	gNavBar->childSetEnabled("teleport_btn", TRUE);
 
 	if( 0 && text.length() >= gNavBar->mMinSearchChars)
@@ -1767,8 +1767,8 @@ void LLNavBar::slurlEditTextEntryCallback(LLLineEditor *caller, void *user_data)
 LLMenuGL* LLNavBar::slurlContextMenuCallback(LLUICtrl *caller, void *user_data)
 {
 	LLNavBar* navbarp = (LLNavBar*)user_data;
-	LLString addressBarText = navbarp->mSlurlEdit->getSimple();
-	LLString::trim(addressBarText);
+	std::string addressBarText = navbarp->mSlurlEdit->getSimple();
+	LLStringUtil::trim(addressBarText);
 	
 	// make the popup menu available
 	LLMenuGL* menu1 = LLUICtrlFactory::getInstance()->buildMenu("menu_navbar_addressbar.xml", navbarp);
@@ -1836,12 +1836,12 @@ void LLNavBar::clearAddressBarHistory()
 	mSlurlEdit->clearHistory();
 }
 
-void LLNavBar::setAddressBar(LLString str)
+void LLNavBar::setAddressBar(std::string str)
 {
 	mSlurlEdit->setLabel(str);
 }
 
-LLString LLNavBar::getAddressBar() {
+std::string LLNavBar::getAddressBar() {
 	return mSlurlEdit->getSimple();
 }
 
@@ -1857,7 +1857,7 @@ class LLDoToSelectedNavBar : public navbar_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLString action = userdata.asString();
+		std::string action = userdata.asString();
 
 		if ("copy" == action)
 		{	
@@ -1865,12 +1865,12 @@ class LLDoToSelectedNavBar : public navbar_listener_t
 		}
 		else if("delete" == action)
 		{
-			LLString textToDelete = "";
+			std::string textToDelete = "";
 			mPtr->setAddressBar(textToDelete);
 		}
 		else if("cut" == action)
 		{
-			LLString text = "";
+			std::string text = "";
 			LLView::getWindow()->copyTextToClipboard(utf8str_to_wstring(mPtr->getAddressBar()));
 			mPtr->setAddressBar(text);
 		}
@@ -1878,7 +1878,7 @@ class LLDoToSelectedNavBar : public navbar_listener_t
 		{
 			LLWString str;
 			LLView::getWindow()->pasteTextFromClipboard(str);
-			LLString str2 = wstring_to_utf8str(str);
+			std::string str2 = wstring_to_utf8str(str);
 			mPtr->setAddressBar(str2);
 			mPtr->mSlurlEdit->setCursorToEnd();
 		}

@@ -50,18 +50,18 @@
 #include "llfloatereditlandmark.h"
 #include "lllandmarkcommon.h"
 
-const LLString LL_RECEIVE_LANDMARK_FLOATER_FOLDER_FILE_NAME("Folders.xml");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_LINEEDITOR_NAME("Name");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_TEXTURE_SNAPSHOT("snapshot_ctrl");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_COMBOBOX_FOLDER("landmarks_combobox");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_TEXT_NOTES("Mynotes");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_TEXT_LOCATION("location_value");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_TEXT_TRAFFIC("traffic_value");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_TEXT_AREA("area_value");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_TEXT_DESCRIPTION("description_value");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_BUTTON_RESET_SNAPSHOT("default_snapshot");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_MENU_ITEM("Copy SLURL");
-const LLString LL_RECEIVE_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_FOLDER_FILE_NAME("Folders.xml");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_LINEEDITOR_NAME("Name");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_TEXTURE_SNAPSHOT("snapshot_ctrl");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_COMBOBOX_FOLDER("landmarks_combobox");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_TEXT_NOTES("Mynotes");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_TEXT_LOCATION("location_value");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_TEXT_TRAFFIC("traffic_value");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_TEXT_AREA("area_value");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_TEXT_DESCRIPTION("description_value");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_BUTTON_RESET_SNAPSHOT("default_snapshot");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_MENU_ITEM("Copy SLURL");
+const std::string LL_RECEIVE_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
 
 const char *SNAPSHOT_FILE_NAME = "location";
 const char *FILE_EXTN = ".bmp";
@@ -110,8 +110,8 @@ void LLFloaterReceiveLandmark::startBuilding()
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_receive_landmark.xml");
 }
 
-const LLString LL_RECEIVE_LANDMARK_FLOATER_BUTTON_SAVE( "save" );
-const LLString LL_RECEIVE_LANDMARK_FLOATER_BUTTON_CANCEL( "cancel" );
+const std::string LL_RECEIVE_LANDMARK_FLOATER_BUTTON_SAVE( "save" );
+const std::string LL_RECEIVE_LANDMARK_FLOATER_BUTTON_CANCEL( "cancel" );
 
 // inventory item and landmark must be set before receive landmark gets built
 BOOL LLFloaterReceiveLandmark::postBuild()
@@ -244,7 +244,7 @@ void LLFloaterReceiveLandmark::onClickSave(void *data)
 	if( ! gAgent.getAvatarObject())
 		return;
 
-	LLString location_name = self->mEditorName->getText();
+	std::string location_name = self->mEditorName->getText();
 	if( location_name == "" )
 		location_name = self->mLandData.mRegionName;
 
@@ -290,14 +290,14 @@ void LLFloaterReceiveLandmark::onClickSave(void *data)
 	self->mSaved = TRUE;
 	self->close();
 
-//	LLString::format_map_t args;
+//	std::string::format_map_t args;
 //	gViewerWindow->alertXml("SaveSuccess", args);
 
 	/* // this should be deleted, only here for reference
 	if(gAgent.getAvatarObject())
 	{
 		LLLineEditor* name =  self->getChild<LLLineEditor>(LL_RECEIVE_LANDMARK_FLOATER_LINEEDITOR_NAME);
-		LLString locationName = name->getText();
+		std::string locationName = name->getText();
 
 		LLComboBox* folder = self->getChild<LLComboBox>(LL_RECEIVE_LANDMARK_FLOATER_COMBOBOX_FOLDER);
 		LLUUID folder_id = folder->getSelectedValue().asUUID();
@@ -308,7 +308,7 @@ void LLFloaterReceiveLandmark::onClickSave(void *data)
 		}
 
 		LLTextEditor* notes = self->getChild<LLTextEditor>(LL_RECEIVE_LANDMARK_FLOATER_TEXT_NOTES);
-		LLString notes_val = notes->getText();
+		std::string notes_val = notes->getText();
 		LLTextureCtrl* snapShot = self->getChild<LLTextureCtrl>("snapshot_ctrl");
 
 		llinfos << "LLFloaterReceiveLandmark::onClickSave(); notes = " << notes_val << llendl;
@@ -319,7 +319,7 @@ void LLFloaterReceiveLandmark::onClickSave(void *data)
 		
 		if(object)
 		{
-			LLString title = "Landmark";
+			std::string title = "Landmark";
 			LLPointer<LLInventoryCallback> cb = new LandmarkCallback(title);
 			copy_inventory_item(gAgent.getID(), self->currentItem->getPermissions().getOwner(), self->currentItem->getUUID(),object->getUUID(),locationName,cb);
 
@@ -333,7 +333,7 @@ void LLFloaterReceiveLandmark::onClickSave(void *data)
 			gInventory.deleteObject(self->currentItem->getUUID());
 			self->close();
 			
-			LLString::format_map_t args;
+			std::string::format_map_t args;
 			gViewerWindow->alertXml("SaveSuccess", args);
 		}
 	}
@@ -345,9 +345,9 @@ void LLFloaterReceiveLandmark::onClickSave(void *data)
 void LLFloaterReceiveLandmark::onClickTakeSnapshot(void* data)
 {
 	LLViewerRegion* region = gAgent.getRegion();
-	LLString location = region->getName();
+	std::string location = region->getName();
 
-	LLString snap_filename = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + SNAPSHOT_FILE_NAME + location + FILE_EXTN;
+	std::string snap_filename = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + SNAPSHOT_FILE_NAME + location + FILE_EXTN;
 	gViewerWindow->saveSnapshot(snap_filename, 200, 200, FALSE, FALSE);
 }
 
@@ -368,7 +368,7 @@ void LLFloaterReceiveLandmark::onClickCreateFolder(void* data)
 }
 
 /* // should be deleted, only here for reference
-void LLFloaterReceiveLandmark::writeToFile(LLString filename, LLString name, LLString notes, LLUUID snapshot_id, BOOL is_received )
+void LLFloaterReceiveLandmark::writeToFile(std::string filename, std::string name, std::string notes, LLUUID snapshot_id, BOOL is_received )
 {
 	time_t date; // Make a time_t object that'll hold the date
 
@@ -390,7 +390,7 @@ void LLFloaterReceiveLandmark::writeToFile(LLString filename, LLString name, LLS
 
 	dir += gDirUtilp->getDirDelimiter();
 
-	LLString pathName =dir+filename;
+	std::string pathName =dir+filename;
 
 	file.open(pathName.c_str());
 
@@ -410,7 +410,7 @@ void LLFloaterReceiveLandmark::writeToFile(LLString filename, LLString name, LLS
 
 		dir += gDirUtilp->getDirDelimiter();
 
-		LLString pathName =dir+filename+ ".xml";
+		std::string pathName =dir+filename+ ".xml";
 		infile.open(pathName.c_str());
 		if(!infile.is_open())
 		{
@@ -440,7 +440,7 @@ void LLFloaterReceiveLandmark::writeToFile(LLString filename, LLString name, LLS
 			if(file.is_open())
 			{
 				LLSDSerialize::toPrettyXML(landmark, file);
-				LLString::format_map_t args;
+				std::string::format_map_t args;
 			}
 		}
 	}

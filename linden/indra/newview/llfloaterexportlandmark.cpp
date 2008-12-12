@@ -35,15 +35,15 @@
 #include "llradiogroup.h"
 
 std::vector<LLUUID> LLFloaterExportLandmark::sLandmark_id_vector;
-std::vector<LLString> LLFloaterExportLandmark::sLandmark_name_vector;
+std::vector<std::string> LLFloaterExportLandmark::sLandmark_name_vector;
 
 const char *EXPORT_FILENAME = "exported_landmarks";
 
-const LLString FILE_EXTENSION_HTML = ".html";
-const LLString FILE_EXTENSION_XML = ".xml";
-const LLString FILE_EXTENSION_TXT = ".txt";
+const std::string FILE_EXTENSION_HTML = ".html";
+const std::string FILE_EXTENSION_XML = ".xml";
+const std::string FILE_EXTENSION_TXT = ".txt";
 
-const LLString LL_HISTORY_XML_THUMBNAIL("Thumbnail");
+const std::string LL_HISTORY_XML_THUMBNAIL("Thumbnail");
 
 LLFloaterExportLandmark::LLFloaterExportLandmark(const LLSD& seed):LLFloater("floater_export_landmarks")
 {
@@ -65,7 +65,7 @@ class LLVFAsyncExportLandmarkObserver : public LLInventoryFetchDescendentsObserv
 {
 public:
 
-	LLVFAsyncExportLandmarkObserver( LLFloaterExportLandmark* Exporter, LLString ExportType ) {
+	LLVFAsyncExportLandmarkObserver( LLFloaterExportLandmark* Exporter, std::string ExportType ) {
 		m_Exporter = Exporter;
 		m_ExportType = ExportType;
 	}
@@ -80,7 +80,7 @@ public:
 		delete this;
 	}
 protected:
-	LLString m_ExportType;
+	std::string m_ExportType;
 	LLFloaterExportLandmark* m_Exporter;
 };
 
@@ -90,7 +90,7 @@ void LLFloaterExportLandmark::onClickExport(void* data)
 	LLRadioGroup* choice = self->getChild<LLRadioGroup>("export");
 	LLSD value = choice->getValue();
 
-	LLString export_type = value.asString();
+	std::string export_type = value.asString();
 
 	// user wants to export data.. make sure the inventory\landmarks path is ready
 	LLUUID landmarksUUID = gInventory.findCategoryUUIDForType( LLAssetType::AT_LANDMARK );		
@@ -112,7 +112,7 @@ void LLFloaterExportLandmark::onClickExport(void* data)
 }
 
 // called once the landmarks folders are finished loaded and ready to be written out to disk
-void LLFloaterExportLandmark::finishExport( LLFloaterExportLandmark* self, LLString export_type )
+void LLFloaterExportLandmark::finishExport( LLFloaterExportLandmark* self, std::string export_type )
 {
 	if( export_type == "HTML" )
 		exportToHTML();
@@ -167,7 +167,7 @@ void LLFloaterExportLandmark::recurse(LLUUID id, U32 level)
 			LLInventoryItem* item = items->get(j);
 			if(item->getType() == 3)
 			{
-			LLString landmark_name = item->getName();
+			std::string landmark_name = item->getName();
 			LLUUID landmark_id = item->getAssetUUID() ;
 			sLandmark_id_vector.push_back(landmark_id);
 			sLandmark_name_vector.push_back(landmark_name);			
@@ -178,10 +178,10 @@ void LLFloaterExportLandmark::recurse(LLUUID id, U32 level)
 	}
 }
 
-LLString LLFloaterExportLandmark::escapeHTML(const LLString& xml)
+std::string LLFloaterExportLandmark::escapeHTML(const std::string& xml)
 {
-	LLString out;
-	for (LLString::size_type i = 0; i < xml.size(); ++i)
+	std::string out;
+	for (std::string::size_type i = 0; i < xml.size(); ++i)
 	{
 		char c = xml[i];
 		switch(c)
@@ -204,11 +204,11 @@ void LLFloaterExportLandmark::exportToHTML()
 	LLUUID landmark_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
 	LLFloaterExportLandmark::recurse(landmark_id, 1);
 	
-	LLString export_file_name = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + EXPORT_FILENAME + FILE_EXTENSION_HTML;
+	std::string export_file_name = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + EXPORT_FILENAME + FILE_EXTENSION_HTML;
 
 	FILE *file_out = LLFile::fopen(export_file_name.c_str(), "w");
 
-	LLString HTMLOut;
+	std::string HTMLOut;
 
 	HTMLOut += "<html>\n";
 	HTMLOut += "<head><title>Your Landmarks</title></head>\n";
@@ -219,7 +219,7 @@ void LLFloaterExportLandmark::exportToHTML()
 	U32 count = sLandmark_id_vector.size();
 	for(U32 i = 0; i < count; ++i)
 	{
-		LLString landmark_name = sLandmark_name_vector[i];
+		std::string landmark_name = sLandmark_name_vector[i];
 		LLUUID landmark_id = sLandmark_id_vector[i];
 
 		HTMLOut += "  <tr><td>" + escapeHTML( landmark_name ) + "</td><td>" + landmark_id.asString() + "</td></tr>\n";
@@ -248,18 +248,18 @@ void LLFloaterExportLandmark::exportToXML()
 	LLUUID landmark_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
 	LLFloaterExportLandmark::recurse(landmark_id, 1);
 
-	LLString export_file_name = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + EXPORT_FILENAME + FILE_EXTENSION_XML;
+	std::string export_file_name = gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + EXPORT_FILENAME + FILE_EXTENSION_XML;
 
 	FILE *file_out = LLFile::fopen(export_file_name.c_str(), "w");
 
-	LLString XMLOut;
+	std::string XMLOut;
 
 	XMLOut += "<Landmarks>\n";
 
 	U32 count = sLandmark_id_vector.size();
 	for(U32 i = 0; i < count; ++i)
 	{
-		LLString landmark_name = sLandmark_name_vector[i];
+		std::string landmark_name = sLandmark_name_vector[i];
 		LLUUID landmark_id = sLandmark_id_vector[i];
 
 		XMLOut += "  <Landmark AssetUUID=\"" + landmark_id.asString() + "\">" + escapeHTML( landmark_name )  + "</Landmark>\n";
@@ -284,7 +284,7 @@ void LLFloaterExportLandmark::exportToFile()
 	LLFloaterExportLandmark::sLandmark_name_vector.clear();
 	LLUUID landmark_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);				
 	LLFloaterExportLandmark::recurse(landmark_id, 1);
-	LLString export_file_name = gDirUtilp->getLindenUserDir();
+	std::string export_file_name = gDirUtilp->getLindenUserDir();
 
 	export_file_name += gDirUtilp->getDirDelimiter();
 	export_file_name += EXPORT_FILENAME + FILE_EXTENSION_TXT;
@@ -292,10 +292,10 @@ void LLFloaterExportLandmark::exportToFile()
 	LLFILE *fOut = LLFile::fopen(export_file_name.c_str(), "w+");
 
 	std::ostringstream ostream;
-	LLString demark= "*";
+	std::string demark= "*";
 	writeToOstream(ostream, demark);
 
-	LLString outstring = ostream.str();
+	std::string outstring = ostream.str();
 	if (fwrite(outstring.c_str(), 1, outstring.length(), fOut) != outstring.length())
 	{
 		llwarns << "Short write" << llendl;
@@ -303,7 +303,7 @@ void LLFloaterExportLandmark::exportToFile()
 	fclose(fOut);
 }
 
-void LLFloaterExportLandmark::writeToOstream(std::ostream& stream, LLString demark)
+void LLFloaterExportLandmark::writeToOstream(std::ostream& stream, std::string demark)
 {	
 	if(sLandmark_id_vector.size()>0)
 	{
@@ -311,7 +311,7 @@ void LLFloaterExportLandmark::writeToOstream(std::ostream& stream, LLString dema
 
 		for(U32 i = 0; i < count; ++i)
 		{
-			LLString landmark_name = sLandmark_name_vector[i];
+			std::string landmark_name = sLandmark_name_vector[i];
 			LLUUID landmark_id = sLandmark_id_vector[i];
 			stream<<"Asset UUID"<<"\t"<<landmark_id.asString().c_str()<<"\n";
 			stream<<"Landmark Name"<<"\t"<<landmark_name.c_str()<<"\n";

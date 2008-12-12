@@ -1010,7 +1010,7 @@ void reload_landmarks_menu()
 		for(S32 i = 0; i < count; ++i)
 		{
 			LLInventoryCategory* item = cats->get(i);
-			LLString landmark_name = item->getName();
+			std::string landmark_name = item->getName();
 			LLUUID landmark_id = item->getUUID() ;
 			category_vector.push_back(landmark_id);
 			LLMenuGL* menu_item = new LLMenuGL(landmark_name);
@@ -1025,7 +1025,7 @@ void reload_landmarks_menu()
 		for(S32 j = 0; j < item_count; j++)
 		{
 			LLInventoryItem* item = items->get(j);
-			LLString landmark_name = item->getName();
+			std::string landmark_name = item->getName();
 			LLUUID* landmark_id_ptr = new LLUUID( item->getAssetUUID() );
 			category_vector.push_back(landmark_id);
 			LLMenuItemCallGL* menu_item = new LLMenuItemCallGL( landmark_name, landmark_menu_action_by_uuid, NULL, NULL, landmark_id_ptr );
@@ -1064,7 +1064,7 @@ void init_sub_menu(LLMenuGL* menu, LLUUID id, bool allow_empty_placeholder)
 
 		show_empty_placeholder = FALSE;
 
-		LLString landmark_name = item->getName();
+		std::string landmark_name = item->getName();
 		LLUUID landmark_id = item->getUUID() ;		
 
 		LLMenuGL* menu_item = new LLMenuGL( landmark_name );
@@ -1086,7 +1086,7 @@ void init_sub_menu(LLMenuGL* menu, LLUUID id, bool allow_empty_placeholder)
 
 		show_empty_placeholder = FALSE;
 
-		LLString landmark_name = item->getName();
+		std::string landmark_name = item->getName();
 		LLUUID* landmark_id_ptr = new LLUUID( item->getAssetUUID() );
 
 			LLMenuItemCallGL* menu_item =
@@ -1121,8 +1121,8 @@ void reload_recent_places_menu()
 		U32 totalHistorySize = placesHistory.size();
 		for( int i = totalHistorySize - 1; i >= 0; i -- )
 		{
-			LLString name = placesHistory[i]["historyentry"]["name"].asString();
-			LLString* slurl = new LLString( placesHistory[i]["historyentry"]["slurl"].asString());
+			std::string name = placesHistory[i]["historyentry"]["name"].asString();
+			std::string* slurl = new std::string( placesHistory[i]["historyentry"]["slurl"].asString());
 			if( name != "" )
 			{
 				subMenuRecentPlaces->append( new LLMenuItemCallGL( name, landmark_recent_menu_action, NULL, NULL, slurl ) );
@@ -3579,14 +3579,14 @@ void landmark_teleport_home(void* userdata)
 }
 void landmark_recent_menu_action(void* userdata) /*Method to process Recently Visited Landmarks*/
 {
-	LLString* slurl = static_cast<LLString*>( userdata ); 
+	std::string* slurl = static_cast<std::string*>( userdata ); 
 	LLAlertDialog::showXml("TeleportFromMenu",
 	menu_recent_landmark_callback, (void*)slurl);
 }
 
 static void menu_recent_landmark_callback(S32 option, void* data)
 {
-	LLString* slurl = (LLString*)data;
+	std::string* slurl = (std::string*)data;
 	if (option == 0)
 	{
 		// HACK: This is to demonstrate teleport on click of recently visited landmarks menu

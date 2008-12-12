@@ -77,7 +77,7 @@ class LLFloaterManageLandmark: public LLFloater, public LLFloaterSingleton<LLFlo
 protected:
 
 	// gui event callbacks
-	static void onSearchEdit(const LLString& search_string, void* user_data);
+	static void onSearchEdit(const std::string& search_string, void* user_data);
 	static void onClearSearch(void* user_data);
 	static void onClickNewFolder(void* data);
 	static void onClickEditLandmark(void* data);
@@ -92,7 +92,7 @@ protected:
 	// if set to true, calls startRenamingSelectedItem()
 	// used to delay renaming a new folder into the next frame
 	BOOL mInSearchMode;
-	LLString mSelectedFolder;
+	std::string mSelectedFolder;
     
 	LLInventoryPanel* mLandmarkPanel;
 	LLSearchEditor* mSearchEdit;

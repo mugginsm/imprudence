@@ -38,13 +38,13 @@ public:
 	LocationInfo();
 	~LocationInfo();
 
-	void setRegionName(const LLString& name);
-	void getRegionName(LLString& name) const;
-	const LLString& getRegionName() const;
+	void setRegionName(const std::string& name);
+	void getRegionName(std::string& name) const;
+	const std::string& getRegionName() const;
 	void setRegionPosition(const LLVector3d& pos);
 	void getRegionPosition(LLVector3d& pos) const;
-	void setRegionNotes(const LLString& notes);
-	void getRegionNotes(LLString& notes) const;
+	void setRegionNotes(const std::string& notes);
+	void getRegionNotes(std::string& notes) const;
 	void setAssetId(const LLUUID& asset_id);
 	void getAssetId(LLUUID& asset_id) const;
 	void setSLURL(const std::string& slurl);
@@ -54,9 +54,9 @@ public:
 
 
 private:
-	LLString mRegionName;
+	std::string mRegionName;
 	LLVector3d mRegionPosition;
-	LLString mRegionNotes;
+	std::string mRegionNotes;
 	LLUUID mAssetId;
 	std::string mSLURL;
 };

@@ -109,8 +109,8 @@ extern void copy_slurl(LLInventoryItem* inv_item);
 extern void show_on_map(LLInventoryItem* inv_item);
 extern void edit_landmark(LLInventoryItem* inv_item);
 
-const LLString LL_MANAGE_LANDMARK_FLOATER_MENU_ITEM("Copy SLURL");
-const LLString LL_MANAGE_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
+const std::string LL_MANAGE_LANDMARK_FLOATER_MENU_ITEM("Copy SLURL");
+const std::string LL_MANAGE_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
 
 BOOL LLFloaterManageLandmark::floaterOpened = FALSE;
 BOOL LLFloaterManageLandmark::m_DraggingItem = FALSE;
@@ -306,7 +306,7 @@ BOOL LLFloaterManageLandmark::isItemProtected( LLViewerInventoryItem* inventory_
 /////////////////////////////////////////////////
 // gui callbacks
 
-void LLFloaterManageLandmark::onSearchEdit(const LLString& search_string, void* user_data)
+void LLFloaterManageLandmark::onSearchEdit(const std::string& search_string, void* user_data)
 {
 	LLFloaterManageLandmark* self = (LLFloaterManageLandmark*)user_data;
 
@@ -322,7 +322,7 @@ void LLFloaterManageLandmark::onSearchEdit(const LLString& search_string, void* 
 	}
 
 	std::string upper_case_search_string = search_string;
-	LLString::toUpper(upper_case_search_string);
+	LLStringUtil::toUpper(upper_case_search_string);
 
 	llinfos << "search edited: " << search_string << llendl;
 
@@ -647,7 +647,7 @@ void LLFloaterManageLandmark::refreshAll()
 	//LLFloaterManageLandmark::getInstance()->refresh();
 }
 
-std::string build_sl_url( LLString region_name, LLLandmark* landmark )
+std::string build_sl_url( std::string region_name, LLLandmark* landmark )
 {
 	LLVector3d pos;
 	if( ! landmark->getGlobalPos(pos) )

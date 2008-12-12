@@ -55,7 +55,7 @@
 #include "llviewermenu.h"
 #include <ctime>
 
-const LLString LL_NAVIGATION_LIST_SCROLLLIST_NAME("location_list");
+const std::string LL_NAVIGATION_LIST_SCROLLLIST_NAME("location_list");
 
 LLNavigationList* LLNavigationList::sInstance = NULL;
 BOOL LLNavigationList::hasTeleported = FALSE;
@@ -109,7 +109,7 @@ void LLNavigationList::clearRecentPlaces()
 void LLNavigationList::addToHistory()
 {
 	LLViewerRegion *region = gAgent.getRegion();
-	LLString name = region->getName();
+	std::string name = region->getName();
 	LLVector3d agentPos = gAgent.getPositionGlobal();
 	LLSD recent;
 	S32 agent_x = llround( (F32)fmod( agentPos.mdV[VX], (F64)REGION_WIDTH_METERS ) );
@@ -206,7 +206,7 @@ void LLNavigationList::onLocationSelect(void* data)
 	LLNavigationList* self = (LLNavigationList*)data;
 	LLCtrlSelectionInterface *list =self->childGetListInterface(LL_NAVIGATION_LIST_SCROLLLIST_NAME);
 	LLSD val=list->getSelectedValue();
-	LLString slurl = val.asString();
+	std::string slurl = val.asString();
 	gAgent.teleportViaSLURL(slurl);
 }
 
@@ -321,7 +321,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 		for(unsigned int i = 0; i < mToday_vector.size()  ; i++) 
 		{
 			LocationInfo info;
-			LLString name;
+			std::string name;
 			std::string slurl;
 			info = mToday_vector[i];
 			slurl = info.getSLURL();
@@ -346,7 +346,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 			for(unsigned int i = 0 ; i < mYesterday_vector.size() ; i++) 
 			{
 				LocationInfo info;
-				LLString name;
+				std::string name;
 				std::string slurl;
 				info = mYesterday_vector.at(i);
 
@@ -378,7 +378,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 			for(unsigned int i = 0 ; i < mTwoDaysAgo_vector.size() ; i++) 
 			{
 				LocationInfo info;
-				LLString name;
+				std::string name;
 				std::string slurl;
 				info =  mTwoDaysAgo_vector.at(i);
 
@@ -410,7 +410,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 			for(unsigned int i = 0 ; i < mThreeDaysAgo_vector.size() ; i++) 
 			{
 				LocationInfo info;
-				LLString name;
+				std::string name;
 				std::string slurl;
 				info =  mThreeDaysAgo_vector.at(i);
 
@@ -441,7 +441,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 			for(unsigned int i = 0 ; i < mFourDaysAgo_vector.size() ; i++) 
 			{
 				LocationInfo info;
-				LLString name;
+				std::string name;
 				std::string slurl;
 				info =  mFourDaysAgo_vector.at(i);
 
@@ -473,7 +473,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 			for(unsigned int i = 0 ; i < mFiveDaysAgo_vector.size() ; i++) 
 			{
 				LocationInfo info;
-				LLString name;
+				std::string name;
 				std::string slurl;
 				info =  mFiveDaysAgo_vector.at(i);
 
@@ -505,7 +505,7 @@ BOOL LLNavigationList::buildList(BOOL asc)
 			for(unsigned int i = 0 ; i < mLongDaysAgo_vector.size() ; i++) 
 			{
 				LocationInfo info;
-				LLString name;
+				std::string name;
 				std::string slurl;
 				info =  mLongDaysAgo_vector.at(i);
 

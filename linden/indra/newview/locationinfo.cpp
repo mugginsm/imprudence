@@ -40,17 +40,17 @@ LocationInfo::~LocationInfo()
 {
 }
 
-void LocationInfo::setRegionName(const LLString& name)
+void LocationInfo::setRegionName(const std::string& name)
 {
 	mRegionName = name;
 }
 
-void LocationInfo::getRegionName(LLString& name) const
+void LocationInfo::getRegionName(std::string& name) const
 {
 	name = mRegionName;
 }
 
-const LLString& LocationInfo::getRegionName() const
+const std::string& LocationInfo::getRegionName() const
 {
 	return mRegionName;
 }
@@ -66,12 +66,12 @@ void LocationInfo::getRegionPosition(LLVector3d& pos) const
 	pos = mRegionPosition;
 }
 
-void LocationInfo::setRegionNotes(const LLString& notes)
+void LocationInfo::setRegionNotes(const std::string& notes)
 {
 	mRegionNotes = notes;
 }
 
-void LocationInfo::getRegionNotes(LLString& notes) const
+void LocationInfo::getRegionNotes(std::string& notes) const
 {
 	notes = mRegionNotes;
 }

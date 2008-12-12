@@ -93,22 +93,22 @@
 #include "llfloatereditlandmark.h"
 #include "lllandmarkcommon.h"
 
-const LLString LL_PATH_LANDMARK_FILE("landmarks.xml");
-const LLString LL_ADD_LANDMARK_FLOATER_FOLDER_FILE_NAME("Folders.xml");
-const LLString LL_ADD_LANDMARK_FLOATER_LINEEDITOR_NAME("Name");
-const LLString LL_ADD_LANDMARK_FLOATER_TEXTURE_SNAPSHOT("snapshot_ctrl");
-const LLString LL_ADD_LANDMARK_FLOATER_COMBOBOX_FOLDER("landmarks_combobox");
-const LLString LL_ADD_LANDMARK_FLOATER_TEXT_NOTES("Mynotes");
-const LLString LL_ADD_LANDMARK_FLOATER_TEXT_LOCATION("location_value");
-const LLString LL_ADD_LANDMARK_FLOATER_TEXT_TRAFFIC("traffic_value");
-const LLString LL_ADD_LANDMARK_FLOATER_TEXT_AREA("area_value");
-const LLString LL_ADD_LANDMARK_FLOATER_TEXT_DESCRIPTION("description_value");
-const LLString LL_ADD_LANDMARK_FLOATER_BUTTON_RESET_SNAPSHOT("default_snapshot");
-const LLString LL_ADD_LANDMARK_FLOATER_MENU_ITEM("Copy SLURL");
-const LLString LL_EDIT_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
-const LLString LL_ADD_LANDMARK_FLOATER_BUTTON_SAVE( "save" );
-const LLString LL_ADD_LANDMARK_FLOATER_BUTTON_CANCEL( "cancel" );
-const LLString LL_ADD_LANDMARK_FLOATER_BUTTON_CREATE_FOLTER( "create_folder" );
+const std::string LL_PATH_LANDMARK_FILE("landmarks.xml");
+const std::string LL_ADD_LANDMARK_FLOATER_FOLDER_FILE_NAME("Folders.xml");
+const std::string LL_ADD_LANDMARK_FLOATER_LINEEDITOR_NAME("Name");
+const std::string LL_ADD_LANDMARK_FLOATER_TEXTURE_SNAPSHOT("snapshot_ctrl");
+const std::string LL_ADD_LANDMARK_FLOATER_COMBOBOX_FOLDER("landmarks_combobox");
+const std::string LL_ADD_LANDMARK_FLOATER_TEXT_NOTES("Mynotes");
+const std::string LL_ADD_LANDMARK_FLOATER_TEXT_LOCATION("location_value");
+const std::string LL_ADD_LANDMARK_FLOATER_TEXT_TRAFFIC("traffic_value");
+const std::string LL_ADD_LANDMARK_FLOATER_TEXT_AREA("area_value");
+const std::string LL_ADD_LANDMARK_FLOATER_TEXT_DESCRIPTION("description_value");
+const std::string LL_ADD_LANDMARK_FLOATER_BUTTON_RESET_SNAPSHOT("default_snapshot");
+const std::string LL_ADD_LANDMARK_FLOATER_MENU_ITEM("Copy SLURL");
+const std::string LL_EDIT_LANDMARK_FLOATER_MAP_ITEM("Show on Map");
+const std::string LL_ADD_LANDMARK_FLOATER_BUTTON_SAVE( "save" );
+const std::string LL_ADD_LANDMARK_FLOATER_BUTTON_CANCEL( "cancel" );
+const std::string LL_ADD_LANDMARK_FLOATER_BUTTON_CREATE_FOLTER( "create_folder" );
 
 BOOL LLFloaterAddLandmark::sLandmarkAdded = FALSE;
 
@@ -315,7 +315,7 @@ void LLFloaterAddLandmark::onClickSave(void *data)
 	if( ! gAgent.getAvatarObject())
 		return;
 
-	LLString location_name = self->mEditorName->getText();
+	std::string location_name = self->mEditorName->getText();
 	if( location_name == "" )
 		location_name = self->mLandData.mRegionName;
 

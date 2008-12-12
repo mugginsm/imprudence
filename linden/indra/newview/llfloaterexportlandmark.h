@@ -46,7 +46,7 @@ public:
 	static void clearVectors();
 	
 	// async callback; called once the landmarks are loaded and ready to be exported
-	static void finishExport( LLFloaterExportLandmark* self, LLString export_type );
+	static void finishExport( LLFloaterExportLandmark* self, std::string export_type );
 
 	static void exportToXML();
 	static void exportToHTML();
@@ -54,23 +54,23 @@ public:
 
 private:
 
-	static LLString escapeHTML(const LLString& html);
+	static std::string escapeHTML(const std::string& html);
 
 	static std::vector<LLUUID> sLandmark_id_vector;
-	static std::vector<LLString> sLandmark_name_vector;
+	static std::vector<std::string> sLandmark_name_vector;
 
 	static void onChangeText(LLUICtrl* ctrl, void* data);
 	static void onClickExport(void* data);
 	static void onClickCancel(void* data);
 	
 	static void onCommitChoice(LLUICtrl* ctrl, void* data);
-	static LLString getNotes(LLUUID landmark_id);
+	static std::string getNotes(LLUUID landmark_id);
 
-	static void writeToOstream(std::ostream& stream, LLString demark);
+	static void writeToOstream(std::ostream& stream, std::string demark);
 
 	static LLLandmark* sLandmark;
 	static LLUUID sLandmarkId;
     
-	LLString mChoice;
+	std::string mChoice;
 };
 
