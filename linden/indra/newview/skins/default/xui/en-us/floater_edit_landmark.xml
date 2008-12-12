@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<floater name="floater_edit_landmark" title="Edit Landmarks" left="375" bottom="-554" width="540" height="350" 
+  can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="false" can_tear_off="false">
+  
+	<panel name="landmark_general_panel" label="General" border="true" left="1" bottom="-349" width="538" height="330"
+    follows="left|top|right|bottom">
+		
+		<text name="Name:" type="string" length="1" left="10" bottom="-25" width="72" height="16"
+      bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			drop_shadow_visible="true" follows="left|top" font="SansSerifSmall"
+			h_pad="0" halign="left" v_pad="0">Name:</text>
+		
+		<line_editor name="Name" bottom="-45" left="10" width="520" height="20" enabled="true"
+			follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+			max_length="63" select_all_on_focus_received="false"
+			select_on_focus="false"  bevel_style="in" border_style="line" border_thickness="1" />
+		
+		<texture_picker name="snapshot_ctrl" label=""  bottom="-236" left="10" width="220" height="165"
+      allow_no_texture="false" can_apply_immediately="false" default_image_name=""
+			enabled="true" follows="left|top" />
+		
+		<button bottom="-96" enabled="true" follows="left|top" font="SansSerifSmall" halign="center"
+			height="25" label="X" label_selected="X" left="204" mouse_opaque="true" name="default_snapshot"
+			scale_image="true" width="25" />
+		
+	</panel>
+		
+		<tab_container bottom="-300" left="240" width="290" height="226" mouse_opaque="false" name="tab" tab_min_width="70" tab_position="top">
+			<panel name="landmark_details_panel" label="Details" left="1" bottom="1" width="290" height="210"
+        mouse_opaque="true" follows="left|top|right|bottom" border="true">
+				<text_editor width="290" height="210" bevel_style="in" border_style="line" border_thickness="1" bottom="0" enabled="false"
+					follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+					left="0" max_length="255" mouse_opaque="true" name="Details" select_all_on_focus_received="false"
+					select_on_focus="false" />
+			</panel>
+			<panel left="1" bottom="1" width="290" height="210" name="landmark_notes_panel" label="My Notes"
+				 mouse_opaque="true" follows="left|top|right|bottom" border="true">
+				<text_editor left="0" bottom="0" width="290" height="210" enabled="true"
+					follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+					max_length="1023" mouse_opaque="true" name="Mynotes" select_all_on_focus_received="false"
+					select_on_focus="false"  bevel_style="in" border_style="line" border_thickness="1" />
+			</panel>
+		</tab_container>
+		
+		<flyout_button name="teleport" left="11" bottom="-338" width="140" height="22" follows="left|top" label="Teleport" tab_stop="false" list_position="below">
+			<flyout_button_item value="Copy SLURL">Copy SLURL</flyout_button_item>
+			<flyout_button_item value="Show on Map">Show on Map</flyout_button_item>
+		</flyout_button>
+		
+		<button name="Apply_Changes" label="Apply Changes" left="240" bottom="-338" width="140" height="22"
+      follows="left|top" font="SansSerifSmall" halign="center" label_selected="Apply_Changes" scale_image="true"  />
+		
+		<button name="Discard_Changes" label="Discard Changes" left="390" bottom="-338" width="140" height="22" 
+      follows="left|top" font="SansSerifSmall" halign="center" label_selected="Discard_Changes" scale_image="true" />
+	
+</floater>

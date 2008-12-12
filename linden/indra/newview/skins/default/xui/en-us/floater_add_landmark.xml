@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<floater name="floater_add_landmark" bottom="-554" left="327" width="540" height="400" can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="false"
+	can_tear_off="false" enabled="true" mouse_opaque="true" rect_control="CreateLandmarkRect" title="Add Landmark">
+	
+	<panel border="false" bottom="-399" enabled="true" follows="left|top|right|bottom" height="380"
+		label="General" left="1" mouse_opaque="true" name="landmark_general_panel" width="538">
+		
+		<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			bottom="-25" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+			h_pad="0" halign="left" height="16" left="10" mouse_opaque="false" name="Name:" v_pad="0"
+			width="72">
+				Name:
+		</text>
+		
+		<line_editor name="Name" bottom="-45" left="10" width="518" height="20" max_length="63"
+			follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+			mouse_opaque="true" select_all_on_focus_received="false"
+			select_on_focus="false" bevel_style="in" border_style="line" border_thickness="1" />
+		
+		<texture_picker name="snapshot_ctrl" bottom="-236" left="10" width="220" height="165"
+      can_apply_immediately="false" default_image_name="" follows="left|top" label="" allow_no_texture="false" mouse_opaque="true" />
+		
+		<button bottom="-96" left="204" width="25" height="25" enabled="true" follows="left|top" font="SansSerifSmall" halign="center"
+			label="X" label_selected="X" mouse_opaque="true" name="default_snapshot" scale_image="true" />
+			
+  </panel>
+
+  <tab_container bottom="-300" height="226" left="240" width="290" mouse_opaque="false" name="tab" tab_min_width="70" tab_position="top">
+    <panel name="landmark_details_panel" width="290" height="210" follows="left|top|right|bottom"
+      label="Details" left="1" mouse_opaque="true" border="true" bottom="1">
+      
+     <text_editor width="290" height="210" bevel_style="in" border_style="line" border_thickness="1" bottom="0" enabled="false"
+					follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+					left="0" max_length="255" mouse_opaque="true" name="description_value" select_all_on_focus_received="false"
+					select_on_focus="false" />
+	  
+	  
+       
+    </panel>
+    
+    <panel name="landmark_notes_panel" bottom="1" left="1" width="290" height="210" follows="left|top|right|bottom"
+         label="My Notes" mouse_opaque="true" border="true">
+      
+      <text_editor name="Mynotes" bottom="0" left="0" width="290" height="210"
+        bevel_style="in" border_style="line" border_thickness="1" enabled="true"
+        follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+        max_length="1023" mouse_opaque="true" select_all_on_focus_received="false"
+        select_on_focus="false" word_wrap="true" type="string" embedded_items="false"
+      />
+      
+    </panel>
+  </tab_container>
+  
+  <text name="Add In Folder" bottom="-325" left="242" width="278" height="16" type="string" length="1"
+    bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+    drop_shadow_visible="true" follows="left|top" font="SansSerifSmall">
+      Add in Folder:
+  </text>
+    
+  <combo_box name="landmarks_combobox" bottom="-345" left="240" width="260" height="20"
+    allow_text_entry="false" control_name="Landmark" follows="left|top|right" max_chars="135" mouse_opaque="false">
+  </combo_box>
+      
+  <button name="create_folder" bottom="-345" right="528" width="22" height="20" follows="left|top" font="SansSerifSmall" halign="center"
+    label="..." label_selected="Select" mouse_opaque="true" scale_image="true" />
+
+  <button name="save" bottom="-384" left="240" width="140" height="22" follows="left|top" font="SansSerif" halign="center"
+    label="Add Landmark" label_selected="Save" mouse_opaque="true" scale_image="true" />
+  
+  <button name="cancel" bottom="-384" left="390" width="140" height="22" follows="left|top" font="SansSerif" halign="center"
+    label="Discard Landmark" label_selected="Cancel" mouse_opaque="true" scale_image="true" />
+	
+</floater>
+

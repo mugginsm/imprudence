@@ -63,6 +63,11 @@
 #include "llvoavatar.h"
 #include "llfloaterproperties.h"
 
+#include "lllandmarkcommon.h"
+#include "llfloatermanagelandmark.h"
+#include "llfloateraddlandmark.h"
+#include "llfloaterreceivelandmark.h"
+
 // RN: HACK
 // We need these because some of the code below relies on things like
 // gAgent root folder. Remove them once the abstraction leak is fixed.
@@ -643,6 +648,29 @@ BOOL LLFolderViewItem::handleMouseDown( S32 x, S32 y, MASK mask )
 	return TRUE;
 }
 
+// figures out whether a particular graphical element belongs to the manage landmarks floater
+// used to disable the inventory floater from coming up during drag and drop originating from the manage landmarks floater
+BOOL isDescendentOfManageLandmark( LLView* View )
+{
+	// quickly jump to the root view element
+	LLView* Parent = View->getParent();
+
+	// this shouldnt have to iterate more than 3 or 4 times
+	while( Parent )
+	{
+		// checks that the name of the floater is same as defined in the xui floater_manage_landmark.xml
+		if( Parent->getName() == "ManageLandmarksFloater" )
+		{
+			// found an ancestor called manage landmark floater!
+			return TRUE;
+		}
+
+		Parent = Parent->getParent();
+	}
+
+	return FALSE;
+}
+
 BOOL LLFolderViewItem::handleHover( S32 x, S32 y, MASK mask )
 {
 	if( hasMouseCapture() && isMovable() )
@@ -670,7 +698,13 @@ BOOL LLFolderViewItem::handleHover( S32 x, S32 y, MASK mask )
 					src = LLToolDragAndDrop::SOURCE_LIBRARY;
 				}
 
+				bool dragInLandmarksManager = isDescendentOfManageLandmark( this );
+
+				if( dragInLandmarksManager )
+					LLFloaterManageLandmark::setInDrag( true );
+
 				can_drag = root->startDrag(src);
+
 				if (can_drag)
 				{
 					// if (mListener) mListener->startDrag();
@@ -682,9 +716,16 @@ BOOL LLFolderViewItem::handleHover( S32 x, S32 y, MASK mask )
 					// world, pressing the delete key won't blow away the inventory
 					// item.
 					gViewerWindow->setKeyboardFocus(NULL);
+					BOOL Status = LLToolDragAndDrop::getInstance()->handleHover( x, y, mask );
 
-					return LLToolDragAndDrop::getInstance()->handleHover( x, y, mask );
+					if( dragInLandmarksManager )
+						LLFloaterManageLandmark::setInDrag( false );
+
+					return Status;
 				}
+
+				if( dragInLandmarksManager )
+					LLFloaterManageLandmark::setInDrag( false );
 			}
 		}
 
@@ -1030,6 +1071,9 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height, S32 filter_generation)
 	F32 running_height = (F32)*height;
 	F32 target_height = (F32)*height;
 
+	// check if there is a filter string setup for this folder and its children
+	bool bInSearchMode = mRoot->getFilter()->getFilterSubString().length() > 0;
+
 	// are my children visible?
 	if (needsArrange())
 	{
@@ -1044,14 +1088,31 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height, S32 filter_generation)
 			for(folders_t::iterator fit = mFolders.begin(); fit != mFolders.end(); ++fit)
 			{
 				LLFolderViewFolder* folderp = (*fit);
-				if (getRoot()->getDebugFilters())
-				{
+
+				if( show_folder_state == LLInventoryFilter::SHOW_ALL_FOLDERS )
 					folderp->setVisible(TRUE);
-				}
 				else
+					folderp->setVisible( folderp->getFiltered(filter_generation) || folderp->hasFilteredDescendants(filter_generation) );
+
+				if( show_folder_state == LLInventoryFilter::SHOW_ALL_LANDMARK_FOLDERS )
 				{
-					folderp->setVisible(show_folder_state == LLInventoryFilter::SHOW_ALL_FOLDERS || // always show folders?
-										(folderp->getFiltered(filter_generation) || folderp->hasFilteredDescendants(filter_generation))); // passed filter or has descendants that passed filter
+					LLString parentName = folderp->getParent()->getName();
+					if( parentName != "My Inventory" && parentName != "Library" )
+					{	// this folder is not a direct child of the inventory or library
+						// it will inherit visibility, and if its a descendant of the Landmarks folder it will be visible by default
+						folderp->setVisible( getVisible() );
+
+						// folders dont have to pass the filter test themselves, and they only need a filtered descendant if there is a search going on
+						if( bInSearchMode )
+							folderp->setVisible( folderp->hasFilteredDescendants(filter_generation) );
+					}
+				} else
+					if( show_folder_state == LLInventoryFilter::SHOW_MY_LANDMARK_FOLDERS )
+					{
+						if( folderp->getName() == "Library" || folderp->getParent()->getName() == "Library" )
+						{
+							folderp->setVisible( FALSE );
+						}
 				}
 
 				if (folderp->getVisible())
@@ -1071,6 +1132,7 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height, S32 filter_generation)
 				iit != mItems.end(); ++iit)
 			{
 				LLFolderViewItem* itemp = (*iit);
+
 				if (getRoot()->getDebugFilters())
 				{
 					itemp->setVisible(TRUE);
@@ -1184,6 +1246,8 @@ void LLFolderViewFolder::filter( LLInventoryFilter& filter)
 		return;
 	}
 
+	bool bShowOnlyLandmarks = getRoot()->getShowFolderState() == LLInventoryFilter::SHOW_ALL_LANDMARK_FOLDERS || getRoot()->getShowFolderState() == LLInventoryFilter::SHOW_MY_LANDMARK_FOLDERS;
+
 	// filter folder itself
 	if (getLastFilterGeneration() < filter_generation)
 	{
@@ -1229,7 +1293,7 @@ void LLFolderViewFolder::filter( LLInventoryFilter& filter)
 		gInventory.startBackgroundFetch(mListener->getUUID());
 	}
 
-	// now query children
+	// filter child folders
 	for (folders_t::iterator iter = mFolders.begin();
 		 iter != mFolders.end();)
 	{
@@ -1238,6 +1302,27 @@ void LLFolderViewFolder::filter( LLInventoryFilter& filter)
 		if (filter.getFilterCount() < 0)
 		{
 			break;
+		}
+
+		// a quick filter for only showing landmark folders
+		if( bShowOnlyLandmarks && (getName() == "My Inventory" || getName() == "Library" ) )
+		{	// this is a first level folder, its parent is the root node
+			// filter OUT all the second level folders NOT named Landmarks
+			if( (*fit)->getName() != "Landmarks" )
+			{
+				(*fit)->setFiltered( FALSE, filter_generation );
+				(*fit)->setVisible( FALSE );
+				continue;
+			}
+		}
+
+		// meh, a quick hack for showing only the landmarks folder within "my inventory"
+		// works in conjunction with the landmark folder filter above
+		if( getRoot()->getShowFolderState() == LLInventoryFilter::SHOW_MY_LANDMARK_FOLDERS && (*fit)->getName() == "Library" )
+		{
+			(*fit)->setFiltered( FALSE, filter_generation );
+			(*fit)->setVisible( FALSE );
+			continue;
 		}
 
 		// mMostFilteredDescendantGeneration might have been reset
@@ -1272,6 +1357,7 @@ void LLFolderViewFolder::filter( LLInventoryFilter& filter)
 		}
 	}
 
+	// filter the items (non-folders)
 	for (items_t::iterator iter = mItems.begin();
 		 iter != mItems.end();)
 	{
@@ -1645,6 +1731,14 @@ BOOL LLFolderViewFolder::removeItem(LLFolderViewItem* item)
 	{
 		//RN: this seem unneccessary as remove() moves to trash
 		//removeView(item);
+		for( LLLandmarkFloaterFactory<LLFloaterAddLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->getIterStart();
+			iter != LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->getIterEnd(); iter ++ )
+			(*iter)->populateCombo();
+
+		for( LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterStart();
+			iter != LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterEnd(); iter ++ )
+			(*iter)->populateCombo();
+
 		return TRUE;
 	}
 	return FALSE;
@@ -2964,6 +3058,7 @@ void LLFolderView::sanitizeSelection()
 
 	// Cache "Show all folders" filter setting
 	BOOL show_all_folders = (getRoot()->getShowFolderState() == LLInventoryFilter::SHOW_ALL_FOLDERS);
+	BOOL show_all_landmark_folders = (getRoot()->getShowFolderState() == LLInventoryFilter::SHOW_ALL_LANDMARK_FOLDERS);
 
 	std::vector<LLFolderViewItem*> items_to_remove;
 	selected_items_t::iterator item_iter;
@@ -2977,7 +3072,7 @@ void LLFolderView::sanitizeSelection()
 		LLFolderViewFolder* parent_folder = item->getParentFolder();
 		if ( parent_folder )
 		{
-			if ( show_all_folders )
+			if ( show_all_folders || show_all_landmark_folders )
 			{	// "Show all folders" is on, so this folder is visible
 				visible = TRUE;
 			}
@@ -3161,7 +3256,10 @@ void LLFolderView::draw()
 		mSearchString.clear();
 	}
 
-	if (hasVisibleChildren() || getShowFolderState() == LLInventoryFilter::SHOW_ALL_FOLDERS)
+	if (hasVisibleChildren() || getShowFolderState() == LLInventoryFilter::SHOW_ALL_FOLDERS
+		|| getShowFolderState() == LLInventoryFilter::SHOW_ALL_LANDMARK_FOLDERS
+		|| getShowFolderState() == LLInventoryFilter::SHOW_MY_LANDMARK_FOLDERS
+		)
 	{
 		mStatusText.clear();
 	}
@@ -3209,6 +3307,14 @@ void LLFolderView::finishRenamingItem( void )
 
 	// List is re-sorted alphabeticly, so scroll to make sure the selected item is visible.
 	scrollToShowSelection();
+
+	for( LLLandmarkFloaterFactory<LLFloaterAddLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->getIterStart();
+		iter != LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->getIterEnd(); iter ++ )
+		(*iter)->populateCombo();
+
+	for( LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterStart();
+		iter != LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterEnd(); iter ++ )
+		(*iter)->populateCombo();
 }
 
 void LLFolderView::revertRenamingItem( void )
@@ -3250,7 +3356,6 @@ void LLFolderView::removeSelectedItems( void )
 			}
 			else
 			{
-				llinfos << "Cannot delete " << item->getName() << llendl;
 				return;
 			}
 		}
@@ -3327,6 +3432,14 @@ void LLFolderView::removeSelectedItems( void )
 		}
 		arrangeAll();
 		scrollToShowSelection();
+
+		for( LLLandmarkFloaterFactory<LLFloaterAddLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->getIterStart();
+			iter != LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->getIterEnd(); iter ++ )
+			(*iter)->populateCombo();
+
+		for( LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterStart();
+			iter != LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterEnd(); iter ++ )
+			(*iter)->populateCombo();
 	}
 }
 
@@ -3627,7 +3740,9 @@ void LLFolderView::startRenamingSelectedItem( void )
 		mRenamer->setFocus( TRUE );
 		mRenamer->setLostTopCallback(onRenamerLost);
 		gViewerWindow->setTopCtrl( mRenamer );
+
 	}
+
 }
 
 void LLFolderView::setFocus(BOOL focus)
@@ -4253,7 +4368,7 @@ void LLFolderView::doIdle()
 	mNeedsAutoSelect = filter_modified_and_active &&
 							!(gFocusMgr.childHasKeyboardFocus(this) || gFocusMgr.getMouseCapture());
 	
-	// filter to determine visiblity before arranging
+	// filter to determine visibility before arranging
 	filterFromRoot();
 
 	// automatically show matching items, and select first one
@@ -4510,6 +4625,7 @@ LLInventoryFilter::~LLInventoryFilter()
 {
 }
 
+// checks if a particular item passes the filter. does not check its children.
 BOOL LLInventoryFilter::check(LLFolderViewItem* item) 
 {
 	U32 earliest;
@@ -4525,10 +4641,16 @@ BOOL LLInventoryFilter::check(LLFolderViewItem* item)
 	}
 	LLFolderViewEventListener* listener = item->getListener();
 	mSubStringMatchOffset = mFilterSubString.size() ? item->getSearchableLabel().find(mFilterSubString) : LLString::npos;
-	BOOL passed = (0x1 << listener->getInventoryType() & mFilterOps.mFilterTypes || listener->getInventoryType() == LLInventoryType::IT_NONE)
+	BOOL passed = (((0x1 << listener->getInventoryType()) & mFilterOps.mFilterTypes) || listener->getInventoryType() == LLInventoryType::IT_NONE)
 					&& (mFilterSubString.size() == 0 || mSubStringMatchOffset != LLString::npos)
 					&& ((listener->getPermissionMask() & mFilterOps.mPermissions) == mFilterOps.mPermissions)
 					&& (listener->getCreationDate() >= earliest && listener->getCreationDate() <= mFilterOps.mMaxDate);
+
+	// if the item doesnt pass the full filter test (wrong inventory type, wrong date, etc)
+	// then clear the sub-string match offset, in order to avoid rendering the search-helper-bubble over items that only have matching names
+	if( ! passed )
+		mSubStringMatchOffset = LLString::npos;
+
 	return passed;
 }
 

@@ -40,6 +40,7 @@
 #include "llsecondlifeurls.h"
 #include "llremoteparcelrequest.h"
 #include "llfloater.h"
+#include "lllandmarkcommon.h"
 
 #include "llagent.h"
 #include "llviewerwindow.h"
@@ -199,6 +200,8 @@ void LLPanelPlace::setErrorStatus(U32 status, const std::string& reason)
 	mDescEditor->setText(error_text);
 }
 
+#include "llgenericmultiplexer.h"
+
 //static 
 void LLPanelPlace::processParcelInfoReply(LLMessageSystem *msg, void **)
 {
@@ -222,15 +225,6 @@ void LLPanelPlace::processParcelInfoReply(LLMessageSystem *msg, void **)
 	msg->getUUID("AgentData", "AgentID", agent_id );
 	msg->getUUID("Data", "ParcelID", parcel_id);
 
-	// look up all panels which have this avatar
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelPlace* self = *iter;
-		if (self->mParcelID != parcel_id)
-		{
-			continue;
-		}
-
 		msg->getUUID	("Data", "OwnerID", owner_id);
 		msg->getString	("Data", "Name", MAX_STRING, name);
 		msg->getString	("Data", "Desc", MAX_STRING, desc);
@@ -246,6 +240,34 @@ void LLPanelPlace::processParcelInfoReply(LLMessageSystem *msg, void **)
 		msg->getS32		("Data", "SalePrice", sale_price);
 		msg->getS32		("Data", "AuctionID", auction_id);
 
+	LLParcelInfo parcel_info;
+	parcel_info.agent_id = agent_id;
+	parcel_info.owner_id = owner_id;
+	parcel_info.parcel_id = parcel_id;
+	parcel_info.name = name;
+	parcel_info.desc = desc;
+	parcel_info.actual_area = actual_area;
+	parcel_info.billable_area = billable_area;
+	parcel_info.flags = flags;
+	parcel_info.global_x = global_x;
+	parcel_info.global_y = global_y;
+	parcel_info.global_z = global_z;
+	parcel_info.sim_name = sim_name;
+	parcel_info.snapshot_id = snapshot_id;
+	parcel_info.dwell = dwell;
+	parcel_info.sale_price = sale_price;
+	parcel_info.auction_id = auction_id;
+
+	llinfos << "LLPanelPlace::processParcelInfoReply(); agent_id = " << agent_id << " parcel_id = " << parcel_id << " name = '" << name << " sim-name = '" << sim_name << "' flags = " << flags << " global_x = " << global_x << llendl;
+
+	// look up all panels which have this avatar
+	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
+	{
+		LLPanelPlace* self = *iter;
+		if (self->mParcelID != parcel_id)
+		{
+			continue;
+		}
 
 		self->mAuctionID = auction_id;
 
@@ -330,8 +352,10 @@ void LLPanelPlace::processParcelInfoReply(LLMessageSystem *msg, void **)
 		BOOL show_auction = (auction_id > 0);
 		self->mAuctionBtn->setVisible(show_auction);
 	}
-}
 
+	// send out parcel info to any curious observers
+	LLVFGenericMultiplexer<LLParcelInfo>::getInstance()->notifyObservers( parcel_info );
+}
 
 void LLPanelPlace::displayParcelInfo(const LLVector3& pos_region,
 									 const LLUUID& landmark_asset_id,

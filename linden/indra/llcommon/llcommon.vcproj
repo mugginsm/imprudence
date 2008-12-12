@@ -184,6 +184,9 @@
 				RelativePath=".\lldate.cpp">
 			</File>
 			<File
+				RelativePath=".\lldelayedcallback.cpp">
+			</File>
+			<File
 				RelativePath=".\llerror.cpp">
 			</File>
 			<File
@@ -376,6 +379,9 @@
 			</File>
 			<File
 				RelativePath=".\lldefs.h">
+			</File>
+			<File
+				RelativePath=".\lldelayedcallback.h">
 			</File>
 			<File
 				RelativePath=".\lldlinked.h">

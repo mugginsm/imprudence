@@ -39,6 +39,50 @@
         <real>1.0</real>
       </array>
     </map>
+    <key>HistoryDays</key>
+        <map>
+        <key>Comment</key>
+            <string>Specified days to save the teleport history</string>
+        <key>Persist</key>
+            <integer>1</integer>
+        <key>Type</key>
+            <string>U32</string>
+        <key>Value</key>
+            <integer>3</integer>
+        </map>
+    <key>AddressBar</key>
+        <map>
+        <key>Comment</key>
+            <string>Specified days to save the address history</string>
+        <key>Persist</key>
+            <integer>1</integer>
+        <key>Type</key>
+            <string>U32</string>
+        <key>Value</key>
+            <integer>3</integer>
+        </map>
+    <key>AddressBarMaxHistoryAge</key>
+        <map>
+        <key>Comment</key>
+            <string>Number of days before an entry is removed from the address bar</string>
+        <key>Persist</key>
+            <integer>1</integer>
+        <key>Type</key>
+            <string>U32</string>
+        <key>Value</key>
+            <integer>7</integer>
+        </map>
+    <key>RecentLocations</key>
+        <map>
+        <key>Comment</key>
+            <string>Specified days to save the address history</string>
+        <key>Persist</key>
+            <integer>1</integer>
+        <key>Type</key>
+            <string>U32</string>
+        <key>Value</key>
+            <integer>3</integer>
+        </map>
     <key>AllowIdleAFK</key>
     <map>
       <key>Comment</key>
@@ -2552,10 +2596,10 @@
       <string>Rect</string>
       <key>Value</key>
       <array>
-        <integer>0</integer>
-        <integer>440</integer>
-        <integer>470</integer>
-        <integer>0</integer>
+        <integer>261</integer>
+        <integer>547</integer>
+        <integer>731</integer>
+        <integer>107</integer>
       </array>
     </map>
     <key>FloaterActiveSpeakersRect</key>
@@ -2655,9 +2699,9 @@
       <key>Value</key>
       <array>
         <integer>0</integer>
+          <integer>977</integer>
         <integer>0</integer>
-        <integer>0</integer>
-        <integer>0</integer>
+           <integer>977</integer>
       </array>
     </map>
     <key>FloaterBumpRect</key>
@@ -2993,10 +3037,10 @@
       <string>Rect</string>
       <key>Value</key>
       <array>
-        <integer>0</integer>
-        <integer>370</integer>
-        <integer>460</integer>
-        <integer>0</integer>
+        <integer>387</integer>
+        <integer>816</integer>
+        <integer>847</integer>
+        <integer>396</integer>
       </array>
     </map>
     <key>FloaterLandmarkRect</key>
@@ -7133,6 +7177,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>ShowNavBar</key>
+    <map>
+      <key>Comment</key>
+      <string>Show navbar at top of screen</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>SitBtnState</key>
     <map>
       <key>Comment</key>
@@ -10195,5 +10250,91 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+
+		<key>NavVisible</key>
+    <map>
+      <key>Comment</key>
+      <string>Nav bar is visible</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+
+    <key>CreateLandmarkRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for Create Landmark window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>299</integer>
+        <integer>719</integer>
+        <integer>839</integer>
+        <integer>319</integer>
+      </array>
+    </map>
+    
+    <key>ReceiveLandmarkRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for Receive Landmark window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>299</integer>
+        <integer>719</integer>
+        <integer>839</integer>
+        <integer>319</integer>
+      </array>
+    </map>
+		
+    <key>FloaterNavListRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for teleport history</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>-1</integer>
+        <integer>820</integer>
+        <integer>724</integer>
+        <integer>598</integer>
+      </array>
+    </map>
+    <key>BackBtnState</key>
+    <map>
+      <key>Comment</key>
+      <string />
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>NextBtnState</key>
+    <map>
+      <key>Comment</key>
+      <string />
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+
   </map>
 </llsd>

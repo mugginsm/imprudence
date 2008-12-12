@@ -255,6 +255,11 @@
 		</menu_item_call>
 		<menu_item_separator bottom="-94" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator" width="211" />
+		<menu_item_check bottom="-113" enabled="true" height="19" label="Navigation Bar" left="0"
+		     mouse_opaque="true" name="showNav" width="211">
+			<on_click function="ShowFloater" userdata="showNav" />
+			<on_check function="FloaterVisible" userdata="showNav" />
+		</menu_item_check>		
 		<menu_item_check bottom="-113" enabled="true" height="19" label="Toolbar" left="0"
 		     mouse_opaque="true" name="Toolbar" width="211">
 			<on_click function="ShowFloater" userdata="toolbar" />
@@ -284,6 +289,12 @@
 			<on_click function="ShowFloater" userdata="mute list" />
 			<on_check function="FloaterVisible" userdata="mute list" />
 		</menu_item_check>
+		<menu_item_check bottom="-189" enabled="true" height="19" label="Complete Teleport History" left="0"
+		     mouse_opaque="true" name="Complete Teleport History" width="211">
+			<on_click function="ShowFloater" userdata="Complete Teleport History" />
+			<on_check function="FloaterVisible" userdata="Complete Teleport History" />
+		</menu_item_check>
+				
 		<menu_item_separator bottom="-197" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator2" width="211" />
 		<menu_item_check bottom="-216" enabled="true" height="19" label="Camera Controls" left="0"
@@ -486,26 +497,6 @@
 		</menu_item_check>
 		<menu_item_separator bottom="-94" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator" width="185" />
-		<menu_item_call bottom="-113" enabled="true" height="19" label="Create Landmark Here" left="0"
-		     mouse_opaque="true" name="Create Landmark Here" width="185">
-			<on_click function="World.CreateLandmark" userdata="" />
-			<on_enable function="World.EnableCreateLandmark" userdata="" />
-		</menu_item_call>
-		<menu_item_call bottom="-132" enabled="true" height="19" label="Set Home to Here" left="0"
-		     mouse_opaque="true" name="Set Home to Here" width="185">
-			<on_click function="World.SetHomeLocation" userdata="" />
-			<on_enable function="World.EnableSetHomeLocation" userdata="" />
-		</menu_item_call>
-		<menu_item_separator bottom="-140" enabled="true" height="8" label="-----------" left="0"
-		     mouse_opaque="true" name="separator2" width="185" />
-		<menu_item_call bottom="-159" enabled="true" height="19" label="Teleport Home" left="0"
-		     mouse_opaque="true" name="Teleport Home" shortcut="control|shift|H"
-		     width="185">
-			<on_click function="World.TeleportHome" userdata="" />
-			<on_enable function="World.EnableTeleportHome" userdata="" />
-		</menu_item_call>
-		<menu_item_separator bottom="-167" enabled="true" height="8" label="-----------" left="0"
-		     mouse_opaque="true" name="separator3" width="185" />
 		<menu_item_call bottom="-186" enabled="true" height="19" label="Set Away" left="0"
 		     mouse_opaque="true" name="Set Away" width="185">
 			<on_click function="World.SetAway" userdata="" />
@@ -853,4 +844,41 @@
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>
 	</menu>
+	
+	<menu bottom="-18" create_jump_keys="true" drop_shadow="true" enabled="true"
+	     height="339" label="Landmarks" left="0" mouse_opaque="false" name="Landmarks"
+	     opaque="true" tear_off="true" width="185">
+		<menu_item_call bottom="-29" enabled="true" height="19" label="New Landmark..." left="0"
+		     mouse_opaque="true" name="New Landmark..." shortcut="" width="185">
+			<on_click function="Landmarks.NewLandmark" userdata="" />
+		</menu_item_call>
+		
+	<menu_item_call bottom="-48" enabled="true" height="19" label="Manage Landmarks" left="0"
+		     mouse_opaque="true" name="Manage Landmark" shortcut="" width="185">
+			<on_click function="Landmarks.ManageLandmarks" userdata="" />
+		</menu_item_call>
+		<menu_item_separator bottom="-75" enabled="true" height="8" label="-----------" left="0"
+		     mouse_opaque="true" name="separator6" width="166" />
+		<menu_item_call bottom="-94" enabled="true" height="19" label="Teleport Home" left="0"
+		     mouse_opaque="true" name="Teleport Home" shortcut="" width="185">
+			<on_click function="Landmarks.TeleportHome" userdata="" />
+			</menu_item_call>
+			
+			<menu_item_call bottom="-113" enabled="true" height="19" label="Set Home to Current Location" left="0"
+		     mouse_opaque="true" name="Set Home to Current Location" shortcut="" width="185">
+			<on_click function="Landmarks.SetHomeToCurrentLocation" userdata="" />
+			</menu_item_call>
+			<menu_item_separator bottom="-140" enabled="true" height="8" label="-----------" left="0"
+		     mouse_opaque="true" name="separator6" width="166" />
+			<menu bottom="-283" create_jump_keys="true" drop_shadow="true" enabled="true"
+		     height="109" label="Recently Visited Landmarks " left="0" mouse_opaque="false"
+		     name="Recent Places" opaque="true" tear_off="true" width="118">
+		     </menu>
+		     <menu bottom="-302" create_jump_keys="true" drop_shadow="true" enabled="true"
+		     height="109" label="Received Landmarks" left="0" mouse_opaque="false"
+		     name="Received Landmarks" opaque="true" tear_off="true" width="118">
+		     </menu>		     
+		     </menu>
+		
+	
 </menu_bar>

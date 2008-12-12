@@ -67,6 +67,7 @@
 #include "llworld.h"
 #include "llworldmap.h"
 #include "llfocusmgr.h"
+#include "llnavbar.h"
 
 void handle_track_avatar(const LLUUID& agent_id, const std::string& name)
 {	
@@ -121,6 +122,7 @@ void handle_inventory(void*)
 }
 
 
+
 void handle_clothing(void*)
 {
 	LLFloaterClothing::toggleVisibility();
@@ -153,4 +155,16 @@ void handle_slash_key(void*)
 	// the same way.  JC
 
 	LLChatBar::startChat(NULL);
+}
+
+void handle_nav(void*)
+{
+	if (gSavedSettings.getBOOL("NavVisible"))
+	{
+		LLNavBar::stopToggle();
+	}
+	else
+	{
+		LLNavBar::startToggle();
+	}
 }

@@ -238,7 +238,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Oy-"
+				AdditionalOptions="/Oy- /MP"
 				AdditionalIncludeDirectories="..\llcommon;..\llmath;..\llvfs;..\llaudio;..\llmedia;..\llimage;..\llscene;..\llxml;..\llmessage;..\llprimitive;..\llrender;..\llwindow;..\llcharacter;..\llinventory;..\llui;..\lscript;&quot;..\..\libraries\i686-win32\include&quot;;..\..\libraries\include\;&quot;..\..\libraries\i686-win32\include\quicktime&quot;;..\..\libraries\include\Logitech_LCD;..\..\libraries\include\Logitech_LCD\LCDUI"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;LL_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T;LL_RELEASE;LL_RELEASE_FOR_DOWNLOAD;XP_WIN;XP_WIN32;MOZILLA_INTERNAL_API"
 				RuntimeLibrary="0"
@@ -330,7 +330,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Oy-"
+				AdditionalOptions="/Oy- /MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\llcommon;..\llmath;..\llvfs;..\llaudio;..\llmedia;..\llimage;..\llscene;..\llxml;..\llmessage;..\llprimitive;..\llrender;..\llwindow;..\llcharacter;..\llinventory;..\llui;..\lscript;&quot;..\..\libraries\i686-win32\include&quot;;..\..\libraries\include\;&quot;..\..\libraries\i686-win32\include\quicktime&quot;;..\..\libraries\include\Logitech_LCD;..\..\libraries\include\Logitech_LCD\LCDUI"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;LL_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T;LL_RELEASE;XP_WIN;XP_WIN32;MOZILLA_INTERNAL_API"
@@ -649,6 +649,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\llfloateraddlandmark.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\llfloateranimpreview.cpp"
 				>
 			</File>
@@ -729,6 +733,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\llfloatereditlandmark.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\llfloatereditui.cpp"
 				>
 			</File>
@@ -738,6 +746,10 @@
 			</File>
 			<File
 				RelativePath=".\llfloaterevent.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\llfloaterexportlandmark.cpp"
 				>
 			</File>
 			<File
@@ -809,6 +821,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\llfloatermanagelandmark.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\llfloatermap.cpp"
 				>
 			</File>
@@ -853,6 +869,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\llfloaterreceivelandmark.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\llfloaterregioninfo.cpp"
 				>
 			</File>
@@ -865,11 +885,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\llfloaterreporter.cpp"
+				RelativePath=".\llfloaterscriptdebug.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\llfloaterscriptdebug.cpp"
+				RelativePath=".\llfloaterselectfolder.cpp"
 				>
 			</File>
 			<File
@@ -1061,6 +1081,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\lllandmarkcommon.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\lllandmarklist.cpp"
 				>
 			</File>
@@ -1130,6 +1154,18 @@
 			</File>
 			<File
 				RelativePath=".\llnamelistctrl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\llnavbar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\llnavigationlist.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\llnavtoggle.cpp"
 				>
 			</File>
 			<File
@@ -1246,6 +1282,10 @@
 			</File>
 			<File
 				RelativePath=".\llpanelgroupvoting.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\llpanelhistory.cpp"
 				>
 			</File>
 			<File
@@ -1477,6 +1517,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\lltogglebar.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\lltool.cpp"
 				>
 			</File>
@@ -1606,10 +1650,6 @@
 			</File>
 			<File
 				RelativePath=".\llviewerassetstorage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\llviewerassetstorage.h"
 				>
 			</File>
 			<File
@@ -1989,6 +2029,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\locationinfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\noise.cpp"
 				>
 			</File>
@@ -2255,6 +2299,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\llfloateraddfolder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\llfloateraddlandmark.h"
+				>
+			</File>
+			<File
 				RelativePath=".\llfloateranimpreview.h"
 				>
 			</File>
@@ -2332,6 +2384,10 @@
 			</File>
 			<File
 				RelativePath=".\llfloaterdirectory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\llfloatereditlandmark.h"
 				>
 			</File>
 			<File
@@ -2459,6 +2515,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\llfloaterreceivelandmark.h"
+				>
+			</File>
+			<File
 				RelativePath=".\llfloaterregioninfo.h"
 				>
 			</File>
@@ -2472,6 +2532,10 @@
 			</File>
 			<File
 				RelativePath=".\llfloaterscriptdebug.h"
+				>
+			</File>
+			<File
+				RelativePath=".\llfloaterselectfolder.h"
 				>
 			</File>
 			<File
@@ -2556,6 +2620,10 @@
 			</File>
 			<File
 				RelativePath=".\llgenepool.h"
+				>
+			</File>
+			<File
+				RelativePath=".\llgenericmultiplexer.h"
 				>
 			</File>
 			<File
@@ -2656,6 +2724,10 @@
 			</File>
 			<File
 				RelativePath=".\lljoystickbutton.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lllandmarkcommon.h"
 				>
 			</File>
 			<File

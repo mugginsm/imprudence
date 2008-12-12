@@ -721,6 +721,20 @@
 		C64F67420AFBED91009732B5 /* lldirpicker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C64F67400AFBED91009732B5 /* lldirpicker.cpp */; };
 		CB0873B60D62226B009600F8 /* lldelayedgestureerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CB0873B40D62226B009600F8 /* lldelayedgestureerror.cpp */; };
 		D1BB623D0D91BBEC00001516 /* llfloatervoicedevicesettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1BB623B0D91BBEB00001516 /* llfloatervoicedevicesettings.cpp */; };
+		D1C53E150E8C342F00E1EB89 /* locationinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53DFA0E8C342E00E1EB89 /* locationinfo.cpp */; };
+		D1C53E160E8C342F00E1EB89 /* lltogglebar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53DFC0E8C342E00E1EB89 /* lltogglebar.cpp */; };
+		D1C53E170E8C342F00E1EB89 /* llpanelhistory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53DFE0E8C342E00E1EB89 /* llpanelhistory.cpp */; };
+		D1C53E180E8C342F00E1EB89 /* llnavtoggle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E000E8C342E00E1EB89 /* llnavtoggle.cpp */; };
+		D1C53E190E8C342F00E1EB89 /* llnavigationlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E020E8C342E00E1EB89 /* llnavigationlist.cpp */; };
+		D1C53E1A0E8C342F00E1EB89 /* llnavbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E040E8C342E00E1EB89 /* llnavbar.cpp */; };
+		D1C53E1B0E8C342F00E1EB89 /* lllandmarkcommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E070E8C342E00E1EB89 /* lllandmarkcommon.cpp */; };
+		D1C53E1C0E8C342F00E1EB89 /* llfloaterselectfolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E0A0E8C342E00E1EB89 /* llfloaterselectfolder.cpp */; };
+		D1C53E1D0E8C342F00E1EB89 /* llfloaterreceivelandmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E0C0E8C342E00E1EB89 /* llfloaterreceivelandmark.cpp */; };
+		D1C53E1E0E8C342F00E1EB89 /* llfloatermanagelandmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E0E0E8C342E00E1EB89 /* llfloatermanagelandmark.cpp */; };
+		D1C53E1F0E8C342F00E1EB89 /* llfloaterexportlandmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E100E8C342E00E1EB89 /* llfloaterexportlandmark.cpp */; };
+		D1C53E200E8C342F00E1EB89 /* llfloatereditlandmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E120E8C342F00E1EB89 /* llfloatereditlandmark.cpp */; };
+		D1C53E210E8C342F00E1EB89 /* llfloateraddlandmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E140E8C342F00E1EB89 /* llfloateraddlandmark.cpp */; };
+		D1C53E240E8C346C00E1EB89 /* lldelayedcallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1C53E230E8C346C00E1EB89 /* lldelayedcallback.cpp */; };
 		D1CA83CE0D62634400C61743 /* llfloaterstats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1CA83CD0D62634400C61743 /* llfloaterstats.cpp */; };
 		D23289B50C453A3600304FEF /* llfloaterreleasemsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D23289B30C453A3600304FEF /* llfloaterreleasemsg.cpp */; };
 		D2768CE50CEA38940000BD66 /* llfloaterlagmeter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2768CE30CEA38940000BD66 /* llfloaterlagmeter.cpp */; };
@@ -2223,6 +2237,36 @@
 		D158CB820D75F0580060BD44 /* llsmoothstep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llsmoothstep.h; sourceTree = "<group>"; };
 		D1BB623B0D91BBEB00001516 /* llfloatervoicedevicesettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloatervoicedevicesettings.cpp; sourceTree = "<group>"; };
 		D1BB623C0D91BBEC00001516 /* llfloatervoicedevicesettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloatervoicedevicesettings.h; sourceTree = "<group>"; };
+		D1C53DF90E8C342E00E1EB89 /* locationinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = locationinfo.h; sourceTree = "<group>"; };
+		D1C53DFA0E8C342E00E1EB89 /* locationinfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = locationinfo.cpp; sourceTree = "<group>"; };
+		D1C53DFB0E8C342E00E1EB89 /* lltogglebar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lltogglebar.h; sourceTree = "<group>"; };
+		D1C53DFC0E8C342E00E1EB89 /* lltogglebar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lltogglebar.cpp; sourceTree = "<group>"; };
+		D1C53DFD0E8C342E00E1EB89 /* llpanelhistory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llpanelhistory.h; sourceTree = "<group>"; };
+		D1C53DFE0E8C342E00E1EB89 /* llpanelhistory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llpanelhistory.cpp; sourceTree = "<group>"; };
+		D1C53DFF0E8C342E00E1EB89 /* llnavtoggle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llnavtoggle.h; sourceTree = "<group>"; };
+		D1C53E000E8C342E00E1EB89 /* llnavtoggle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llnavtoggle.cpp; sourceTree = "<group>"; };
+		D1C53E010E8C342E00E1EB89 /* llnavigationlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llnavigationlist.h; sourceTree = "<group>"; };
+		D1C53E020E8C342E00E1EB89 /* llnavigationlist.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llnavigationlist.cpp; sourceTree = "<group>"; };
+		D1C53E030E8C342E00E1EB89 /* llnavbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llnavbar.h; sourceTree = "<group>"; };
+		D1C53E040E8C342E00E1EB89 /* llnavbar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llnavbar.cpp; sourceTree = "<group>"; };
+		D1C53E050E8C342E00E1EB89 /* lllandmarkregionhelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lllandmarkregionhelper.h; sourceTree = "<group>"; };
+		D1C53E060E8C342E00E1EB89 /* lllandmarkcommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lllandmarkcommon.h; sourceTree = "<group>"; };
+		D1C53E070E8C342E00E1EB89 /* lllandmarkcommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lllandmarkcommon.cpp; sourceTree = "<group>"; };
+		D1C53E080E8C342E00E1EB89 /* llgenericmultiplexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llgenericmultiplexer.h; sourceTree = "<group>"; };
+		D1C53E090E8C342E00E1EB89 /* llfloaterselectfolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloaterselectfolder.h; sourceTree = "<group>"; };
+		D1C53E0A0E8C342E00E1EB89 /* llfloaterselectfolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloaterselectfolder.cpp; sourceTree = "<group>"; };
+		D1C53E0B0E8C342E00E1EB89 /* llfloaterreceivelandmark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloaterreceivelandmark.h; sourceTree = "<group>"; };
+		D1C53E0C0E8C342E00E1EB89 /* llfloaterreceivelandmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloaterreceivelandmark.cpp; sourceTree = "<group>"; };
+		D1C53E0D0E8C342E00E1EB89 /* llfloatermanagelandmark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloatermanagelandmark.h; sourceTree = "<group>"; };
+		D1C53E0E0E8C342E00E1EB89 /* llfloatermanagelandmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloatermanagelandmark.cpp; sourceTree = "<group>"; };
+		D1C53E0F0E8C342E00E1EB89 /* llfloaterexportlandmark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloaterexportlandmark.h; sourceTree = "<group>"; };
+		D1C53E100E8C342E00E1EB89 /* llfloaterexportlandmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloaterexportlandmark.cpp; sourceTree = "<group>"; };
+		D1C53E110E8C342E00E1EB89 /* llfloatereditlandmark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloatereditlandmark.h; sourceTree = "<group>"; };
+		D1C53E120E8C342F00E1EB89 /* llfloatereditlandmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloatereditlandmark.cpp; sourceTree = "<group>"; };
+		D1C53E130E8C342F00E1EB89 /* llfloateraddlandmark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llfloateraddlandmark.h; sourceTree = "<group>"; };
+		D1C53E140E8C342F00E1EB89 /* llfloateraddlandmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = llfloateraddlandmark.cpp; sourceTree = "<group>"; };
+		D1C53E220E8C346C00E1EB89 /* lldelayedcallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lldelayedcallback.h; sourceTree = "<group>"; };
+		D1C53E230E8C346C00E1EB89 /* lldelayedcallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lldelayedcallback.cpp; sourceTree = "<group>"; };
 		D1CA83CC0D62634400C61743 /* llfloaterstats.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = llfloaterstats.h; sourceTree = "<group>"; };
 		D1CA83CD0D62634400C61743 /* llfloaterstats.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = llfloaterstats.cpp; sourceTree = "<group>"; };
 		D23289B30C453A3600304FEF /* llfloaterreleasemsg.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = llfloaterreleasemsg.cpp; sourceTree = "<group>"; };
@@ -2669,6 +2713,34 @@
 		26F529A0051F61CD00A80050 /* newview */ = {
 			isa = PBXGroup;
 			children = (
+				D1C53DF90E8C342E00E1EB89 /* locationinfo.h */,
+				D1C53DFA0E8C342E00E1EB89 /* locationinfo.cpp */,
+				D1C53DFB0E8C342E00E1EB89 /* lltogglebar.h */,
+				D1C53DFC0E8C342E00E1EB89 /* lltogglebar.cpp */,
+				D1C53DFD0E8C342E00E1EB89 /* llpanelhistory.h */,
+				D1C53DFE0E8C342E00E1EB89 /* llpanelhistory.cpp */,
+				D1C53DFF0E8C342E00E1EB89 /* llnavtoggle.h */,
+				D1C53E000E8C342E00E1EB89 /* llnavtoggle.cpp */,
+				D1C53E010E8C342E00E1EB89 /* llnavigationlist.h */,
+				D1C53E020E8C342E00E1EB89 /* llnavigationlist.cpp */,
+				D1C53E030E8C342E00E1EB89 /* llnavbar.h */,
+				D1C53E040E8C342E00E1EB89 /* llnavbar.cpp */,
+				D1C53E050E8C342E00E1EB89 /* lllandmarkregionhelper.h */,
+				D1C53E060E8C342E00E1EB89 /* lllandmarkcommon.h */,
+				D1C53E070E8C342E00E1EB89 /* lllandmarkcommon.cpp */,
+				D1C53E080E8C342E00E1EB89 /* llgenericmultiplexer.h */,
+				D1C53E090E8C342E00E1EB89 /* llfloaterselectfolder.h */,
+				D1C53E0A0E8C342E00E1EB89 /* llfloaterselectfolder.cpp */,
+				D1C53E0B0E8C342E00E1EB89 /* llfloaterreceivelandmark.h */,
+				D1C53E0C0E8C342E00E1EB89 /* llfloaterreceivelandmark.cpp */,
+				D1C53E0D0E8C342E00E1EB89 /* llfloatermanagelandmark.h */,
+				D1C53E0E0E8C342E00E1EB89 /* llfloatermanagelandmark.cpp */,
+				D1C53E0F0E8C342E00E1EB89 /* llfloaterexportlandmark.h */,
+				D1C53E100E8C342E00E1EB89 /* llfloaterexportlandmark.cpp */,
+				D1C53E110E8C342E00E1EB89 /* llfloatereditlandmark.h */,
+				D1C53E120E8C342F00E1EB89 /* llfloatereditlandmark.cpp */,
+				D1C53E130E8C342F00E1EB89 /* llfloateraddlandmark.h */,
+				D1C53E140E8C342F00E1EB89 /* llfloateraddlandmark.cpp */,
 				79ED67F00E197D66003D1E78 /* llpanelskins.cpp */,
 				79ED67F10E197D67003D1E78 /* llpanelskins.h */,
 				AA38F8F00D8A3687003B39F9 /* llfloaterjoystick.cpp */,
@@ -3162,6 +3234,8 @@
 		6192211E074A9B57005E1F34 /* llcommon */ = {
 			isa = PBXGroup;
 			children = (
+				D1C53E220E8C346C00E1EB89 /* lldelayedcallback.h */,
+				D1C53E230E8C346C00E1EB89 /* lldelayedcallback.cpp */,
 				D158CB820D75F0580060BD44 /* llsmoothstep.h */,
 				8849626B0C7B3E8A00A777FB /* llares.cpp */,
 				295542580C3B371500025801 /* llversionviewer.h */,
@@ -5065,6 +5139,19 @@
 				1AE082100DA708E900575141 /* llstylemap.cpp in Sources */,
 				1AE082110DA708E900575141 /* lltrans.cpp in Sources */,
 				79ED67F20E197D67003D1E78 /* llpanelskins.cpp in Sources */,
+				D1C53E150E8C342F00E1EB89 /* locationinfo.cpp in Sources */,
+				D1C53E160E8C342F00E1EB89 /* lltogglebar.cpp in Sources */,
+				D1C53E170E8C342F00E1EB89 /* llpanelhistory.cpp in Sources */,
+				D1C53E180E8C342F00E1EB89 /* llnavtoggle.cpp in Sources */,
+				D1C53E190E8C342F00E1EB89 /* llnavigationlist.cpp in Sources */,
+				D1C53E1A0E8C342F00E1EB89 /* llnavbar.cpp in Sources */,
+				D1C53E1B0E8C342F00E1EB89 /* lllandmarkcommon.cpp in Sources */,
+				D1C53E1C0E8C342F00E1EB89 /* llfloaterselectfolder.cpp in Sources */,
+				D1C53E1D0E8C342F00E1EB89 /* llfloaterreceivelandmark.cpp in Sources */,
+				D1C53E1E0E8C342F00E1EB89 /* llfloatermanagelandmark.cpp in Sources */,
+				D1C53E1F0E8C342F00E1EB89 /* llfloaterexportlandmark.cpp in Sources */,
+				D1C53E200E8C342F00E1EB89 /* llfloatereditlandmark.cpp in Sources */,
+				D1C53E210E8C342F00E1EB89 /* llfloateraddlandmark.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5355,6 +5442,7 @@
 				1A97C4560B8BCF9C00331A24 /* llliveappconfig.cpp in Sources */,
 				1A9897E90B98E2F4005C45D7 /* llbase32.cpp in Sources */,
 				9117EAA20BF24A6100845BD2 /* llpacketack.cpp in Sources */,
+				D1C53E240E8C346C00E1EB89 /* lldelayedcallback.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

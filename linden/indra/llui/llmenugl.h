@@ -437,6 +437,9 @@ public:
 	// Add the menu item to this menu.
 	virtual BOOL append( LLMenuItemGL* item );
 
+	// Add the menu item to this menu. Avoid arrange()
+	virtual BOOL appendWithoutArrange( LLMenuItemGL* item );
+
 	// add a separator to this menu
 	virtual BOOL appendSeparator( const LLString &separator_name = "separator" );
 
@@ -723,6 +726,7 @@ private:
 //
 // High level view that serves as parent for all menus
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLTearOffMenu;
 class LLMenuHolderGL : public LLPanel
 {
 public:
@@ -744,9 +748,19 @@ public:
 
 	static void setActivatedItem(LLMenuItemGL* item);
 
+	void updateTearOffMenus();
+	void addTearOffMenu( LLTearOffMenu* Menu ) {
+		m_TornOffMenus.push_back( Menu );
+	}
+	void removeTearOffMenu( LLTearOffMenu* Menu ) {		
+		m_TornOffMenus.remove( Menu );
+	}
+
 private:
 	static LLHandle<LLView> sItemLastSelectedHandle;
 	static LLFrameTimer sItemActivationTimer;
+
+	std::list<LLTearOffMenu*> m_TornOffMenus;
 
 	BOOL mCanHide;
 };
@@ -769,6 +783,8 @@ public:
 	virtual BOOL handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
 	virtual BOOL handleKeyHere(KEY key, MASK mask);
 	virtual void translate(S32 x, S32 y);
+
+	virtual void recalcRect(); // update the size of the host to reflect changes to the menu (eg: after adding items to recent-places)
 
 private:
 	LLTearOffMenu(LLMenuGL* menup);

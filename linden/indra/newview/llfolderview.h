@@ -170,6 +170,8 @@ public:
 	typedef enum e_folder_show
 	{
 		SHOW_ALL_FOLDERS,
+		SHOW_ALL_LANDMARK_FOLDERS,	// shows all landmark folders
+		SHOW_MY_LANDMARK_FOLDERS,	// only shows landmarks in "My Inventory"
 		SHOW_NON_EMPTY_FOLDERS,
 		SHOW_NO_FOLDERS
 	} EFolderShow;

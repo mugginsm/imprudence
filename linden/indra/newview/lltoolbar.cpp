@@ -65,6 +65,7 @@
 #include "llfloatermute.h"
 #include "llimpanel.h"
 #include "llscrolllistctrl.h"
+#include "llfloatermanagelandmark.h"
 
 #if LL_DARWIN
 
@@ -209,6 +210,8 @@ BOOL LLToolBar::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 			if (!(active_inventory && active_inventory->getVisible()) && 
 			mInventoryAutoOpenTimer.getElapsedTimeF32() > sInventoryAutoOpenTime)
 			{
+				// only show the inventory floater if this drag isnt initiated by manage-landmarks floater
+				if( ! LLFloaterManageLandmark::getInDrag() )
 				LLInventoryView::showAgentInventory();
 			}
 		}

@@ -75,6 +75,7 @@
 #include "llkeyboard.h"
 #include "llscrollcontainer.h"
 #include "llfloaterhardwaresettings.h"
+#include "llpanelhistory.h"
 
 #if LL_WINDOWS
 // for Logitech LCD keyboards / speakers
@@ -134,6 +135,7 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mGeneralPanel(NULL),
 	mInputPanel(NULL),
 	mNetworkPanel(NULL),
+	mHistoryPanel(NULL),
 	mDisplayPanel(NULL),
 	mAudioPanel(NULL),
 	mMsgPanel(NULL),
@@ -151,6 +153,13 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mNetworkPanel = new LLPanelNetwork();
 	mTabContainer->addTabPanel(mNetworkPanel, mNetworkPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
 	mNetworkPanel->setDefaultBtn(default_btn);
+
+	if(!gAgent.getID().isNull())
+	{
+		mHistoryPanel = new LLPanelHistory();
+		mTabContainer->addTabPanel(mHistoryPanel, mHistoryPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+		mHistoryPanel->setDefaultBtn(default_btn);
+	}
 
 	mWebPanel = new LLPanelWeb();
 	mTabContainer->addTabPanel(mWebPanel, mWebPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
@@ -257,6 +266,11 @@ LLPreferenceCore::~LLPreferenceCore()
 		delete mSkinsPanel;
 		mSkinsPanel = NULL;
 	}
+	if (mHistoryPanel)
+	{
+		delete mHistoryPanel;
+		mHistoryPanel = NULL;
+	}
 
 }
 
@@ -272,6 +286,9 @@ void LLPreferenceCore::apply()
 	mPrefsIM->apply();
 	mMsgPanel->apply();
 	mSkinsPanel->apply();
+
+	if( mHistoryPanel )
+		mHistoryPanel->apply();
 
 	// hardware menu apply
 	LLFloaterHardwareSettings::instance()->apply();
@@ -300,6 +317,7 @@ void LLPreferenceCore::cancel()
 	mPrefsIM->cancel();
 	mMsgPanel->cancel();
 	mSkinsPanel->cancel();
+	mHistoryPanel->cancel();
 
 	// cancel hardware menu
 	LLFloaterHardwareSettings::instance()->cancel();

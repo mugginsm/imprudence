@@ -85,6 +85,13 @@
 #include "lluictrlfactory.h"
 #include "llselectmgr.h"
 #include "llfloateropenobject.h"
+#include "llfloatereditlandmark.h"
+#include "lllandmarklist.h"
+#include "llworldmap.h"
+#include "llurldispatcher.h"
+#include "llfloateraddlandmark.h"
+#include "llfloaterreceivelandmark.h"
+#include "lllandmarkregionhelper.h"
 
 // Helpers
 // bug in busy count inc/dec right now, logic is complex... do we really need it?
@@ -111,6 +118,8 @@ void remove_inventory_category_from_avatar(LLInventoryCategory* category);
 void remove_inventory_category_from_avatar_step2( BOOL proceed, void* userdata);
 void move_task_inventory_callback(S32 option, void* user_data);
 void confirm_replace_attachment_rez(S32 option, void* user_data);
+void show_on_map(LLInventoryItem *inv_item);
+void copy_slurl(LLInventoryItem *inv_item);
 
 const char* ICON_NAME[ICON_NAME_COUNT] =
 {
@@ -153,6 +162,97 @@ struct LLWearInfo
 };
 
 BOOL gAddToOutfit = FALSE;
+
+//////////////////////////////////////////////////////////////////////////
+// inventory action callbacks, called after fetching proper region and landmark data
+
+
+
+// copies slurl into clipboard
+static void onFetchCopySLURLInfo( LLLandmark* landmark, LLInventoryItem* inventory_item, U64 region_handle )
+{
+	LLSimInfo* info = LLWorldMap::getInstance()->simInfoFromHandle( region_handle );
+	if( !info )
+	{
+		llinfos << "onFetchCopySLURLInfo(); failed to get region name!" << llendl;
+		return;
+	}
+
+	std::string slurl = build_sl_url(info->mName, landmark);
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(slurl));
+
+	LLString::format_map_t args;
+	args["[SLURL]"] = slurl;
+	LLAlertDialog::showXml("CopySLURL", args);
+}
+
+// show-on-map request
+static void onFetchMapInfo( LLLandmark* landmark, LLInventoryItem* inventory_item, U64 region_handle )
+{
+	LLSimInfo* info = LLWorldMap::getInstance()->simInfoFromHandle( region_handle );
+	if( !info ) {
+		llinfos << "onFetchCopySLURLInfo(); failed to get region name!" << llendl;
+		return;
+	}
+
+	LLVector3d pos;
+
+	if( ! landmark->getGlobalPos(pos) || pos.isExactlyZero() ) {
+		llwarns << "onFetchCopySLURLInfo(); global position is zero!" << llendl;
+		return;
+	}
+
+	llinfos << "onFetchCopySLURLInfo(); tracking " << info->mName << " on map at " << pos << llendl;
+
+	gFloaterWorldMap->trackLocation( pos );
+	LLFloaterWorldMap::show( NULL, TRUE );
+}
+
+// edits landmarks
+static void onFetchEditLandmarkInfo( LLLandmark* landmark, LLInventoryItem* inventory_item, U64 region_handle )
+{
+	llinfos << "onFetchEditLandmarkInfo(); showing edit-landmark floater" << llendl;
+
+	// do a quick scan to make sure we arent double editing the same landmark
+	// since nothing good can come of it :)
+
+	// close open add-landmark dialogs -- leave receive-landmark dialogs
+	for( LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::iterator iter = LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterStart();
+		iter != LLLandmarkFloaterFactory<LLFloaterReceiveLandmark>::getInstance()->getIterEnd(); iter ++ )
+	{
+		LLFloaterReceiveLandmark* receive_landmark_floater = *iter;
+
+		LLUUID inv_id = receive_landmark_floater->getInventoryItemUUID();
+		if( inv_id == inventory_item->getUUID() )
+		{	// we are currently editing this inventory item, dont bring up another edit window
+			// instead give focus to the existing editing window!
+			receive_landmark_floater->setFocus(TRUE);
+			return;
+		}
+	}
+
+	LLFloaterEditLandmark* editor = LLLandmarkFloaterFactory<LLFloaterEditLandmark>::getInstance()->createFloater();
+	editor->setLandmark( landmark );
+	editor->setInventoryItem( inventory_item );
+	editor->beginBuild();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// called from a landmark manager or inventory context menu
+
+void copy_slurl(LLInventoryItem* inv_item) {
+	LLLandmarkRegionHelper::getInstance()->fetchLandmarkAndRegionData( inv_item, onFetchCopySLURLInfo );
+}
+
+void edit_landmark(LLInventoryItem* inv_item) {
+	LLLandmarkRegionHelper::getInstance()->fetchLandmarkAndRegionData( inv_item, onFetchEditLandmarkInfo );
+}
+
+void show_on_map(LLInventoryItem* inv_item) {
+	LLLandmarkRegionHelper::getInstance()->fetchLandmarkAndRegionData( inv_item, onFetchMapInfo );
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 // +=================================================+
 // |        LLInvFVBridge                            |
@@ -426,14 +526,24 @@ void hideContextEntries(LLMenuGL& menu,
 void LLInvFVBridge::getClipboardEntries(bool show_asset_id, std::vector<LLString> &items, 
 		std::vector<LLString> &disabled_items, U32 flags)
 {
+	LLView* panel_container = mInventoryPanel->getParent();
+	bool in_landmark_manager = panel_container->getName() == "ManageLandmarksFloater";
 	items.push_back("Rename");
 	if (!isItemRenameable() || (flags & FIRST_SELECTED_ITEM) == 0)
 	{
 		disabled_items.push_back("Rename");
+		disabled_items.push_back("Edit");
 	}
-
+	if((flags & FIRST_SELECTED_ITEM) == 0)
+	{
+		disabled_items.push_back("map");
+		disabled_items.push_back("slurl");
+	}
 	if (show_asset_id)
 	{
+
+		
+		if( !in_landmark_manager )
 		items.push_back("Copy Asset UUID");
 		if ( (! ( isItemPermissive() || gAgent.isGodlike() ) ) 
 			  || (flags & FIRST_SELECTED_ITEM) == 0)
@@ -457,8 +567,9 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id, std::vector<LLString
 	}
 
 	items.push_back("Paste Separator");
-
 	items.push_back("Delete");
+	if( in_landmark_manager )
+		items.push_back("Delete Separator");
 	if (!isItemRemovable())
 	{
 		disabled_items.push_back("Delete");
@@ -1800,8 +1911,16 @@ void LLFolderBridge::folderOptionsMenu()
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return;
 	
-	// calling card related functionality for folders.
+	// dont include certain items in the options menu if its invoked from within the landmark manager or the folder selection window
+	LLView* panel_container = mInventoryPanel->getParent();
+	bool in_landmark_manager = panel_container->getName() == "ManageLandmarksFloater";
+	bool in_folder_selection = panel_container->getName() == "FolderSelectionFloater";
 
+	bool ignore_default_option_items = in_landmark_manager || in_folder_selection;
+
+	if( ! ignore_default_option_items )
+	{
+		// calling card related functionality for folders.
 	LLIsType is_callingcard(LLAssetType::AT_CALLINGCARD);
 	if (mCallingCards || checkFolderForContentsOfType(model, is_callingcard))
 	{
@@ -1831,6 +1950,7 @@ void LLFolderBridge::folderOptionsMenu()
 			mItems.push_back("Replace Outfit");
 		}
 		mItems.push_back("Take Off Items");
+	}
 	}
 	hideContextEntries(*mMenu, mItems, disabled_items);
 }
@@ -1907,6 +2027,27 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 									is_callingcard);
 		if(item_array.count() > 0) contains_calling_cards = TRUE;
 */
+
+		LLView* panel_container = mInventoryPanel->getParent();
+		LLInventoryCategory* inv_folder = model->getCategory(mUUID);
+	
+		bool in_landmark_manager = panel_container->getName() == "ManageLandmarksFloater";
+		bool in_folder_selection = panel_container->getName() == "FolderSelectionFloater";
+
+		if( in_landmark_manager || in_folder_selection)
+		{	
+			// this context menu is being built inside of a landmark manager!
+			if(!(inv_folder->getName() == "My Inventory"))
+				mItems.push_back("New Folder");
+			// can add our own custom actions here :)
+			
+			getClipboardEntries(false, mItems, mDisabledItems, flags);
+
+			//Added by spatters to force inventory pull on right-click to display folder options correctly. 07-17-06
+			mCallingCards = mWearables = FALSE;
+
+		} else
+		{	// context menu being built elsewhere (eg: normal inventory manager)
 		mItems.push_back("New Folder");
 		mItems.push_back("New Script");
 		mItems.push_back("New Note");
@@ -1934,6 +2075,7 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			checkFolderForContentsOfType(model, is_gesture) )
 		{
 			mWearables=TRUE;
+		}
 		}
 		
 		mMenu = &menu;
@@ -2517,6 +2659,8 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 {
 	std::vector<LLString> items;
 	std::vector<LLString> disabled_items;
+	LLView* panel_container = mInventoryPanel->getParent();
+	bool in_landmark_manager = panel_container->getName() == "ManageLandmarksFloater";
 
 	lldebugs << "LLLandmarkBridge::buildContextMenu()" << llendl;
 	if(isInTrash())
@@ -2532,14 +2676,18 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	else
 	{
 		items.push_back("Landmark Open");
+		if(!in_landmark_manager)
 		items.push_back("Properties");
-
 		getClipboardEntries(true, items, disabled_items, flags);
 	}
 
-	items.push_back("Landmark Separator");
+	//items.push_back("Landmark Separator");
+	if(!in_landmark_manager)
 	items.push_back("Teleport To Landmark");
-
+	items.push_back("Edit");
+	items.push_back("map");
+	menu.appendSeparator();
+	//menu.append(new LLMenuItemGL("Edit", "Edit"));
 	hideContextEntries(menu, items, disabled_items);
 
 }
@@ -2567,8 +2715,35 @@ void LLLandmarkBridge::performAction(LLFolderView* folder, LLInventoryModel* mod
 		LLViewerInventoryItem* item = getItem();
 		if(item)
 		{
+			llinfos << "LLLandmarkBridge::performAction(about); opening landmark.." << llendl;
 			open_landmark(item, LLString("  ") + getPrefix() + item->getName(), FALSE);
 		}
+	}
+	if ("edit" == action)
+	{
+		LLViewerInventoryItem* item = getItem();
+		if(item)
+		{
+			llinfos << "LLLandmarkBridge::performAction(edit); requesting asset data.." << llendl;
+			LLLandmarkRegionHelper::getInstance()->fetchLandmarkAndRegionData( item, onFetchEditLandmarkInfo );
+		}
+	}
+	if ("map" == action)
+	{
+		LLViewerInventoryItem* item = getItem();
+		if(item)
+		{
+			show_on_map(item);
+		}
+	}
+	if("slurl" == action)
+	{
+		LLViewerInventoryItem* item = getItem();
+		if(item)
+		{
+			copy_slurl(item);
+		}
+
 	}
 	else LLItemBridge::performAction(folder, model, action);
 }
@@ -2579,15 +2754,25 @@ void open_landmark(LLViewerInventoryItem* inv_item,
 				   const LLUUID& source_id,
 				   BOOL take_focus)
 {
-	// See if we can bring an exiting preview to the front
-	if( !LLPreview::show( inv_item->getUUID(), take_focus ) )
+
+	LLViewerInventoryItem* itemInInventory = gInventory.getItem( inv_item->getAssetUUID() );
+	llinfos << "open_landmark(); inv_item = " << inv_item << " itemInInventory = " << itemInInventory << " source id = " << source_id << llendl;
+
+	if(LLFloaterAddLandmark::sLandmarkAdded)
 	{
-		// There isn't one, so make a new preview
+		llinfos << "open_landmark(); sLandmarkAdded intercepted" << llendl;
+
+//		gAssetStorage->getAssetData( inv_item->getAssetUUID(), LLAssetType::AT_LANDMARK, LLFloaterAddLandmark::onLandmarkCreatedWrapper, inv_item );
+		LLFloaterAddLandmark::sLandmarkAdded = FALSE;
+	}
+	else
+	{
+
+		llinfos << "open_landmark(); not from formAddlandmark" << llendl;
 		S32 left, top;
 		gFloaterView->getNewFloaterPosition(&left, &top);
 		LLRect rect = gSavedSettings.getRect("PreviewLandmarkRect");
 		rect.translate( left - rect.mLeft, top - rect.mTop );
-
 		LLPreviewLandmark* preview = new LLPreviewLandmark(title,
 								  rect,
 								  title,
@@ -2598,6 +2783,7 @@ void open_landmark(LLViewerInventoryItem* inv_item,
 		if(take_focus) preview->setFocus(TRUE);
 		// keep onscreen
 		gFloaterView->adjustToFitScreen(preview, FALSE);
+			
 	}
 }
 

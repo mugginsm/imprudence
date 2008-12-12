@@ -111,7 +111,8 @@ const char* NEW_CATEGORY_NAMES[LLAssetType::AT_COUNT] =
 	"Uncompressed Images",	// AT_IMAGE_JPEG
 	"Animations",		// AT_ANIMATION
 	"Gestures",			// AT_GESTURE
-	"New Folder"		// AT_SIMSTATE
+	"New Folder",		// AT_SIMSTATE
+	"Received Landmarks" //AT_RECEIVE_LANDMARK
 };
 
 struct InventoryIDPtrLess
@@ -319,6 +320,28 @@ LLUUID LLInventoryModel::findCatUUID(LLAssetType::EType preferred_type)
 	{
 		return root_id;
 	}
+	if(root_id.notNull())
+	{
+		cat_array_t* cats = NULL;
+		cats = get_ptr_in_map(mParentChildCategoryTree, root_id);
+		if(cats)
+		{
+			S32 count = cats->count();
+			for(S32 i = 0; i < count; ++i)
+			{
+				if(cats->get(i)->getPreferredType() == preferred_type)
+				{
+					return cats->get(i)->getUUID();
+				}
+			}
+		}
+	}
+	return LLUUID::null;
+}
+
+LLUUID LLInventoryModel::findSubCatUUID(LLAssetType::EType preferred_type)
+{
+	LLUUID root_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
 	if(root_id.notNull())
 	{
 		cat_array_t* cats = NULL;

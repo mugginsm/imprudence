@@ -46,5 +46,6 @@ void handle_clothing(void*);
 void handle_chat(void*);
 void handle_return_key(void*);
 void handle_slash_key(void*);
+void handle_nav(void*);
 
 #endif

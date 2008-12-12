@@ -1,3 +1,4 @@
+newview/lllandmarkcommon.cpp
 newview/llagent.cpp
 newview/llagentdata.cpp
 newview/llagentpilot.cpp
@@ -57,6 +58,7 @@ newview/llfirstuse.cpp
 newview/llflexibleobject.cpp
 newview/llfloaterabout.cpp
 newview/llfloateractivespeakers.cpp
+newview/llfloateraddlandmark.cpp
 newview/llfloateranimpreview.cpp
 newview/llfloaterauction.cpp
 newview/llfloateravatarinfo.cpp
@@ -77,9 +79,11 @@ newview/llfloatercolorpicker.cpp
 newview/llfloatercustomize.cpp
 newview/llfloaterdaycycle.cpp
 newview/llfloaterdirectory.cpp
+newview/llfloatereditlandmark.cpp
 newview/llfloatereditui.cpp
 newview/llfloaterenvsettings.cpp
 newview/llfloaterevent.cpp
+newview/llfloaterexportlandmark.cpp
 newview/llfloaterfriends.cpp
 newview/llfloatergesture.cpp
 newview/llfloatergodtools.cpp
@@ -98,6 +102,7 @@ newview/llfloaterland.cpp
 newview/llfloaterlandholdings.cpp
 newview/llfloaterlandmark.cpp
 newview/llfloatermap.cpp
+newview/llfloatermanagelandmark.cpp
 newview/llfloatermute.cpp
 newview/llfloaternamedesc.cpp
 newview/llfloaternewim.cpp
@@ -176,6 +181,9 @@ newview/llmutelist.cpp
 newview/llnamebox.cpp
 newview/llnameeditor.cpp
 newview/llnamelistctrl.cpp
+newview/llnavbar.cpp
+newview/llnavigationlist.cpp
+newview/llnavtoggle.cpp
 newview/llnetmap.cpp
 newview/llnotify.cpp
 newview/lloverlaybar.cpp
@@ -205,6 +213,7 @@ newview/llpanelgrouplandmoney.cpp
 newview/llpanelgroupnotices.cpp
 newview/llpanelgrouproles.cpp
 newview/llpanelgroupvoting.cpp
+newview/llpanelhistory.cpp
 newview/llpanelinput.cpp
 newview/llpanelinventory.cpp
 newview/llpanelland.cpp
@@ -261,6 +270,7 @@ newview/lltexturecache.cpp
 newview/lltexturectrl.cpp
 newview/lltexturefetch.cpp
 newview/lltextureview.cpp
+newview/lltogglebar.cpp
 newview/lltool.cpp
 newview/lltoolbar.cpp
 newview/lltoolbrush.cpp
@@ -369,5 +379,8 @@ newview/llworld.cpp
 newview/llworldmap.cpp
 newview/llworldmapview.cpp
 newview/llxmlrpctransaction.cpp
+newview/locationinfo.cpp
 newview/noise.cpp
 newview/pipeline.cpp
+newview/llfloaterreceivelandmark.cpp
+newview/llfloaterselectfolder.cpp

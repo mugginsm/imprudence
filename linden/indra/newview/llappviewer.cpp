@@ -146,6 +146,7 @@
 #include "llviewercontrol.h"
 #include "lleventnotifier.h"
 #include "llcallbacklist.h"
+#include "lldelayedcallback.h"
 #include "pipeline.h"
 #include "llgesturemgr.h"
 #include "llsky.h"
@@ -885,6 +886,9 @@ bool LLAppViewer::init()
 	gSimFrames = (F32)gFrameCount;
 
 	LLViewerJoystick::getInstance()->init(false);
+
+	// for easy scheduling of future tasks
+	gDelayedCallbacks = new LLDelayedCallbackManager();
 
 	return true;
 }
@@ -3269,6 +3273,15 @@ void LLAppViewer::idle()
 	}
 
 	stop_glerror();
+
+	////////////////////////////////////////
+	// mini-scheduler for rebuilding dynamic menus on inventory updates, etc
+	// different from gIdleCallbacks because it provides user-specifiable scheduling
+	// is one-time and very fast/minimal
+	{
+		//LLFrameHelper::doFrame();
+		gDelayedCallbacks->executeDelayedCallbacks();
+	}
 
 	////////////////////////////////////////
 	//

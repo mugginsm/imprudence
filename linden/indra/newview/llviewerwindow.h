@@ -114,18 +114,12 @@ public:
 	// ACCESSORS
 	//
 	LLView*			getRootView()		const	{ return mRootView; }
-
-	// Window in raw pixels as seen on screen.
 	const LLRect&	getWindowRect()		const	{ return mWindowRect; };
-	S32				getWindowDisplayHeight()	const;
-	S32				getWindowDisplayWidth()	const;
-
-	// Window in scaled pixels (via UI scale), use this for
-	// UI elements checking size.
 	const LLRect&	getVirtualWindowRect()		const	{ return mVirtualWindowRect; };
 	S32				getWindowHeight()	const;
 	S32				getWindowWidth()	const;
-
+	S32				getWindowDisplayHeight()	const;
+	S32				getWindowDisplayWidth()	const;
 	LLWindow*		getWindow()			const	{ return mWindow; }
 	void*			getPlatformWindow() const	{ return mWindow->getPlatformWindow(); }
 	void			focusClient()		const	{ return mWindow->focusClient(); };
@@ -386,6 +380,23 @@ protected:
 	LLView * mIndicator;
 };
 extern LLBottomPanel * gBottomPanel;
+
+class LLTopPanel : public LLPanel
+{
+public:
+	LLTopPanel(const LLRect& rect);
+	void setFocusIndicator(LLView * indicator);
+	LLView * getFocusIndicator() { return mIndicator; }
+	/*virtual*/ void draw();
+
+	static void* createHUD(void* data);
+	static void* createToggleBar(void* data);
+	static void* createNavToggle(void* data);
+
+protected:
+	LLView * mIndicator;
+};
+extern LLTopPanel * gTopPanel;
 
 void toggle_flying(void*);
 void toggle_first_person();

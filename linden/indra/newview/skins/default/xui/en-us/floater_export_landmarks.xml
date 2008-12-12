@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<floater bottom="320" can_close="true" can_drag_on_left="false" can_minimize="true"
+     can_resize="false" height="150" min_height="150" min_width="150" left="470"
+     name="ExportLandmarks" title="Export Landmarks" width="410">
+<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-40" drop_shadow_visible="true" follows="left|bottom"
+	     font="SansSerif" h_pad="0" halign="left" height="16"
+	     left="10" mouse_opaque="true" name="first_name_text" v_pad="0" width="150">
+		Export  Landmarks... 
+	</text>
+	<radio_group bottom_delta ="-35" follows="left|top" height="30" draw_border="false"
+	
+	     left="10" name="export" width="350" mouse_opaque="true"  >
+		<radio_item bottom="-20" height="20" name="HTML" left="0"  >
+			HTML
+		</radio_item>
+		<radio_item bottom="-20" height="20" name="XML" left="60"  >
+			XML
+		</radio_item>
+		<radio_item bottom="-20" height="16" name="TXT" left="120"  >
+			TXT
+		</radio_item>
+	</radio_group>
+		
+		
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-90" drop_shadow_visible="true" follows="left|bottom"
+	     font="SansSerif" h_pad="0" halign="left" height="16"
+	     left="10" mouse_opaque="true" name="Export_text" v_pad="0" width="550">
+		
+		Exported Landmarks are read from the Landmarks Folder and 
+
+	</text>
+	
+	 <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-110" drop_shadow_visible="true" follows="left|bottom"
+	     font="SansSerif" h_pad="0" halign="left" height="16"
+	     left="10" mouse_opaque="true" name="Export_text2" v_pad="0" width="550">
+		do not include Landmarks embedded in Notecards.
+
+		</text>
+	   
+		 
+		 
+		 <button bottom="-140" follows="left|bottom" font="SansSerif" halign="center"
+	     height="24" label="OK" label_selected="OK" 
+	     left="230" mouse_opaque="true" name="OK_btn" scale_image="TRUE"
+	     width="80"/>
+	     <button bottom="-140" follows="left|bottom" font="SansSerif" halign="center"
+	     height="24" label="Cancel" label_selected="Cancel"
+	     left="320" mouse_opaque="true" name="cancel_btn" scale_image="TRUE" width="80" />
+	 </floater>   
+	 
+	 

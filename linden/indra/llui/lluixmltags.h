@@ -122,4 +122,5 @@ const LLString
 	LL_GROUP_DROP_TARGET_TAG("group_drop_target"),
 	LL_LAYOUT_STACK_TAG("layout_stack");
 #define LL_FLYOUT_BUTTON_TAG "flyout_button"
+#define LL_IMAGE_FLYOUT_BUTTON_TAG "image_flyout_button"
 #endif

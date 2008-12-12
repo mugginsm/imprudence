@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel follows="left|right|bottom|top" height="36" left="0" mouse_opaque="false" name="togglebar"
+	use_bounding_rect="true" width="543">
+	<layout_stack bottom="0" follows="left|right|bottom" height="36" left="0" mouse_opaque="false"
+		name="toggle_layout_panel" orientation="horizontal"  use_bounding_rect="true" width="543">
+		<layout_panel auto_resize="false" background_visible="false" border="false" filename="panel_navigationbar.xml"
+			follows="left|right|bottom" bottom="0" left="0" height="36" mouse_opaque="false" name="navbar" use_bounding_rect="true"
+			width="543" />
+	</layout_stack>
+</panel>
+

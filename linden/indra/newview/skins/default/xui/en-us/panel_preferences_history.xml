@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="History_panel" border="true" bottom="-409" enabled="true" follows="left|top|right|bottom"
+       height="408" label="History &amp; Landmarks"  left="102" mouse_opaque="true" width="517">     
+     
+  <text type="string" length="1" bottom="-25" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="15" name="History_textbox" v_pad="0"
+	      width="394">Teleport History:</text>
+    
+	<text type="string" length="1" bottom="-45" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="15" name="teleport_history" v_pad="0"
+	      width="220">Remember my teleport history for the last</text>
+	  
+  <spinner bottom="-45" control_name="days" decimal_digits="0" enabled="true"
+	         follows="left|top|right" height="16" increment="1" initial_val="3"
+	         label="" label_width="1" left="235" max_val="365" 
+	         min_val="0" mouse_opaque="true" name="days" width="50" />
+	         
+  <text type="string" length="1" bottom="-45" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="285" name="Days_textbox" v_pad="0" width="100">days.</text>
+		
+  <button name="Clear_Now" width="100" height="22" label="Clear Now" 
+          bottom_delta="0" left_delta="35" mouse_opaque="true" follows="left|top" font="SansSerif" v_pad="0" />
+	
+  <!-- address bar history -->
+  <text type="string" length="1" bottom="-85" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="15" name="History_textbox" v_pad="0"
+	      width="394">Address Bar History:</text> 
+	  
+  <text type="string" length="1" bottom="-105" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="15" name="teleport_history" v_pad="0"
+	      width="268">Remember text entered into address bar for the last</text>
+		
+  <spinner control_name="address_bar_history_age"  bottom="-105" decimal_digits="0" enabled="true"
+	         follows="left|top|right" height="16" increment="1" initial_val="3"
+	         label="" label_width="1" left="285" max_val="365"
+	         min_val="0" mouse_opaque="true" name="address_bar_history_age" width="50" />
+		
+  <text type="string" length="1" left="340" bottom="-105" height="16" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" v_pad="0" width="100">days.</text>
+	     
+  <button name="reset_address_bar_expiry" bottom_delta="0" follows="left|top" font="SansSerif" height="22"
+	        label="Clear Now" left_delta="35" mouse_opaque="true" v_pad="0" width="100" />
+		 
+		 
+  <!-- recently visited landmarks -->
+  <text type="string" length="1" bottom="-145" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="15" name="Landmarks_textbox" v_pad="0"
+	      width="394">Recently Visited Landmarks:</text>
+  
+  <text type="string" length="1" bottom="-165" follows="left|top" font="SansSerifSmall" h_pad="0"
+	      halign="left" height="16" left="15" name="teleport_store" v_pad="0"
+	      width="300">Remember the last</text>
+	      
+  <spinner bottom="-165" control_name="locations_name" decimal_digits="0" enabled="true"
+	         follows="left|top|right" height="16" increment="1" initial_val="3"
+	         label="" label_width="1" left="115" max_val="365"
+	         min_val="0" mouse_opaque="true" name="locations_name" width="50" />
+  
+  <text name="Days_textbox" length="1" left="170" bottom="-165" width="200" height="16" follows="left|top" font="SansSerifSmall"
+        h_pad="0" halign="left" type="string" v_pad="0">landmarks I visited.</text>
+  
+  <button name="Clear_Now_recent" left="280" width="100" height="22" label="Clear Now"
+	         bottom_delta="0" mouse_opaque="true" follows="left|top" font="SansSerif"  />
+
+  <button name="Export_btn" left="15" bottom="-200" width="140" height="22" label="Export Landmarks..."
+	         mouse_opaque="true" follows="left|top" font="SansSerif" />
+
+</panel>
+     
+     

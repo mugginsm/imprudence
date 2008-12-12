@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<floater name="ManageLandmarksFloater" bottom="50" width="375" height="555" min_width="375" min_height="200"
+  title="Manage Landmarks" can_resize="true" can_minimize="true" can_close="true" can_drag_on_left="false" >
+	
+	<search_editor bottom="-40" left="5"	width="365" height="16"
+		 follows="left|top|right" font="SansSerifSmall" label="Filter Landmarks" max_length="128" mouse_opaque="true" name="inventory search editor"
+		 tool_tip="Search Landmarks" />
+	
+	<inventory_panel name="landmark_panel" bottom="41" left="5" width="365" height="467" allow_multi_select="true" border="true"
+    follows="left|top|right|bottom" hidden="false" mouse_opaque="true" />
+    
+  <flyout_button name="teleport" bottom="11" left="9" width="100" height="20" follows="left|bottom" font="SansSerifSmall" label="Teleport"
+		list_position="down" mouse_opaque="true" tool_tip="" scale_image="true" tab_stop="false">
+		<flyout_button_item value="Copy SLURL">Copy SLURL</flyout_button_item>
+		<flyout_button_item value="Show on Map">Show on Map</flyout_button_item>
+	</flyout_button>
+	
+	<button name="Edit_landmark" bottom="11" left="120" width="75" height="20" follows="left|bottom" font="SansSerifSmall" halign="center"
+		label="Edit" label_selected="Edit" mouse_opaque="true" scale_image="true" />
+	
+	<button name="Delete" bottom="11" left="200" width="75" height="20" follows="left|bottom" font="SansSerifSmall" halign="center"
+		label="Delete" label_selected="Delete" mouse_opaque="true" scale_image="true" />
+	
+  <button name="New_Folder" bottom="11" left="280" width="85" height="20" follows="left|bottom" font="SansSerifSmall" halign="center"
+		label="New Folder..." label_selected="New Folder" mouse_opaque="true" scale_image="true" />
+	
+</floater>

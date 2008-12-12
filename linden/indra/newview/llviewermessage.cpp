@@ -134,7 +134,8 @@
 #include "llkeythrottle.h"
 #include "llviewerdisplay.h"
 #include "llkeythrottle.h"
-
+#include "llfloaterreceivelandmark.h"
+#include "llfloateraddlandmark.h"
 #include <boost/tokenizer.hpp>
 
 #if LL_WINDOWS // For Windows specific error handler
@@ -187,6 +188,7 @@ struct LLFriendshipOffer
 	LLUUID mTransactionID;
 	BOOL mOnline;
 	LLHost mHost;
+
 };
 
 //const char BUSY_AUTO_RESPONSE[] =	"The Resident you messaged is in 'busy mode' which means they have "
@@ -812,6 +814,8 @@ bool check_offer_throttle(const std::string& from_name, bool check_only)
  
 void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 {
+	llinfos << "open_offer();" << llendl;
+
 	std::vector<LLUUID>::const_iterator it = items.begin();
 	std::vector<LLUUID>::const_iterator end = items.end();
 	LLUUID trash_id(gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH));
@@ -840,7 +844,14 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 				open_notecard((LLViewerInventoryItem*)item, LLString("Note: ") + item->getName(), LLUUID::null, show_keep_discard, LLUUID::null, FALSE);
 				break;
 			case LLAssetType::AT_LANDMARK:
+				llinfos << "open_offer(); got landmark offer; LLFloaterAddLandmark::sLandmarkAdded = " << LLFloaterAddLandmark::sLandmarkAdded << llendl;
+				if(!LLFloaterAddLandmark::sLandmarkAdded)
+				{
+					gAssetStorage->getAssetData( ((LLViewerInventoryItem*)item)->getAssetUUID(), LLAssetType::AT_LANDMARK, LLFloaterReceiveLandmark::onGetNewLandmarkInfo, (LLViewerInventoryItem*)item );
+				} else
+				{
 				open_landmark((LLViewerInventoryItem*)item, LLString("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
+				}
 				break;
 			case LLAssetType::AT_TEXTURE:
 				open_texture(*it, LLString("Texture: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
@@ -1145,6 +1156,7 @@ void inventory_offer_callback(S32 button, void* user_data)
 	// Allow these to stack up, but once you deal with one, reset the
 	// position.
 	gFloaterView->resetStartingFloaterPosition();
+	
 }
 
 
@@ -1176,7 +1188,6 @@ void inventory_offer_handler(LLOfferInfo* info, BOOL from_task)
 		inventory_offer_callback(IOR_ACCEPT, info);
 		return;
 	}
-
 	LLString::format_map_t args;
 	args["[OBJECTNAME]"] = info->mDesc;
 	// must protect against a NULL return from lookupHumanReadable()

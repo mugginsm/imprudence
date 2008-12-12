@@ -641,7 +641,9 @@ void LLMenuItemTearOffGL::doIt()
 		getMenu()->arrange();
 
 		LLFloater* parent_floater = mParentHandle.get();
-		LLFloater* tear_off_menu = LLTearOffMenu::create(getMenu());
+		LLTearOffMenu* tear_off_menu = LLTearOffMenu::create(getMenu());
+
+		LLMenuGL::sMenuContainer->addTearOffMenu( tear_off_menu );
 
 		if (tear_off_menu)
 		{
@@ -1387,6 +1389,7 @@ void LLMenuItemBranchDownGL::buildDrawLabel( void )
 
 void LLMenuItemBranchDownGL::openMenu( void )
 {
+	
 	LLMenuGL* branch = getBranch();
 	if( branch->getVisible() && !branch->getTornOff() )
 	{
@@ -2114,7 +2117,6 @@ LLView* LLMenuGL::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *fa
 	return menu;
 }
 
-
 // rearrange the child rects so they fit the shape of the menu.
 void LLMenuGL::arrange( void )
 {
@@ -2126,6 +2128,34 @@ void LLMenuGL::arrange( void )
 
 	cleanupSpilloverBranch();
 
+	LLMenuItemGL* parent_branch = getParentMenuItem();
+	LLMenuGL* root_menu_item = NULL;
+
+	// LLMenuGL->
+	while( parent_branch )
+	{
+		LLMenuGL* parent_menu = dynamic_cast<LLMenuGL*>( parent_branch->getParent() );
+		
+		if( parent_menu && parent_menu->getName() != "Main Menu" )
+		{
+			root_menu_item = parent_menu;
+			parent_branch = parent_menu->getParentMenuItem();
+		} else
+		{
+			parent_branch = NULL;
+		}
+	}
+
+	if( ! root_menu_item )
+		root_menu_item = this;
+
+	bool use_menu_width_shortcut = false;
+
+	if( root_menu_item->getName() == "Landmarks" )
+	{ // we are in the landmarks menu, use shortcuts to optimize rendering time
+		use_menu_width_shortcut = true;
+	}
+
 	if( mItems.size() ) 
 	{
 		const LLRect menu_region_rect = LLMenuGL::sMenuContainer ? LLMenuGL::sMenuContainer->getMenuRect() : LLRect(0, S32_MAX, S32_MAX, 0);
@@ -2136,6 +2166,8 @@ void LLMenuGL::arrange( void )
 		// *FIX: create the item first and then ask for its dimensions?
 		S32 spillover_item_width = PLAIN_PAD_PIXELS + LLFontGL::sSansSerif->getWidth( "More" );
 		S32 spillover_item_height = llround(LLFontGL::sSansSerif->getLineHeight()) + MENU_ITEM_PADDING;
+
+		S32 max_width_chars = 0;
 
 		if (mHorizontalLayout)
 		{
@@ -2149,13 +2181,16 @@ void LLMenuGL::arrange( void )
 						// no room for any more items
 						createSpilloverBranch();
 
+						// move the rest of the items in this menu over to the spillover menu
 						item_list_t::iterator spillover_iter;
 						for (spillover_iter = item_iter; spillover_iter != mItems.end(); ++spillover_iter)
 						{
 							LLMenuItemGL* itemp = (*spillover_iter);
 							removeChild(itemp);
-							mSpilloverMenu->append(itemp);
+							mSpilloverMenu->appendWithoutArrange(itemp);
 						}
+						// arrange the spillover menu (this will create a sub-spillover menu, recursing)
+						mSpilloverMenu->arrange();
 						mItems.erase(item_iter, mItems.end());
 						
 						mItems.push_back(mSpilloverBranch);
@@ -2177,11 +2212,16 @@ void LLMenuGL::arrange( void )
 		else
 		{
 			item_list_t::iterator item_iter;
+			//bool use_menu_width_shortcut = mItems.size() < 30; // always check short menus
 			for (item_iter = mItems.begin(); item_iter != mItems.end(); ++item_iter)
 			{
-				if ((*item_iter)->getVisible())
+				LLMenuItemGL* item = (LLMenuItemGL*) (*item_iter);				
+
+				if (item->getVisible())
 				{
-					if (!getTornOff() && height + (*item_iter)->getNominalHeight() > max_height - spillover_item_height)
+					// tear-offs that stretch completely vertically cause problems when torn-off
+					// because the tear-off label + "more" spillover both require room that isnt taken into account
+					if (!getTornOff() && height + item->getNominalHeight() > max_height - spillover_item_height)
 					{
 						// no room for any more items
 						createSpilloverBranch();
@@ -2191,12 +2231,20 @@ void LLMenuGL::arrange( void )
 						{
 							LLMenuItemGL* itemp = (*spillover_iter);
 							removeChild(itemp);
-							mSpilloverMenu->append(itemp);
+
+							// manually add up items for spillover menu
+							// avoiding append() which calls the recursive arrange()
+							mSpilloverMenu->appendWithoutArrange( itemp );
 						}
+						// arrange menu only once
+						mSpilloverMenu->arrange();
+
+						// erase the rest of the items from this menu (as they are now in the spillover-menu)
 						mItems.erase(item_iter, mItems.end());
 						mItems.push_back(mSpilloverBranch);
 						addChild(mSpilloverBranch);
 						height += mSpilloverBranch->getNominalHeight();
+
 						width = llmax( width, mSpilloverBranch->getNominalWidth() );
 
 						break;
@@ -2204,13 +2252,22 @@ void LLMenuGL::arrange( void )
 					else
 					{
 						// track our rect
-						height += (*item_iter)->getNominalHeight();
-						width = llmax( width, (*item_iter)->getNominalWidth() );
+						height += item->getNominalHeight();
+
+						if( use_menu_width_shortcut && (S32) item->getLabel().length() >= max_width_chars - 1  )
+						{
+							max_width_chars = item->getLabel().length();
+							width = llmax( width, item->getNominalWidth() );
+						}
+
+						if( ! use_menu_width_shortcut )
+						{
+							width = llmax( width, item->getNominalWidth() );
+						}
 					}
 				}
 			}
 		}
-
 		setRect(LLRect(getRect().mLeft, getRect().mBottom + height, getRect().mLeft + width, getRect().mBottom));
 
 		S32 cur_height = (S32)llmin(max_height, height);
@@ -2440,6 +2497,13 @@ BOOL LLMenuGL::append( LLMenuItemGL* item )
 	return TRUE;
 }
 
+BOOL LLMenuGL::appendWithoutArrange( LLMenuItemGL* item )
+{
+	mItems.push_back( item );
+	addChild( item );
+	return TRUE;
+}
+
 // add a separator to this menu
 BOOL LLMenuGL::appendSeparator( const LLString &separator_name )
 {
@@ -2460,6 +2524,9 @@ BOOL LLMenuGL::appendMenu( LLMenuGL* menu )
 	LLMenuItemBranchGL* branch = NULL;
 	branch = new LLMenuItemBranchGL( menu->getName(), menu->getLabel(), menu );
 	branch->setJumpKey(menu->getJumpKey());
+	
+//	llinfos << "LLMenuGL::appendMenu() appended menu " << menu->getName() << " at " << menu << " to branch " << branch << " to parent " << this << llendl;
+	
 	success &= append( branch );
 
 	// Inherit colors
@@ -4236,6 +4303,18 @@ void LLMenuHolderGL::setActivatedItem(LLMenuItemGL* item)
 	sItemActivationTimer.start();
 }
 
+void LLMenuHolderGL::updateTearOffMenus()
+{
+	llinfos << "LLMenuHolderGL::updateTearOffMenus(); num of torn off menus: " << m_TornOffMenus.size() << llendl;
+
+	//for( unsigned int i = 0; i < m_TornOffMenus.size(); i ++ )
+	for( std::list<LLTearOffMenu*>::iterator iter = m_TornOffMenus.begin(); iter != m_TornOffMenus.end(); iter ++ )
+	{
+		llinfos << "LLMenuHolderGL::updateTearOffMenus(); updating menu " << *iter << " named " << (*iter)->getName() << llendl;
+		(*iter)->recalcRect();
+	}
+}
+
 ///============================================================================
 /// Class LLTearOffMenu
 ///============================================================================
@@ -4298,7 +4377,7 @@ void LLTearOffMenu::onFocusReceived()
 
 	// parent menu items get highlights so navigation logic keeps working
 	LLMenuItemGL* parent_menu_item = mMenu->getParentMenuItem();
-	while(parent_menu_item)
+	while(parent_menu_item && parent_menu_item->getMenu())
 	{
 		if (parent_menu_item->getMenu()->getVisible())
 		{
@@ -4367,6 +4446,7 @@ LLTearOffMenu* LLTearOffMenu::create(LLMenuGL* menup)
 
 void LLTearOffMenu::onClose(bool app_quitting)
 {
+	LLMenuGL::sMenuContainer->removeTearOffMenu( this );
 	removeChild(mMenu);
 	mOldParent->addChild(mMenu);
 	mMenu->clearHoverItem();
@@ -4378,3 +4458,38 @@ void LLTearOffMenu::onClose(bool app_quitting)
 	destroy();
 }
 
+void LLTearOffMenu::recalcRect()
+{
+	// recalc the container size of the menu
+	if( mMenu )
+	{
+		LLRect rect;
+		mMenu->localRectToOtherView(LLRect(-1, mMenu->getRect().getHeight(), mMenu->getRect().getWidth() + 3, 0), &rect, gFloaterView);
+		reshape(rect.getWidth(), rect.getHeight());
+		setRect(rect);
+	}
+}
+
+/*
+//////////////////////////////////////////////////////////////////////////
+// helpers
+
+// called every frame before anything gets drawn and (i think) after all the messages are handled
+void
+LLFrameHelper::doFrame()
+{
+	while( m_Callbacks.size() )
+	{
+		CallbackSignature Callback = m_Callbacks.front();
+		m_Callbacks.pop_front();
+
+		(*Callback)();
+	}
+
+	// handle any delayed callbacks
+	gDelayedCallbacks->executeDelayedCallbacks();
+}
+
+
+std::list< LLFrameHelper::CallbackSignature > LLFrameHelper::m_Callbacks;
+*/

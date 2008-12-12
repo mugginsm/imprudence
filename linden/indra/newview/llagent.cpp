@@ -126,6 +126,10 @@
 #include "llviewercontrol.h"
 #include "llappviewer.h"
 #include "llvoiceclient.h"
+#include "llnavigationlist.h"
+
+#include "llnavbar.h"
+#include "llurlsimstring.h"
 
 // Ventrella
 #include "llfollowcam.h"
@@ -597,6 +601,7 @@ void LLAgent::moveAt(S32 direction, bool reset)
 		setControlFlags(AGENT_CONTROL_AT_NEG | AGENT_CONTROL_FAST_AT);
 	}
 
+	LLNavBar::updateSLURL(getNavSLURL());
 	if (reset)
 	{
 		resetView();
@@ -622,6 +627,7 @@ void LLAgent::moveAtNudge(S32 direction)
 		setControlFlags(AGENT_CONTROL_NUDGE_AT_NEG);
 	}
 
+	LLNavBar::updateSLURL(getNavSLURL());
 	resetView();
 }
 
@@ -643,7 +649,7 @@ void LLAgent::moveLeft(S32 direction)
 	{
 		setControlFlags(AGENT_CONTROL_LEFT_NEG | AGENT_CONTROL_FAST_LEFT);
 	}
-
+	LLNavBar::updateSLURL(getNavSLURL());
 	resetView();
 }
 
@@ -665,7 +671,7 @@ void LLAgent::moveLeftNudge(S32 direction)
 	{
 		setControlFlags(AGENT_CONTROL_NUDGE_LEFT_NEG);
 	}
-
+	LLNavBar::updateSLURL(getNavSLURL());
 	resetView();
 }
 
@@ -687,7 +693,7 @@ void LLAgent::moveUp(S32 direction)
 	{
 		setControlFlags(AGENT_CONTROL_UP_NEG | AGENT_CONTROL_FAST_UP);
 	}
-
+	LLNavBar::updateSLURL(getNavSLURL());
 	resetView();
 }
 
@@ -706,11 +712,12 @@ void LLAgent::moveYaw(F32 mag, bool reset_view)
 	{
 		setControlFlags(AGENT_CONTROL_YAW_NEG);
 	}
-
+	LLNavBar::updateSLURL(getNavSLURL());
     if (reset_view)
 	{
         resetView();
 	}
+	
 }
 
 //-----------------------------------------------------------------------------
@@ -728,6 +735,7 @@ void LLAgent::movePitch(S32 direction)
 	{
 		setControlFlags(AGENT_CONTROL_PITCH_NEG);
 	}
+	LLNavBar::updateSLURL(getNavSLURL());
 }
 
 
@@ -929,6 +937,48 @@ std::string LLAgent::getSLURL() const
 	}
 	return slurl;
 }
+
+std::string LLAgent::getNavSLURL() const
+{
+	std::string slurl;
+
+	LLViewerRegion *region = gAgent.getRegion();
+
+	if (region)
+	{
+		const LLVector3& agent_pos_region = gAgent.getPositionAgent();
+
+		S32 pos_x = lltrunc( agent_pos_region.mV[VX] );
+		S32 pos_y = lltrunc( agent_pos_region.mV[VY] );
+		S32 pos_z = lltrunc( agent_pos_region.mV[VZ] );
+
+		// Round the numbers based on the velocity
+		LLVector3 agent_velocity = gAgent.getVelocity();
+		F32 velocity_mag_sq = agent_velocity.magVecSquared();
+
+		const F32 FLY_CUTOFF = 6.f;		// meters/sec
+		const F32 FLY_CUTOFF_SQ = FLY_CUTOFF * FLY_CUTOFF;
+		const F32 WALK_CUTOFF = 1.5f;	// meters/sec
+		const F32 WALK_CUTOFF_SQ = WALK_CUTOFF * WALK_CUTOFF;
+
+		if (velocity_mag_sq > FLY_CUTOFF_SQ)
+		{
+			pos_x -= pos_x % 4;
+			pos_y -= pos_y % 4;
+		}
+		else if (velocity_mag_sq > WALK_CUTOFF_SQ)
+		{
+			pos_x -= pos_x % 2;
+			pos_y -= pos_y % 2;
+
+		}
+		slurl = LLURLDispatcher::buildSLURL(region->getName(),pos_x,pos_y,pos_z);
+
+	}
+	return slurl;
+
+}
+
 
 //-----------------------------------------------------------------------------
 // inPrelude()
@@ -3537,6 +3587,7 @@ void LLAgent::setupSitCamera()
 		at_axis.mV[VZ] = 0.f;
 		at_axis.normVec();
 		resetAxes(at_axis * ~parent_rot);
+		LLNavBar::is_moving = FALSE;
 	}
 }
 
@@ -4369,6 +4420,7 @@ void LLAgent::setFocusGlobal(const LLVector3d& focus, const LLUUID &object_id)
 		}
 		updateFocusOffset();
 	}
+	LLNavBar::updateSLURL(getNavSLURL());
 }
 
 // Used for avatar customization
@@ -5797,6 +5849,7 @@ void LLAgent::teleportViaLandmark(const LLUUID& landmark_asset_id)
 		msg->addUUIDFast(_PREHASH_SessionID, getSessionID());
 		msg->addUUIDFast(_PREHASH_LandmarkID, landmark_asset_id);
 		sendReliableMessage();
+		reload_recent_places_menu();
 	}
 }
 
@@ -5863,12 +5916,14 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 			(F32)(pos_global.mdV[VY] - y_pos),
 			(F32)(pos_global.mdV[VZ]));
 		teleportRequest(info->mHandle, pos_local);
+		reload_recent_places_menu();
 	}
 	else if(regionp && 
 		teleportCore(regionp->getHandle() == to_region_handle_global((F32)pos_global.mdV[VX], (F32)pos_global.mdV[VY])))
 	{
 		llwarns << "Using deprecated teleportlocationrequest." << llendl; 
 		// send the message
+	
 		LLMessageSystem* msg = gMessageSystem;
 		msg->newMessageFast(_PREHASH_TeleportLocationRequest);
 		msg->nextBlockFast(_PREHASH_AgentData);
@@ -5888,7 +5943,29 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 		pos.mV[VX] += 1;
 		msg->addVector3Fast(_PREHASH_LookAt, pos);
 		sendReliableMessage();
+		reload_recent_places_menu();
 	}
+
+}
+
+void LLAgent::teleportViaSLURL(const std::string& slurl)
+{
+	LLViewerRegion* regionp = getRegion();
+	if(regionp != NULL && LLURLDispatcher::isSLURL(slurl))
+	{
+		// The default URL dispatch is to bring up the about land floater.
+		// We want an actual teleport here.
+		std::string strippedText = LLURLDispatcher::stripProtocol(slurl);
+		std::string region_name;
+		S32 x = 128;
+		S32 y = 128;
+		S32 z = 0;
+		LLURLSimString::parse(strippedText, &region_name, &x, &y, &z);
+
+		std::string commandtext = LLURLDispatcher::buildSLURLCommand("teleport", region_name, x, y, z);
+		LLURLDispatcher::dispatch(commandtext, false);
+	}
+
 }
 
 void LLAgent::setTeleportState(ETeleportState state)
@@ -5903,6 +5980,8 @@ void LLAgent::setTeleportState(ETeleportState state)
 		// We're outa here. Save "back" slurl.
 		mTeleportSourceSLURL = getSLURL();
 	}
+
+	LLNavBar::onAgentTeleporting(mTeleportState, getNavSLURL());
 }
 
 void LLAgent::fidget()

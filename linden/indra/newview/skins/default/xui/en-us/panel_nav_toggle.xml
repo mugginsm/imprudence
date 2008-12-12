@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel background_opaque="false" background_visible="false" bottom="-32" follows="left"
+	height="34" name="navtoggle" width="543">
+	<layout_stack name="navtoggle_stack" follows="top" bottom="0" left="0" width="13" height="26"
+		min_width="13" min_height="26" orientation="horizontal">
+		<button bottom="0" font="SansSerif" height="26" label="" left="0" name="nav_btn" tool_tip="Click for Toggle."
+			image_selected="navbar_btn_toggle_hide.tga" image_unselected="navbar_btn_toggle_show.tga"
+			image_disabled="navbar_btn_toggle_show.tga" width="13" follows="top" user_resize="false"
+			auto_resize="false" min_height="26" scale_image="true" />
+	</layout_stack>
+</panel>

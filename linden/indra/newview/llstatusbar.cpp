@@ -76,11 +76,11 @@
 #include "llviewerthrottle.h"
 #include "lluictrlfactory.h"
 #include "llvoiceclient.h"	// for gVoiceClient
-
+#include "llurldispatcher.h"
 #include "lltoolmgr.h"
 #include "llfocusmgr.h"
 #include "llappviewer.h"
-
+#include "llnavbar.h"
 //#include "llfirstuse.h"
 
 //
@@ -478,13 +478,19 @@ void LLStatusBar::refresh()
 		{
 			pos_x -= pos_x % 4;
 			pos_y -= pos_y % 4;
+			LLNavBar::is_moving = FALSE;
 		}
 		else if (velocity_mag_sq > WALK_CUTOFF_SQ)
 		{
 			pos_x -= pos_x % 2;
 			pos_y -= pos_y % 2;
+			LLNavBar::is_moving = FALSE;
+		}else if(velocity_mag_sq < 0.01 && !LLNavBar::is_moving) 
+		{
+			LLURI slurl = LLURLDispatcher::buildSLURL(region->getName(), pos_x, pos_y, pos_z);
+			LLNavBar::updateSLURL(slurl.asString());
+			LLNavBar::is_moving = TRUE;
 		}
-
 		mRegionDetails.mTime = mTextTime->getText();
 		mRegionDetails.mBalance = mBalance;
 		mRegionDetails.mAccesString = region->getSimAccessString();
