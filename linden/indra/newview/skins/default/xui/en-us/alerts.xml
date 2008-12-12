@@ -313,6 +313,99 @@ Add this Ability to &apos;[ROLE_NAME]&apos;?
 			No
 		</option>
 	</alert>
+		<alert modal="true" name="SaveSuccess">
+		<message name="message">
+			Landmark has been created/modified successfully
+		</message>
+	</alert>
+	<alert modal="true" name="DeletedSelectedItem">
+		<message name="message">
+			Selected item(s) has been deleted
+		</message>
+	</alert>
+<alert modal="true" name="SaveFailure">
+		<message name="message">
+			Landmark  has not been created. Please try again  
+		</message>
+	</alert>
+<alert modal="true" name="SaveLandmarkChanges">
+		<message name="message">
+			You made changes to this Landmark.
+Do you want to apply these changes ?
+		</message>
+		<option name="SaveAll">
+			Apply Changes
+		</option>
+		<option name="Don&apos;tSave">
+			Discard Changes
+		</option>
+		<option name="Cancel">
+			Cancel
+		</option>
+	</alert>
+	<alert modal="true" name="AddLandmark">
+		<message name="message">
+			Do you wish to add this Landmark?
+		</message>
+		<option name="Save">
+			Add Landmark 
+		</option>
+		<option name="Don&apos;tSave">
+			Discard Landmark
+		</option>
+		<option name="Cancel">
+			Cancel
+		</option>
+	</alert>
+
+		<alert modal="true" name="ManageLandmark">
+		<message name="message">
+			Do you wish to delete this item(s)?
+		</message>
+		<option name="Yes">
+			Yes
+		</option>
+		<option name="No">
+			No
+		</option>
+			</alert>
+	
+	<alert modal="true" name="panelhistory">
+		<message name="message">
+			Do you wish to clear Teleport History ?
+		</message>
+		<option name="Yes">
+			Yes
+		</option>
+		<option name="No">
+			No
+		</option>
+			</alert>
+	
+	<alert modal="true" name="HistoryPanelResetAddressBar">
+    <message name="message">
+      Are you sure you want to clear the Address Bar history?
+    </message>
+    <option name="Yes">
+      Yes
+    </option>
+    <option name="No">
+      No
+    </option>
+	</alert>
+
+	<alert modal="true" name="panelhistoryrecent">
+		<message name="message">
+			Do you wish to clear Recently Visited Landmarks ?
+		</message>
+		<option name="Yes">
+			Yes
+		</option>
+		<option name="No">
+			No
+		</option>
+	</alert>
+	
 	<alert modal="true" name="AssignDangerousAbilityWarning">
 		<message name="message">
 			You are about to add the Ability &apos;[ACTION_NAME]&apos; to the 
@@ -1327,7 +1420,8 @@ really want to offer this item?
 	</alert>
 	<alert modal="true" name="NoItems">
 		<message name="message">
-			You do not have permission to transfer the selected items.
+			You do not have permission to transfer
+			the selected items.
 		</message>
 	</alert>
 	<alert modal="true" name="CannotCopyCountItems">
@@ -2499,11 +2593,9 @@ You have been moved into a nearby region.
 	<alert modal="true" name="ClothingLoading">
 		<message name="message">
 			Your clothing is still downloading. 
-You can use [SECOND_LIFE] normally and other users will see you correctly.
+You can use the world normally, and other users
+will see you correctly.
 		</message>
-		<ignore name="ignore">
-			When clothing is taking a long time to download
-		</ignore>
 	</alert>
 	<alert modal="true" name="FirstRun">
 		<message name="message">
@@ -3302,6 +3394,34 @@ from the &apos;Edit&apos; menu.
 			Cancel
 		</option>
 	</alert>
+		<alert modal="true" name="TeleportFromNavbar">
+		<message name="message">
+			Are you sure you want to teleport?
+		</message>
+		<ignore name="ignore">
+			When teleporting from navbar
+		</ignore>
+		<option name="Teleport">
+			Teleport
+		</option>
+		<option name="Cancel">
+			Cancel
+		</option>
+	</alert>
+		<alert modal="true" name="TeleportFromMenu">
+		<message name="message">
+			Are you sure you want to teleport?
+		</message>
+		<ignore name="ignore">
+			When teleporting from landmarks menu
+		</ignore>
+		<option name="Teleport">
+			Teleport
+		</option>
+		<option name="Cancel">
+			Cancel
+		</option>
+	</alert>
 	<alert name="MessageEstate" title="Message everyone in your Estate">
 		<message name="message">
 			Type a short announcement which will be
@@ -3554,34 +3674,6 @@ Publish this classified now for L$[AMOUNT]?
 			Cancel
 		</option>
 	</alert>
-  <alert name="SetClassifiedMature">
-    <message name="message">
-Does this classified contain Mature content?
-    </message>
-    <option name="Mature">
-      Yes
-    </option>
-    <option name="Not Mature">
-      No
-    </option>
-    <option name="Cancel">
-      Cancel
-    </option>
-  </alert>
-  <alert name="SetGroupMature">
-    <message name="message">
-Does this group contain Mature content?
-    </message>
-    <option name="Mature">
-      Yes
-    </option>
-    <option name="Not Mature">
-      No
-    </option>
-    <option name="Cancel">
-      Cancel
-    </option>
-  </alert>
 	<alert name="ConfirmRestart" title="Confirm restart">
 		<message name="message">
 			Do you really want to restart this region in 2 minutes?
@@ -4516,7 +4608,7 @@ try it out yourself by pasting it into the address bar of your web browser.
 	</alert>
 	<alert modal="true" name="GraphicsPreferencesHelp">
 		<message name="message">
-			This panel controls window size and resolution and the quality of the client&apos;s graphics.  The Preferences > Graphics interface allows you to choose between four graphics levels: Low, Mid, High, and Ultra. You may also customize your graphics settings by checking the Custom checkbox and manipulating the following settings:
+			This panel controls window size and resolution and the quality of the client&apos;s graphics.  The graphics preferences interface allows you to choose between four graphics levels: Low, Mid, High, and Ultra. One may customize their graphics settings by checking the Custom checkbox and manipulating the following settings:
 
 Shaders: Enable or disable various types of pixel shaders. 
 
@@ -4530,11 +4622,13 @@ Max Particle Count: Sets the maximum number of particles you are able to see on 
 
 Post Process Quality: Sets the resolution with which Glow is rendered. 
 
-Mesh Detail: Sets the amount of detail or number of triangles used in rendering certain objects. A higher value takes longer to render, but makes these objects appear with more detail.
+Mesh Detail: Sets the amout of detail used in rendering certain objects.
 
 Lighting Detail: Selects what types of lights you would like to render.
 
-Terrain Detail: Sets the amount of detail you would like to see for the terrain texture. 
+Terrain Detail: Sets the amount of terrain detail you would like to see. 
+
+Sky Detail: Sets the amount of tesselation of the sky dome.  A higher value takes longer to render, but makes the sun look more rounded.
 		</message>
 	</alert>
 	<alert modal="true" name="WLSavePresetAlert">
@@ -4974,11 +5068,6 @@ Would you like to visit the Second Life website to set this up?
 		<url option="0">
 			https://secondlife.com/account/
 		</url>
-	</alert>
-	<alert modal="true" name="MissingString">
-		<message name="message">
-			The string [STRING_NAME] is missing from strings.xml
-		</message>
 	</alert>
 </alerts>
 

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<floater name="floater_recv_landmark" bottom="-554" left="327" height="400" width="540" can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="false"
+	can_tear_off="false" enabled="true" mouse_opaque="true" rect_control="ReceiveLandmarkRect" title="Receive Landmark">
+	
+	<panel name="landmark_general_panel" border="true" bottom="-399" left="1" width="538" height="380" follows="left|top|right|bottom"
+		label="General" mouse_opaque="true">
+		
+		<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+			h_pad="0" halign="left" bottom="-25" left="10" width="72" height="16" mouse_opaque="true" name="Name:" v_pad="0">
+				Name:
+		</text>
+		
+		<line_editor name="Name" bottom="-45" left="10" width="519" height="20" bevel_style="in" border_style="line" border_thickness="1" enabled="true"
+			follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false"
+			max_length="63" mouse_opaque="true" select_all_on_focus_received="false"
+			select_on_focus="false" />
+			
+		<texture_picker name="snapshot_ctrl" bottom="-236" left="10" width="220" height="165"
+      can_apply_immediately="false" default_image_name="" follows="left|top" label="" allow_no_texture="false" mouse_opaque="true" />
+			
+		<button bottom = "-100" enabled="true" follows="left|top" font="SansSerifSmall" halign="center"
+			height="25" label="X" label_selected="X" left="205" mouse_opaque="true" name="default_snapshot"
+			scale_image="true" width="25"/>
+			
+  </panel>
+
+  <tab_container bottom="-300" height="226" left="240" mouse_opaque="false" name="tab"
+       tab_min_width="50" tab_position="top" width="290">
+    <panel border="true" bottom="1" follows="left|top|right|bottom" height="210"
+         label="Details" left="1" mouse_opaque="true" name="landmark_details_panel" width="290">
+      <text_editor bevel_style="in" border_style="line" border_thickness="1" bottom="0" enabled="false"
+        follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false" height="210"
+        left="0" max_length="255" mouse_opaque="true" name="description_value" select_all_on_focus_received="false"
+        select_on_focus="false" width="290" />
+    </panel>
+    <panel border="true" bottom="1" follows="left|top|right|bottom" height="210"
+         label="My Notes" left="1" mouse_opaque="true" name="landmark_notes_panel" width="290">
+      <text_editor bevel_style="in" border_style="line" border_thickness="1" bottom="0" enabled="true"
+        follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false" height="210"
+        left="0" max_length="1023" mouse_opaque="true" name="Mynotes" select_all_on_focus_received="false"
+        select_on_focus="false" width="290" word_wrap="true" type="string" embedded_items="false" />
+      
+    </panel>
+  </tab_container>
+  
+  <text name="Add In Folder" bottom="-330" left="242" width="278" height="16" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+    drop_shadow_visible="true" follows="left|top" font="SansSerifSmall"
+    halign="left"  mouse_opaque="true" type="string">
+      Add in Folder :
+  </text>
+  
+  <flyout_button name="teleport" left="13" bottom="-387" width="140" height="22" follows="left|top" label="Teleport" tab_stop="false" list_position="below">
+    <flyout_button_item value="Copy SLURL">Copy SLURL</flyout_button_item>
+    <flyout_button_item value="Show on Map">Show on Map</flyout_button_item>
+  </flyout_button>
+  
+  <combo_box name="landmarks_combobox" bottom="-350" left="240" width="260" height="20"
+    allow_text_entry="false" control_name="Landmark" follows="left|top|right" max_chars="135" mouse_opaque="false">
+  </combo_box>
+    
+  <button name="create_folder" bottom="-350" right="528" width="22" height="20" follows="left|top" font="SansSerifSmall" halign="center"
+    label="..." label_selected="Select" mouse_opaque="true" scale_image="true" />
+
+  <button bottom="-387" right="380" width="140" height="22" enabled="true" follows="left|top" font="SansSerif" halign="center"
+    label="Save Landmark" label_selected="Save" mouse_opaque="true"
+    name="save" scale_image="true" />
+  
+  <button bottom="-387" right="528" width="140" height="22" enabled="true" follows="left|top" font="SansSerif" halign="center"
+    label="Discard Landmark" label_selected="Cancel" mouse_opaque="true"
+    name="cancel" scale_image="true" />
+	
+</floater>

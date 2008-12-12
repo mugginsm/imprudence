@@ -205,8 +205,18 @@
 #include "llwlanimator.h"
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
-
+#include "lllandmarkcommon.h"
+#include "llfloateraddlandmark.h"
+#include "llfloatermanagelandmark.h"
+#include "lldelayedcallback.h"
 #include "lltexlayer.h"
+#include "locationinfo.h"
+#include "llnavbar.h"
+#include "llnavigationlist.h"
+#include <vector>
+
+void init_sub_menu(LLMenuGL* menu, LLUUID id, bool allow_empty_placeholder);
+void clear_landmark_menu(LLMenuGL* menu);
 
 void init_client_menu(LLMenuGL* menu);
 void init_server_menu(LLMenuGL* menu);
@@ -283,7 +293,6 @@ void handle_leave_group(void *);
 // File Menu
 const char* upload_pick(void* data);
 void handle_upload(void* data);
-//void handle_upload_object(void* data);
 void handle_compress_image(void*);
 BOOL enable_save_as(void *);
 
@@ -331,6 +340,14 @@ void handle_audio_status_3(void*);
 void handle_audio_status_4(void*);
 #endif
 void manage_landmarks(void*);
+void create_new_landmark(void*);
+void landmark_set_home(void*);//for landmarks menu
+void landmark_teleport_home(void*); //for landmarks menu
+void landmark_recent_menu_action(void*);
+void landmark_menu_action_by_uuid(void*);
+static void menu_landmark_callback(S32 option, void* data);
+static void menu_recent_landmark_callback(S32 option, void* data);
+void landmark_recieved_action(void*);
 void reload_ui(void*);
 void handle_agent_stop_moving(void*);
 void print_packets_lost(void*);
@@ -490,6 +507,176 @@ BOOL enable_region_owner(void*);
 void menu_toggle_attached_lights(void* user_data);
 void menu_toggle_attached_particles(void* user_data);
 
+// called when there is a reason to rebuild the landmark menus
+// it makes sure we arent rebuild the landmark menu very often
+// and if needed, schedules a build to happen in the future
+void rebuild_landmark_menus()
+{
+	static bool rebuild_scheduled = false;
+	static LLTimer last_rebuild;
+
+	const float min_rebuild_interval = .5f; // dont rebuild more often than X.Y number of seconds
+	const float delayed_rebuild_interval = .8f; // if we just rebuilt, and need another rebuild, wait this many seconds
+
+	double sec_since_last_rebuild = last_rebuild.getElapsedTimeF32();
+
+	if( sec_since_last_rebuild > min_rebuild_interval )
+	{	// enough time passed since last rebuild, so lets rebuild the menus right away!
+		//llinfos << "rebuild_landmark_menus(); rebuilding the landmarks menu.." << llendl;
+		LLTimer timer;
+		init_landmark_menu();
+		llinfos << "rebuild_landmark_menus(); rebuilding menus took " << timer.getElapsedTimeF32() << " sec" << llendl;
+		last_rebuild.reset();
+		rebuild_scheduled = false;
+	} else
+	if( ! rebuild_scheduled )
+	{	// put off rebuilding for a while
+		//llinfos << "rebuild_landmark_menus(); delaying rebuild.. (adding callback)" << llendl;
+		rebuild_scheduled = true;
+		gDelayedCallbacks->addDelayedCallback( rebuild_landmark_menus, delayed_rebuild_interval );
+	}
+}
+
+// this helps load all of the landmarks on startup
+// 
+class LLVFAsyncStartupLandmarkBuildObserver : public LLInventoryFetchDescendentsObserver
+{
+public:
+
+	LLVFAsyncStartupLandmarkBuildObserver() {
+	}
+	~LLVFAsyncStartupLandmarkBuildObserver() {
+	}
+
+	// called once inventory finishes fetching everything in the requested category/folder
+	virtual void done()
+	{
+		// contents done loading
+		llinfos << "LLVFAsyncStartupLandmarkBuildObserver::done(); fetched " << mCompleteFolders.size() << " landmark sub-folders" << llendl;
+
+		rebuild_landmark_menus();
+
+		//dec_busy_count();
+		gInventory.removeObserver(this);
+		delete this;
+	}
+};
+
+// initialize the async landmarks loader, tell it to load all the landmark folders
+// which will lead to the landmarks menu being built
+void init_async_landmarks_menu_builder()
+{
+	LLVFAsyncStartupLandmarkBuildObserver* asyncLandmarksBuilder = new LLVFAsyncStartupLandmarkBuildObserver();
+	LLUUID landmarksUUID = gInventory.findCategoryUUIDForType( LLAssetType::AT_LANDMARK );		
+
+	LLViewerInventoryCategory::cat_array_t landmarkFolders;
+	LLViewerInventoryItem::item_array_t landmarkItems;
+	
+	LLInventoryFetchDescendentsObserver::folder_ref_t foldersToFetch;
+	
+	gInventory.collectDescendents( landmarksUUID, landmarkFolders, landmarkItems, LLInventoryModel::EXCLUDE_TRASH );
+
+	foldersToFetch.push_back( landmarksUUID );
+	
+	for(unsigned int i = 0; i < landmarkFolders.size(); ++i)
+		foldersToFetch.push_back(landmarkFolders.get(i)->getUUID());
+
+	asyncLandmarksBuilder->fetchDescendents(foldersToFetch);
+
+	if(asyncLandmarksBuilder->isEverythingComplete())
+		asyncLandmarksBuilder->done();
+	else
+		gInventory.addObserver( asyncLandmarksBuilder );
+}
+
+class LLLandmarkObserver : public LLInventoryObserver
+{
+public:
+	LLLandmarkObserver();
+	virtual ~LLLandmarkObserver();
+
+	LLTimer mLastMenuRebuild;
+
+	virtual void changed(U32 mask)
+	{
+		/*	when the inventory is first created at login:
+			gInventory.addChangedMask(LLInventoryObserver::ALL, LLUUID::null);
+			gInventory.notifyObservers();
+			so we catch the LLInventoryObserver::ALL here
+		*/
+
+		if( mask == LLInventoryObserver::ALL && gInventory.getChangedIDs().size() == 0 )
+		{
+			// inventory first built -- build the landmarks menu for the first time!
+			llinfos << "LLLandmarkObserver::changed(); inventory first created.. begin async landmarks fetch.." << llendl;
+			init_async_landmarks_menu_builder();
+			return;
+		}
+
+		// JC - Disabled for now - slows down client or causes crashes
+		// in inventory code.
+		//
+		// Also, this may not be faster than just rebuilding the menu each time.
+		// I believe gInventory.getObject() is not fast.
+		//
+
+		// AB - these checks are pretty cheap and worthwhile, could offload them into the rebuild_landmark_menus
+		// and only do this at most once a second.
+
+		BOOL need_to_rebuild_menu = FALSE;
+
+		// quick check if the inventory was modified in any way that needs to be reflected in any significant way
+		need_to_rebuild_menu = mask & LLInventoryObserver::LABEL || mask & LLInventoryObserver::ADD || mask & LLInventoryObserver::REMOVE || mask & LLInventoryObserver::STRUCTURE;
+
+		if( need_to_rebuild_menu )
+		{
+			// do a more expensive check to see if its worth rebuilding the menus
+			LLTimer changedTimer;
+			changedTimer.start();
+
+			const std::set<LLUUID>& changed_ids = gInventory.getChangedIDs();
+			std::set<LLUUID>::const_iterator id_it;
+
+			BOOL found_modified_landmark = FALSE;
+
+			// does an early abort if it finds even one landmark in the changes
+			for(id_it = changed_ids.begin(); !found_modified_landmark && id_it != changed_ids.end(); ++id_it)
+			{
+				LLInventoryObject* objectp = gInventory.getObject(*id_it);
+				if (objectp && (objectp->getType() == LLAssetType::AT_LANDMARK || objectp->getType() == LLAssetType::AT_CATEGORY))
+				{
+					found_modified_landmark = TRUE;
+				}
+			}
+
+//			llinfos << "LLLandmarkObserver::changed(); found_modified_landmark = " << found_modified_landmark << " time = " << changedTimer.getElapsedTimeF32() * 1000.0f << " msec |  mask = " << mask << " changed_ids.size() = " << changed_ids.size() << llendl;
+
+			// if we found modified landmarks, rebuild the menu
+			if ( need_to_rebuild_menu && found_modified_landmark )
+				rebuild_landmark_menus();
+		}
+	}
+};
+
+
+
+// For debugging only, I think the inventory observer doesn't get 
+// called if the inventory is loaded from cache.
+//void build_landmark_menu(void*)
+//{
+//	init_landmark_menu(gLandmarkMenu);
+//}
+
+LLLandmarkObserver::LLLandmarkObserver()
+{
+	gInventory.addObserver(this);
+}
+
+LLLandmarkObserver::~LLLandmarkObserver()
+{
+	gInventory.removeObserver(this);
+}
+
 class LLMenuParcelObserver : public LLParcelObserver
 {
 public:
@@ -648,6 +835,10 @@ void init_menus()
     // gMenuBarView->setItemVisible("Tools", FALSE);
 	gMenuBarView->arrange();
 	
+	
+	
+
+
 	gMenuHolder->addChild(gMenuBarView);
 	
 	// menu holder appears on top of menu bar so you can see the menu title
@@ -702,8 +893,303 @@ void init_menus()
 	gLoginMenuBarView->setBackgroundColor( color );
 
 	gMenuHolder->addChild(gLoginMenuBarView);
-	
 }
+LLMenuGL* landmarksMenu=NULL;
+LLMenuGL* subMenuRecentPlaces = NULL;
+
+void init_landmark_menu()
+{
+	landmarksMenu = gMenuBarView->getChildMenuByName( "Landmarks", false );
+	if (!landmarksMenu) return;
+	
+	// clear existing menu, as we might be rebuilding as result of inventory update
+	clear_landmark_menu( landmarksMenu );
+
+	/*
+	if( landmarksMenu->getParent() )
+		landmarksMenu->updateParent( landmarksMenu->getParent() );
+	else
+		landmarksMenu->updateParent( LLMenuGL::sMenuContainer );
+		*/
+			
+	landmarksMenu->append( new LLMenuItemCallGL("Add Landmark...", &create_new_landmark, NULL) );
+	landmarksMenu->append( new LLMenuItemCallGL("Manage Landmarks...", &manage_landmarks, NULL) );
+
+	landmarksMenu->appendSeparator();
+	
+	landmarksMenu->append( new LLMenuItemCallGL("Teleport Home", &landmark_teleport_home, NULL) );
+	landmarksMenu->append( new LLMenuItemCallGL("Set Home to Current Location", &landmark_set_home, NULL) );
+
+	landmarksMenu->appendSeparator();
+
+	// recent places
+	if( ! subMenuRecentPlaces )
+	{	// new menu!
+		subMenuRecentPlaces = new LLMenuGL( "Recently Visited Landmarks" );
+		// parent it under the global menuholder
+		subMenuRecentPlaces->updateParent( LLMenuGL::sMenuContainer );
+}
+
+	// creates a branch item, sets the sub-menu's parent to be the branch item
+	// and makes the branch item a child of the landmarks menu
+	// appendMenu() only sets the menu parent relationship, not the view parent relationship!
+	landmarksMenu->appendMenu( subMenuRecentPlaces );
+
+	if( subMenuRecentPlaces->getTornOff() )
+	{	// menu is torn off, so re-attach it to the landmarks menu
+		// appendMenu() makes menus invisible by default
+		// so make sure our torn-off menu is visible!
+		subMenuRecentPlaces->setVisible(TRUE);
+	}
+
+	reload_recent_places_menu();
+
+	landmarksMenu->appendSeparator();
+	
+	// now collect all landmarks in inventory and build menu...
+	reload_landmarks_menu();
+	
+//	LLMenuGL::sMenuContainer->updateTearOffMenus();
+	
+	// reshape all the tearoffs
+	if( landmarksMenu->getParent() && landmarksMenu->getTornOff() )
+	{	// parent is really LLViewerMenuHolderGL
+		
+		LLTearOffMenu* menuHolder1 = dynamic_cast<LLTearOffMenu*>( landmarksMenu->getParent() );
+		if( menuHolder1 )
+{
+			llinfos << "using LLTearOffMenu" << llendl;
+			menuHolder1->recalcRect();
+		}
+
+
+		LLViewerMenuHolderGL* menuHolder = dynamic_cast<LLViewerMenuHolderGL*>( landmarksMenu->getParent() );
+		if( menuHolder )
+		{
+			llinfos << "using LLViewerMenuHolderGL" << llendl;
+			menuHolder->updateTearOffMenus();
+		}
+	
+	}
+
+	landmarksMenu->arrange();
+}
+
+// alphabetical order
+bool landmark_menu_sort_folders( LLViewerInventoryCategory* folder1, LLViewerInventoryCategory* folder2 )
+{
+	return folder1->getName() < folder2->getName();
+}
+
+// show newest items on top
+bool landmark_menu_sort_items( LLViewerInventoryItem* folder1, LLViewerInventoryItem* folder2 )
+{
+	return folder1->getCreationDate() > folder2->getCreationDate();
+}
+
+// using collectDescendents() and then sorting the resulting folder list, leaving the items alone
+void reload_landmarks_menu()
+{
+	std::vector<LLUUID> category_vector;
+	LLInventoryModel::cat_array_t cats;
+	LLInventoryModel::item_array_t items;
+	LLUUID landmark_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+	
+	gInventory.collectDescendents( landmark_id, cats, items, FALSE );
+	std::sort( cats.begin(), cats.end(), landmark_menu_sort_folders );
+
+	init_sub_menu( landmarksMenu, gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK), false );
+	landmarksMenu->arrange();
+
+	/*
+	if(items)
+	{
+		S32 count = cats->count();
+		S32 item_count = items->count();
+
+		for(S32 i = 0; i < count; ++i)
+		{
+			LLInventoryCategory* item = cats->get(i);
+			LLString landmark_name = item->getName();
+			LLUUID landmark_id = item->getUUID() ;
+			category_vector.push_back(landmark_id);
+			LLMenuGL* menu_item = new LLMenuGL(landmark_name);
+			menu_item->setCanTearOff(FALSE);
+			init_sub_menu(menu_item, landmark_id);  
+			landmarksMenu->appendMenu(menu_item);
+			
+			if ( LLMenuGL::sMenuContainer != NULL )
+				menu_item->updateParent(LLMenuGL::sMenuContainer);
+		}
+
+		for(S32 j = 0; j < item_count; j++)
+		{
+			LLInventoryItem* item = items->get(j);
+			LLString landmark_name = item->getName();
+			LLUUID* landmark_id_ptr = new LLUUID( item->getAssetUUID() );
+			category_vector.push_back(landmark_id);
+			LLMenuItemCallGL* menu_item = new LLMenuItemCallGL( landmark_name, landmark_menu_action_by_uuid, NULL, NULL, landmark_id_ptr );
+			if(item->getType() == 3)
+			landmarksMenu->append(menu_item);
+		}
+	}
+	*/
+	
+	//landmarksMenu->arrange();
+}
+
+// after calling init_sub_menu(), the caller should then menu->arrange()
+// because we are manually adding child items to avoid re-arranging the menu everytime an item is added
+void init_sub_menu(LLMenuGL* menu, LLUUID id, bool allow_empty_placeholder)
+{
+	LLInventoryModel::cat_array_t* folders_direct_ptr;
+	LLInventoryModel::item_array_t* items_direct_ptr;
+
+	gInventory.getDirectDescendentsOf( id, folders_direct_ptr, items_direct_ptr );
+	// make local copies of the direct pointers and then sort
+	std::vector<LLPointer<LLViewerInventoryCategory> > cats( folders_direct_ptr->begin(), folders_direct_ptr->end() );
+	std::vector<LLPointer<LLViewerInventoryItem> > items( items_direct_ptr->begin(), items_direct_ptr->end() );
+
+	std::sort( cats.begin(), cats.end(), landmark_menu_sort_folders );
+	std::sort( items.begin(), items.end(), landmark_menu_sort_items );
+
+	BOOL show_empty_placeholder = TRUE;
+
+	S32 count = cats.size();
+	S32 item_count = items.size();
+
+	for( S32 i = 0; i < count; ++i )
+	{
+		LLViewerInventoryCategory* item = cats[i];
+
+		show_empty_placeholder = FALSE;
+
+		LLString landmark_name = item->getName();
+		LLUUID landmark_id = item->getUUID() ;		
+
+		LLMenuGL* menu_item = new LLMenuGL( landmark_name );
+		menu_item->setCanTearOff( FALSE );
+		init_sub_menu( menu_item, landmark_id, true ); 
+		
+		menu->appendMenu(menu_item);
+		
+		if ( LLMenuGL::sMenuContainer != NULL )
+			menu_item->updateParent( LLMenuGL::sMenuContainer );
+	}
+
+	for(S32 j = 0; j < item_count; j++)
+	{
+		LLViewerInventoryItem* item = items[j];
+
+		if( item->getType() != LLAssetType::AT_LANDMARK )
+			continue;
+
+		show_empty_placeholder = FALSE;
+
+		LLString landmark_name = item->getName();
+		LLUUID* landmark_id_ptr = new LLUUID( item->getAssetUUID() );
+
+			LLMenuItemCallGL* menu_item =
+			new LLMenuItemCallGL(landmark_name, landmark_menu_action_by_uuid, 
+					NULL, NULL,	landmark_id_ptr);
+		
+		if(item->getType() == 3)
+			menu->appendWithoutArrange(menu_item);
+	}
+
+	if( allow_empty_placeholder && show_empty_placeholder )
+	{
+		menu->empty();
+		LLMenuItemCallGL* menu_item = new LLMenuItemCallGL("[[Empty]]",NULL);
+		menu_item->setEnabled(FALSE);
+		menu->appendWithoutArrange(menu_item);
+	}
+}
+
+void reload_recent_places_menu()
+{
+	//remove the tear off item before it is deleted during menu->empty
+    subMenuRecentPlaces->setCanTearOff(FALSE);
+    subMenuRecentPlaces->empty();
+	subMenuRecentPlaces->setCanTearOff(TRUE); 
+	
+	LLSD placesHistory;
+	LLNavigationList::getRecentPlaces( placesHistory );
+	int numOfRecentPlaces = 0;
+	if( placesHistory.isDefined() )
+	{	   
+		U32 totalHistorySize = placesHistory.size();
+		for( int i = totalHistorySize - 1; i >= 0; i -- )
+		{
+			LLString name = placesHistory[i]["historyentry"]["name"].asString();
+			LLString* slurl = new LLString( placesHistory[i]["historyentry"]["slurl"].asString());
+			if( name != "" )
+			{
+				subMenuRecentPlaces->append( new LLMenuItemCallGL( name, landmark_recent_menu_action, NULL, NULL, slurl ) );
+				numOfRecentPlaces ++;
+			}
+		}
+	}
+
+	// if the recent places menu is empty
+	if( ! numOfRecentPlaces )
+	{	// add an "empty" item
+		LLMenuItemCallGL* menu_item = new LLMenuItemCallGL( "[[Empty]]", NULL );
+		menu_item->setEnabled( FALSE );
+		subMenuRecentPlaces->append( menu_item );
+	}
+
+	// sub-menu should update its natural parent, if thats not available, then update the static menu container
+	if( subMenuRecentPlaces->getParent() )
+	{
+		subMenuRecentPlaces->updateParent( subMenuRecentPlaces->getParent() );
+
+		LLView* menuParent = subMenuRecentPlaces->getParent();
+		
+		if( subMenuRecentPlaces->getTornOff() )
+		{
+			LLTearOffMenu* menuHolder = dynamic_cast<LLTearOffMenu*>( menuParent );
+			if( ! menuHolder )
+			{
+				llwarns << "torn off 'recent places' menu's parent is not a valid LLTearOffMenu object" << llendl;
+				return;
+			}
+			menuHolder->recalcRect();
+		}
+	}
+}
+
+
+
+void clear_landmark_menu(LLMenuGL* menu)
+{
+	if (!menu) return;
+
+	//remove the tear off item before it is deleted during menu->empty
+	menu->setCanTearOff(FALSE);
+	
+	// We store the UUIDs of the landmark inventory items in the userdata
+	// field of the menus.  Therefore when we clean up the menu we need to
+	// delete that data.
+	const LLView::child_list_t* child_list = menu->getChildList();
+	LLView::child_list_const_iter_t it = child_list->begin();
+	for ( ; it != child_list->end(); ++it)
+	{
+		LLView* view = *it;
+		LLMenuItemCallGL* menu_item = dynamic_cast<LLMenuItemCallGL*>(view);
+		
+		if (menu_item && menu_item->getMenuCallback() == landmark_recent_menu_action)
+		{
+			void* user_data = menu_item->getUserData();
+			delete (LLUUID*)user_data;
+		}
+	}
+	menu->empty();
+
+	//restore the tear off item
+	menu->setCanTearOff(TRUE); 
+}
+
 
 
 
@@ -1508,6 +1994,66 @@ void cleanup_menus()
 
 	sMenus.clear();
 }
+
+
+class NewLandmark : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerRegion* agent_region = gAgent.getRegion();
+		if(!agent_region)
+		{
+			llwarns << "No agent region" << llendl;
+			return true;
+		}
+		LLParcel* agent_parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
+		if (!agent_parcel)
+		{
+			llwarns << "No agent parcel" << llendl;
+			return true;
+		}
+		if (!agent_parcel->getAllowLandmark()
+			&& !LLViewerParcelMgr::isParcelOwnedByAgent(agent_parcel, GP_LAND_ALLOW_LANDMARK))
+		{
+			gViewerWindow->alertXml("CannotCreateLandmarkNotOwner");
+			return true;
+		}
+
+		LLFloaterAddLandmark* floater = LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->createFloater();
+		floater->beginBuild();
+
+		return true;
+	}
+};
+
+class ManageLandmarks : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterManageLandmark::showInstance(1);
+	   return true;
+	}
+};
+
+
+class TeleportHome : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gAgent.teleportHome();
+	   return true;
+	}
+};
+
+class SetHomeToCurrentLocation : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gAgent.setStartPosition(START_LOCATION_ID_HOME);
+	   return true;
+	}
+};
+
 
 //-----------------------------------------------------------------------------
 // Object pie menu
@@ -2969,6 +3515,109 @@ void handle_audio_status_4(void*)
 	gSavedSettings.setS32("AudioInfoPage", page);	
 }
 #endif
+
+void manage_landmarks(void*)
+{
+	LLFloaterManageLandmark::showInstance(1);
+}
+
+void create_new_landmark(void*)
+{
+	// Note this is temporary cut and paste of legacy functionality.
+	// TODO: Make this spawn a floater allowing user customize before creating the inventory object
+
+	/*LLViewerRegion* agent_region = gAgent.getRegion();
+	if(!agent_region)
+	{
+		llwarns << "No agent region" << llendl;
+		return;
+	}
+	LLParcel* agent_parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
+	if (!agent_parcel)
+	{
+		llwarns << "No agent parcel" << llendl;
+		return;
+	}
+	if (!agent_parcel->getAllowLandmark()
+		&& !LLViewerParcelMgr::isParcelOwnedByAgent(agent_parcel, GP_LAND_ALLOW_LANDMARK))
+	{
+		gViewerWindow->alertXml("CannotCreateLandmarkNotOwner");
+		return;
+	}
+
+	LLUUID folder_id;
+	folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+	std::string pos_string;
+	gAgent.buildLocationString(pos_string);
+
+	create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
+		folder_id, LLTransactionID::tnull,
+		pos_string, pos_string, // name, desc
+		LLAssetType::AT_LANDMARK,
+		LLInventoryType::IT_LANDMARK,
+		NOT_WEARABLE, PERM_ALL, 
+		NULL);*/
+	
+	/*
+	if (LLViewerParcelMgr::getInstance()->selectionEmpty())
+	{
+		LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
+	}
+	*/
+	LLFloaterAddLandmark* floater = LLLandmarkFloaterFactory<LLFloaterAddLandmark>::getInstance()->createFloater();
+	floater->beginBuild();
+}
+
+void landmark_set_home(void* userdata)
+{
+
+	gAgent.setStartPosition(START_LOCATION_ID_HOME);
+}
+void landmark_teleport_home(void* userdata)
+	{
+	gAgent.teleportHome();
+}
+void landmark_recent_menu_action(void* userdata) /*Method to process Recently Visited Landmarks*/
+{
+	LLString* slurl = static_cast<LLString*>( userdata ); 
+	LLAlertDialog::showXml("TeleportFromMenu",
+	menu_recent_landmark_callback, (void*)slurl);
+}
+
+static void menu_recent_landmark_callback(S32 option, void* data)
+{
+	LLString* slurl = (LLString*)data;
+	if (option == 0)
+	{
+		// HACK: This is to demonstrate teleport on click of recently visited landmarks menu
+		gAgent.teleportViaSLURL( *slurl );
+	}
+	delete slurl;
+}
+void landmark_menu_action_by_uuid(void* userdata) /*Method to process Landmark Menu Items*/
+{
+	 LLUUID* asset_idp = static_cast<LLUUID*>( userdata ); 
+	LLAlertDialog::showXml("TeleportFromMenu",
+	menu_landmark_callback, (void*)asset_idp);
+}
+
+static void menu_landmark_callback(S32 option, void* data)
+{
+	LLUUID* asset_idp = (LLUUID*)data;
+	if (option == 0)
+	{
+		// HACK: This is to demonstrate teleport on click of landmarks menu
+		gAgent.teleportViaLandmark( *asset_idp );
+
+		// we now automatically track the landmark you're teleporting to
+		// because you'll probably arrive at a telehub instead
+		if( gFloaterWorldMap )
+		{
+			gFloaterWorldMap->trackLandmark( *asset_idp );
+	}
+}
+	delete asset_idp;
+}
 
 void reload_ui(void *)
 {
@@ -5208,6 +5857,12 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterMute::toggleInstance();
 		}
+		else if (floater_name == "Complete Teleport History")
+		{
+			LLNavigationList::setBackList(gNavBar->teleportHistory);
+			LLNavigationList::show();
+			
+		}
 		else if (floater_name == "camera controls")
 		{
 			LLFloaterCamera::toggleInstance();
@@ -5305,6 +5960,17 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterActiveSpeakers::toggleInstance(LLSD());
 		}
+		else if(floater_name == "showNav")
+		{
+			if (gSavedSettings.getBOOL("NavVisible"))
+			{
+				LLNavBar::stopToggle();
+			}
+			else
+			{
+				LLNavBar::startToggle();
+			}		
+		}
 		return true;
 	}
 };
@@ -5336,6 +6002,12 @@ class LLFloaterVisible : public view_listener_t
 		{
 			new_value = LLFloaterMute::instanceVisible();
 		}
+		
+		else if (floater_name == "nav_list")
+		{
+			 LLNavigationList::show();
+		}
+		
 		else if (floater_name == "camera controls")
 		{
 			new_value = LLFloaterCamera::instanceVisible();
@@ -5351,6 +6023,10 @@ class LLFloaterVisible : public view_listener_t
 		else if (floater_name == "active speakers")
 		{
 			new_value = LLFloaterActiveSpeakers::instanceVisible(LLSD());
+		}
+		else if(floater_name == "showNav")
+		{
+			new_value = gNavBar->getVisible();		
 		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;
@@ -6590,40 +7266,6 @@ class LLToolsEnableToolNotPie : public view_listener_t
 	{
 		bool new_value = ( LLToolMgr::getInstance()->getBaseTool() != LLToolPie::getInstance() );
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-
-class LLWorldEnableCreateLandmark : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		bool new_value = gAgent.isGodlike() || 
-			(gAgent.getRegion() && gAgent.getRegion()->getAllowLandmark());
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-
-class LLWorldEnableSetHomeLocation : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		bool new_value = gAgent.isGodlike() || 
-			(gAgent.getRegion() && gAgent.getRegion()->getAllowSetHome());
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-
-class LLWorldEnableTeleportHome : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLViewerRegion* regionp = gAgent.getRegion();
-		bool agent_on_prelude = (regionp && regionp->isPrelude());
-		bool enable_teleport_home = gAgent.isGodlike() || !agent_on_prelude;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(enable_teleport_home);
 		return true;
 	}
 };
@@ -9807,15 +10449,9 @@ void initialize_menus()
 	addMenu(new LLWorldAlwaysRun(), "World.AlwaysRun");
 	addMenu(new LLWorldFly(), "World.Fly");
 	addMenu(new LLWorldEnableFly(), "World.EnableFly");
-	addMenu(new LLWorldCreateLandmark(), "World.CreateLandmark");
-	addMenu(new LLWorldSetHomeLocation(), "World.SetHomeLocation");
-	addMenu(new LLWorldTeleportHome(), "World.TeleportHome");
 	addMenu(new LLWorldSetAway(), "World.SetAway");
 	addMenu(new LLWorldSetBusy(), "World.SetBusy");
 
-	addMenu(new LLWorldEnableCreateLandmark(), "World.EnableCreateLandmark");
-	addMenu(new LLWorldEnableSetHomeLocation(), "World.EnableSetHomeLocation");
-	addMenu(new LLWorldEnableTeleportHome(), "World.EnableTeleportHome");
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
 
 	addMenu(new LLWorldCheckAlwaysRun(), "World.CheckAlwaysRun");
@@ -9950,6 +10586,10 @@ void initialize_menus()
 	addMenu(new LLEditableSelected(), "EditableSelected");
 	addMenu(new LLEditableSelectedMono(), "EditableSelectedMono");
 
+	addMenu(new NewLandmark(),"Landmarks.NewLandmark");
+	addMenu(new ManageLandmarks(),"Landmarks.ManageLandmarks");
+	addMenu(new TeleportHome(),"Landmarks.TeleportHome");
+	addMenu(new SetHomeToCurrentLocation(),"Landmarks.SetHomeToCurrentLocation");
 
 	// Advanced (top level menu)
 	addMenu(new LLAdvancedToggleConsole(), "Advanced.ToggleConsole");

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<floater name="FolderSelectionFloater" left="4" bottom="50" width="315" height="370" min_width="315" min_height="200"
+  can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true" title="Select Folder">
+	
+	<inventory_panel name="Folder_panel" bottom="88" left="5" width="305" height="260"
+    allow_multi_select="false" border="false" follows="left|top|right|bottom" border_thickness="0" mouse_opaque="true"  />
+	
+	<text name="first_name_text" bottom="62" left="8" height="16" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		drop_shadow_visible="true" follows="left|bottom" font="SansSerif" h_pad="0" halign="left"
+		mouse_opaque="true" v_pad="0">
+		Add New Folder:
+	</text>
+	
+	<line_editor name="folder_name_edit" left="9" bottom="40" width="236" height="20" max_length="21"
+    bevel_style="in" border_style="line" border_thickness="1" follows="left|bottom|right" font="SansSerif" 
+		handle_edit_keys_directly="true" mouse_opaque="true" select_all_on_focus_received="true" />
+	
+	<button name="save_btn" left="250" bottom="40" width="55" height="20" follows="bottom|right" font="SansSerif" halign="center"
+		label="Add" label_selected="Add" mouse_opaque="true" scale_image="TRUE" />
+	
+	<button name="select_btn" left="6" bottom="11" width="150" height="22" follows="left|bottom" font="SansSerif" halign="center"
+		label="Select" label_selected="select" mouse_opaque="true" scale_image="TRUE" />
+	
+	<button name="cancel_btn" left="160" bottom="11" width="148" height="22" follows="left|bottom" font="SansSerif" halign="center"
+		label="Cancel" label_selected="Cancel" mouse_opaque="true" scale_image="TRUE" />
+	
+</floater>
+

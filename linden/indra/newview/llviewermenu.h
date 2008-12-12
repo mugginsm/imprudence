@@ -46,6 +46,9 @@ class LLObjectSelection;
 void pre_init_menus();
 void init_menus();
 void cleanup_menus();
+void init_landmark_menu();
+void reload_recent_places_menu();
+void reload_landmarks_menu();
 
 void show_debug_menus(); // checks for if menus should be shown first.
 void show_context_menu( S32 x, S32 y, MASK mask );

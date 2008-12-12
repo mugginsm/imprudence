@@ -56,7 +56,7 @@ class LLPrefsIM;
 class LLPanelMsgs;
 class LLPanelSkins;
 class LLScrollListCtrl;
-
+class LLPanelHistory;
 class LLPreferenceCore
 {
 
@@ -82,6 +82,7 @@ private:
 	LLPanelSkins			*mSkinsPanel;
 	LLPanelInput			*mInputPanel;
 	LLPanelNetwork	        *mNetworkPanel;
+	LLPanelHistory	        *mHistoryPanel;
 	LLPanelDisplay	        *mDisplayPanel;
 	LLPanelAudioPrefs		*mAudioPanel;
 //	LLPanelDebug			*mDebugPanel;

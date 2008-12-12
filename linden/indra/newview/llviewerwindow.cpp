@@ -143,6 +143,9 @@
 #include "lltextureview.h"
 #include "lltool.h"
 #include "lltoolbar.h"
+#include "llnavtoggle.h"
+#include "lltogglebar.h"
+#include "llnavbar.h"
 #include "lltoolcomp.h"
 #include "lltooldraganddrop.h"
 #include "lltoolface.h"
@@ -180,6 +183,7 @@
 #include "llspatialpartition.h"
 #include "llviewerjoystick.h"
 #include "llviewernetwork.h"
+#include "llfloatereditlandmark.h"
 
 #if LL_WINDOWS
 #include "llwindebug.h"
@@ -191,6 +195,7 @@
 //
 void render_ui();
 LLBottomPanel* gBottomPanel = NULL;
+LLTopPanel* gTopPanel = NULL;
 
 extern BOOL gDebugClicks;
 extern BOOL gDisplaySwapBuffers;
@@ -1676,13 +1681,15 @@ void LLViewerWindow::initBase()
 	setProgressCancelButtonVisible(FALSE);
 }
 
+// TODO: make floaters work nicely with always-on-top XUI elements like the navbar
+const S32 NAVBAR_HEIGHT = 56;
 
 void adjust_rect_top_left(const std::string& control, const LLRect& window)
 {
 	LLRect r = gSavedSettings.getRect(control);
 	if (r.mLeft == 0 && r.mBottom == 0)
 	{
-		r.setLeftTopAndSize(0, window.getHeight(), r.getWidth(), r.getHeight());
+		r.setLeftTopAndSize(0, window.getHeight() - NAVBAR_HEIGHT, r.getWidth(), r.getHeight());
 		gSavedSettings.setRect(control, r);
 	}
 }
@@ -1693,7 +1700,7 @@ void adjust_rect_top_center(const std::string& control, const LLRect& window)
 	if (r.mLeft == 0 && r.mBottom == 0)
 	{
 		r.setLeftTopAndSize( window.getWidth()/2 - r.getWidth()/2,
-			window.getHeight(),
+			window.getHeight() - NAVBAR_HEIGHT,
 			r.getWidth(),
 			r.getHeight() );
 		gSavedSettings.setRect(control, r);
@@ -1826,6 +1833,9 @@ void LLViewerWindow::initWorldUI()
 		// panel containing chatbar, toolbar, and overlay, over floaters
 		gBottomPanel = new LLBottomPanel(mRootView->getRect());
 		mRootView->addChild(gBottomPanel);
+
+		gTopPanel = new LLTopPanel(mRootView->getRect());
+		mRootView->addChild(gTopPanel);
 
 		// View for hover information
 		gHoverView = new LLHoverView(std::string("gHoverView"), full_window);
@@ -2123,6 +2133,12 @@ void LLViewerWindow::setNormalControlsVisible( BOOL visible )
 	{
 		gBottomPanel->setVisible( visible );
 		gBottomPanel->setEnabled( visible );
+	}
+
+	if(gTopPanel)
+	{
+		gTopPanel->setVisible(visible);
+		gTopPanel->setEnabled(visible);
 	}
 
 	if ( gMenuBarView )
@@ -2917,6 +2933,10 @@ BOOL LLViewerWindow::handlePerFrameHover()
 	{
 		gToolBar->refresh();
 	}
+	if(gNavToggle)
+	{
+		gNavToggle->refresh();
+	}
 
 	if (gChatBar)
 	{
@@ -2927,9 +2947,17 @@ BOOL LLViewerWindow::handlePerFrameHover()
 	{
 		gOverlayBar->refresh();
 	}
+	if(gNavBar)
+	{
+		gNavBar->refresh();
+	}
+	if(gToggleBar)
+	{
+		gToggleBar->refresh();
+	}
 
 	// Update rectangles for the various toolbars
-	if (gOverlayBar && gNotifyBoxView && gConsole && gToolBar)
+	if (gOverlayBar && gNotifyBoxView && gConsole && gToolBar && gNavToggle && gToggleBar)
 	{
 		LLRect bar_rect(-1, STATUS_BAR_HEIGHT, getWindowWidth()+1, -1);
 
@@ -5391,4 +5419,51 @@ bool LLPickInfo::isFlora(LLViewerObject* object)
 		return true;
 	}
 	return false;
+}
+///////////////////////////////////////////////////////
+
+
+LLTopPanel::LLTopPanel(const LLRect &rect) : 
+LLPanel("", rect, FALSE),
+mIndicator(NULL)
+{
+	// top panel is focus root, so Tab moves through the toolbar and button bar, and overlay
+	setFocusRoot(TRUE);
+	// flag this panel as chrome so buttons don't grab keyboard focus
+	//setIsChrome(TRUE);
+
+	mFactoryMap["navtoggle"] = LLCallbackMap(createNavToggle, NULL);
+	mFactoryMap["togglebar"] = LLCallbackMap(createToggleBar, NULL);
+	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_nav_bars.xml", &getFactoryMap()); 
+
+	setOrigin(rect.mLeft, rect.mBottom);
+	reshape(rect.getWidth(), rect.getHeight());
+}
+
+void LLTopPanel::setFocusIndicator(LLView * indicator)
+{
+	mIndicator = indicator;
+}
+
+void LLTopPanel::draw()
+{
+	if(mIndicator)
+	{
+		BOOL hasFocus = gFocusMgr.childHasKeyboardFocus(this);
+		mIndicator->setVisible(hasFocus);
+		mIndicator->setEnabled(hasFocus);
+	}
+	LLPanel::draw();
+}
+void* LLTopPanel::createToggleBar(void* data)
+{
+	delete gToggleBar;
+	gToggleBar = new LLToggleBar();
+	return gToggleBar;
+}
+void* LLTopPanel::createNavToggle(void* data)
+{
+	delete gNavToggle;
+	gNavToggle = new LLNavToggle();
+	return gNavToggle;
 }

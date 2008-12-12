@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="navbar" width="543" height="34" left="0" top="54" can_minimize="false" can_resize="false" follows="left|top|right" default_tab_group="1">
+	
+	<layout_stack name="navbar_buttons_stack" bottom="0" left="0" width="543" height="34" orientation="horizontal" follows="left">
+		
+	<layout_panel left="0" bottom="0" height="34" width="543" follows="left|bottom|right|top">
+		
+      <icon left="0" bottom="0" width="543" height="34" image_name="navbar_bg.tga" scale_image="true" />
+      
+      <button name="back_btn" left="13" bottom="7" width="26" height="26" image_selected="navbar_btn_back_over.tga"
+        image_unselected="navbar_btn_back_default.tga" image_hover_unselected="navbar_btn_back_over.tga"
+        image_disabled="navbar_btn_back_off.tga" image_disabled_selected="navbar_btn_back_off.tga" label=""
+        label_selected="" tool_tip="Click for previous Location." scale_image="true" 
+      />
+        
+      <button name="next_btn" left="39" bottom="7" width="26" height="26" label="" tool_tip="Click for next Location."
+        image_selected="navbar_btn_fwd_over.tga"
+        image_unselected="navbar_btn_fwd_default.tga" image_hover_unselected="navbar_btn_fwd_over.tga"
+        image_disabled="navbar_btn_fwd_off.tga" scale_image="true"
+      />
+      
+      <image_flyout_button name="more_btn" left="65" bottom="5" width="20" height="25" label="more_btn_label" tool_tip="Click for History."
+        image_selected="navbar_more_btn.tga" mouse_opaque="true" image_unselected="navbar_more_btn.tga" image_disabled="navbar_more_btn.tga"
+      />
+        
+      <button name="home_btn" bottom="7" left="85" width="29" height="26" label=""  tool_tip="Home Location."
+        image_selected="navbar_btn_home_over.tga"
+        image_unselected="navbar_btn_home_default.tga" image_hover_unselected="navbar_btn_home_over.tga"
+        image_disabled="navbar_btn_home_default.tga" scale_image="true"
+      />
+      
+      <icon left="118" bottom="10" width="386" height="20" image_name="navbar_input_field.tga" scale_image="true" />
+      
+      <button name="land_btn" width="12" height="12" bottom="14" left="123" scale_image="true"
+        image_disabled="navbar_btn_info_default.tga" image_disabled_selected="navbar_btn_info_default.tga"
+        image_selected="navbar_btn_info_down.tga" image_unselected="navbar_btn_info_default.tga"
+        image_hover_selected="navbar_btn_info_over.tga" image_hover_unselected="navbar_btn_info_over.tga"
+        label_selected="" mouse_opaque="true" tool_tip="About Land"
+      />
+      
+      <navbar_combo_box name="Slurl_edit" allow_text_entry="true" left="140" bottom="11" width="369" height="20"
+        max_chars="128" mouse_opaque="true" use_bounding_rect="false" border_thickness="0" tab_stop="false"
+      />
+      
+      <button left="508" bottom="7" width="26" height="26" image_selected="navbar_btn_go_over.tga" image_unselected="navbar_btn_go_default.tga"
+        image_hover_unselected="navbar_btn_go_over.tga"	image_disabled="navbar_btn_go_default.tga" label="" label_selected=""
+        name="teleport_btn" tool_tip="Teleport Location." scale_image="true" hover_glow_strength="0"
+      />
+      
+		</layout_panel>
+	</layout_stack>
+</panel>

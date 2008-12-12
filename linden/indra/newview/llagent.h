@@ -176,7 +176,7 @@ public:
 	LLViewerRegion	*getRegion() const;
 	const LLHost&	getRegionHost() const;
 	std::string		getSLURL() const;
-	
+	std::string		getNavSLURL()const ;
 	void			updateAgentPosition(const F32 dt, const F32 yaw, const S32 mouse_x, const S32 mouse_y);		// call once per frame to update position, angles radians
 	void			updateLookAt(const S32 mouse_x, const S32 mouse_y);
 
@@ -470,6 +470,9 @@ public:
 	// to a global location - this will probably need to be
 	// deprecated.
 	void teleportViaLocation(const LLVector3d& pos_global); 
+
+	// to a SLURL
+	void teleportViaSLURL(const std::string& slurl);
 
 	// cancel the teleport, may or may not be allowed by server
 	void teleportCancel();

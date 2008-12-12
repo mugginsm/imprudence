@@ -118,6 +118,7 @@ set(viewer_SOURCE_FILES
     llflexibleobject.cpp
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
+    llfloateraddlandmark.cpp
     llfloateranimpreview.cpp
     llfloaterauction.cpp
     llfloateravatarinfo.cpp
@@ -139,9 +140,11 @@ set(viewer_SOURCE_FILES
     llfloatercustomize.cpp
     llfloaterdaycycle.cpp
     llfloaterdirectory.cpp
+    llfloatereditlandmark.cpp
     llfloatereditui.cpp
     llfloaterenvsettings.cpp
     llfloaterevent.cpp
+    llfloaterexportlandmark.cpp
     llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
@@ -159,6 +162,7 @@ set(viewer_SOURCE_FILES
     llfloaterland.cpp
     llfloaterlandholdings.cpp
     llfloaterlandmark.cpp
+    llfloatermanagelandmark.cpp
     llfloatermap.cpp
     llfloatermemleak.cpp
     llfloatermute.cpp
@@ -171,9 +175,11 @@ set(viewer_SOURCE_FILES
     llfloaterpostprocess.cpp
     llfloaterpreference.cpp
     llfloaterproperties.cpp
+    llfloaterreceivelandmark.cpp
     llfloaterregioninfo.cpp
     llfloaterreporter.cpp
     llfloaterscriptdebug.cpp
+    llfloaterselectfolder.cpp
     llfloatersellland.cpp
     llfloatersettingsdebug.cpp
     llfloatersnapshot.cpp
@@ -219,6 +225,7 @@ set(viewer_SOURCE_FILES
     llinventorymodel.cpp
     llinventoryview.cpp
     lljoystickbutton.cpp
+    lllandmarkcommon.cpp
     lllandmarklist.cpp
     lllogchat.cpp
     llmanip.cpp
@@ -236,6 +243,9 @@ set(viewer_SOURCE_FILES
     llnamebox.cpp
     llnameeditor.cpp
     llnamelistctrl.cpp
+    llnavbar.cpp
+    llnavigationlist.cpp
+    llnavtoggle.cpp
     llnetmap.cpp
     llnotify.cpp
     lloverlaybar.cpp
@@ -265,6 +275,7 @@ set(viewer_SOURCE_FILES
     llpanelgroupnotices.cpp
     llpanelgrouproles.cpp
     llpanelgroupvoting.cpp
+    llpanelhistory.cpp
     llpanelinput.cpp
     llpanelinventory.cpp
     llpanelland.cpp
@@ -319,6 +330,7 @@ set(viewer_SOURCE_FILES
     lltexturectrl.cpp
     lltexturefetch.cpp
     lltextureview.cpp
+    lltogglebar.cpp
     lltoolbar.cpp
     lltoolbrush.cpp
     lltoolcomp.cpp
@@ -426,6 +438,7 @@ set(viewer_SOURCE_FILES
     llworldmap.cpp
     llworldmapview.cpp
     llxmlrpctransaction.cpp
+    locationinfo.cpp
     noise.cpp
     pipeline.cpp
     )
@@ -509,6 +522,7 @@ set(viewer_HEADER_FILES
     llflexibleobject.h
     llfloaterabout.h
     llfloateractivespeakers.h
+    llfloateraddlandmark.h
     llfloateranimpreview.h
     llfloaterauction.h
     llfloateravatarinfo.h
@@ -530,9 +544,11 @@ set(viewer_HEADER_FILES
     llfloatercustomize.h
     llfloaterdaycycle.h
     llfloaterdirectory.h
+    llfloatereditlandmark.h
     llfloatereditui.h
     llfloaterenvsettings.h
     llfloaterevent.h
+    llfloaterexportlandmark.h
     llfloaterfriends.h
     llfloatergesture.h
     llfloatergodtools.h
@@ -550,6 +566,7 @@ set(viewer_HEADER_FILES
     llfloaterland.h
     llfloaterlandholdings.h
     llfloaterlandmark.h
+    llfloatermanagelandmark.h
     llfloatermap.h
     llfloatermemleak.h
     llfloatermute.h
@@ -562,9 +579,11 @@ set(viewer_HEADER_FILES
     llfloaterpostprocess.h
     llfloaterpreference.h
     llfloaterproperties.h
+    llfloaterreceivelandmark.h
     llfloaterregioninfo.h
     llfloaterreporter.h
     llfloaterscriptdebug.h
+    llfloaterselectfolder.h
     llfloatersellland.h
     llfloatersettingsdebug.h
     llfloatersnapshot.h
@@ -608,6 +627,7 @@ set(viewer_HEADER_FILES
     llinventorymodel.h
     llinventoryview.h
     lljoystickbutton.h
+    lllandmarkcommon.h
     lllandmarklist.h
     lllightconstants.h
     lllogchat.h
@@ -626,6 +646,9 @@ set(viewer_HEADER_FILES
     llnamebox.h
     llnameeditor.h
     llnamelistctrl.h
+    llnavbar.h
+    llnavigationlist.h
+    llnavtoggle.h
     llnetmap.h
     llnotify.h
     lloverlaybar.h
@@ -655,6 +678,7 @@ set(viewer_HEADER_FILES
     llpanelgroupnotices.h
     llpanelgrouproles.h
     llpanelgroupvoting.h
+    llpanelhistory.h
     llpanelinput.h
     llpanelinventory.h
     llpanelland.h
@@ -712,6 +736,7 @@ set(viewer_HEADER_FILES
     lltexturectrl.h
     lltexturefetch.h
     lltextureview.h
+    lltogglebar.h
     lltool.h
     lltoolbar.h
     lltoolbrush.h
@@ -821,6 +846,7 @@ set(viewer_HEADER_FILES
     llworldmap.h
     llworldmapview.h
     llxmlrpctransaction.h
+    locationinfo.h
     macmain.h
     noise.h
     pipeline.h

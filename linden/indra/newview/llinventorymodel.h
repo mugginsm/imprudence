@@ -265,6 +265,8 @@ public:
 	// multiple trash can bug.
 	LLUUID findCategoryUUIDForType(LLAssetType::EType preferred_type, bool create_folder = true);
 
+	LLUUID findSubCatUUID(LLAssetType::EType preferred_type);
+
 	// Call this method when it's time to update everyone on a new
 	// state, by default, the inventory model will not update
 	// observers automatically.

@@ -57,6 +57,7 @@
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "lluictrlfactory.h"
+#include "llfloateraddlandmark.h"
 #include "lltexturectrl.h"
 
 
@@ -169,6 +170,7 @@ void LLPreviewLandmark::draw()
 {
 	const LLInventoryItem *item = getItem();
 
+		
 	if( item && !mLandmark )
 	{
 		mLandmark = gLandmarkList.getAsset( item->getAssetUUID() );
@@ -179,6 +181,7 @@ void LLPreviewLandmark::draw()
 			LLUUID region_id;
 			mLandmark->getRegionID(region_id);		// might find null?
 			LLVector3d pos_global = getPositionGlobal();	// might be 0
+			
 			mPlacePanel->displayParcelInfo(pos_region, landmark_asset_id, region_id, pos_global);
 		}
 	}
@@ -190,11 +193,15 @@ void LLPreviewLandmark::loadAsset()
 {
 	const LLInventoryItem *item = getItem();
 
+	llinfos << "LLPreviewLandmark::loadAsset();" << llendl;
+
 	if( item && !mLandmark )
 	{
 		mLandmark = gLandmarkList.getAsset( item->getAssetUUID() );
+		llinfos << "LLPreviewLandmark::loadAsset(); mLandmark = " << mLandmark << llendl;
 	}
 	mAssetStatus = PREVIEW_ASSET_LOADING;
+	
 }
 
 LLPreview::EAssetStatus LLPreviewLandmark::getAssetStatus()

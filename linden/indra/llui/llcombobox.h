@@ -188,10 +188,10 @@ protected:
 	LLScrollListCtrl*	mList;
 	EPreferredPosition	mListPosition;
 	LLPointer<LLUIImage>	mArrowImage;
+	LLLineEditor*		mTextEntry;
 
 private:
 	S32					mButtonPadding;
-	LLLineEditor*		mTextEntry;
 	BOOL				mAllowTextEntry;
 	S32					mMaxChars;
 	BOOL				mTextEntryTentative;

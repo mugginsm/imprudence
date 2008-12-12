@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel enabled="true" height="34" left="0" mouse_opaque="false" name="top_panel" width="543">
+	<layout_stack border_size="0" bottom="-54" height="34" left="0" mouse_opaque="false"
+		name="navbar_stack" orientation="vertical" use_bounding_rect="true" width="543">
+		<layout_panel auto_resize="false" name="togglebar" use_bounding_rect="true" user_resize="false" width="543" />
+	</layout_stack>
+	<layout_stack border_size="0" bottom="-47" height="34" left="0" mouse_opaque="false"
+		name="toggle_stack" orientation="vertical" use_bounding_rect="true" width="543">
+		<layout_panel auto_resize="false" filename="panel_nav_toggle.xml" name="navtoggle" use_bounding_rect="true"
+			user_resize="false" width="543" />
+	</layout_stack>
+</panel>

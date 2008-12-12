@@ -368,6 +368,8 @@ void LLFloaterLandmark::onBtnDelete(void* userdata)
 	LLViewerInventoryItem* item = gInventory.getItem(self->mImageAssetID);
 	if(item)
 	{
+		llinfos << "LLFloaterLandmark::onBtnDelete(); moving item " << item->getName() << " to the trash" << llendl;
+
 		// Move the item to the trash
 		LLUUID trash_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH);
 		if (item->getParentUUID() != trash_id)

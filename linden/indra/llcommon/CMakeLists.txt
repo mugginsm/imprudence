@@ -21,6 +21,7 @@ set(llcommon_SOURCE_FILES
     llcrc.cpp
     llcriticaldamp.cpp
     lldate.cpp
+    lldelayedcallback.cpp
     llerror.cpp
     llerrorthread.cpp
     llevent.cpp
@@ -94,6 +95,7 @@ set(llcommon_HEADER_FILES
     lldarrayptr.h
     lldate.h
     lldefs.h
+    lldelayedcallback.h
     lldepthstack.h
     lldlinked.h
     lldqueueptr.h

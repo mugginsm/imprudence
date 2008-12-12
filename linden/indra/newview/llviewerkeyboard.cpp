@@ -43,7 +43,7 @@
 #include "lltoolfocus.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
-
+#include "llmenucommands.h"
 //
 // Constants
 //
@@ -224,6 +224,14 @@ void agent_toggle_fly( EKeystate s )
 	if (KEYSTATE_DOWN == s )
 	{
 		gAgent.toggleFlying();
+	}
+}
+
+void show_navbar( EKeystate s )
+{
+	if (KEYSTATE_DOWN == s )
+	{
+		handle_nav(NULL);
 	}
 }
 
@@ -529,6 +537,7 @@ void bind_keyboard_functions()
 	gViewerKeyboard.bindNamedFunction("look_up", agent_look_up);
 	gViewerKeyboard.bindNamedFunction("look_down", agent_look_down);
 	gViewerKeyboard.bindNamedFunction("toggle_fly", agent_toggle_fly);
+	gViewerKeyboard.bindNamedFunction("show_nav", show_navbar);
 	gViewerKeyboard.bindNamedFunction("turn_left", agent_turn_left);
 	gViewerKeyboard.bindNamedFunction("turn_right", agent_turn_right);
 	gViewerKeyboard.bindNamedFunction("slide_left", agent_slide_left);

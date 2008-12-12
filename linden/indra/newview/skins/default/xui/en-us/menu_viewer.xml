@@ -271,6 +271,10 @@
       <on_enable function="View.EnableLastChatter" />
     </menu_item_call>
     <menu_item_separator />
+    <menu_item_check name="showNav" label="Navigation Bar">
+      <on_click function="ShowFloater" userdata="toolbar" />
+      <on_check function="FloaterVisible" userdata="toolbar" />
+    </menu_item_check>
     <menu_item_check name="Toolbar" label="Toolbar">
       <on_click function="ShowFloater" userdata="toolbar" />
       <on_check function="FloaterVisible" userdata="toolbar" />
@@ -296,6 +300,13 @@
     <menu_item_check name="Mute List" label="Mute List">
       <on_click function="ShowFloater" userdata="mute list" />
       <on_check function="FloaterVisible" userdata="mute list" />
+    </menu_item_check>
+    <menu_item_check name="Complete Teleport History"
+                     label="Complete Teleport History">
+      <on_click function="ShowFloater"
+                userdata="Complete Teleport History" />
+      <on_check function="FloaterVisible"
+                userdata="Complete Teleport History" />
     </menu_item_check>
     <menu_item_separator />
     <menu_item_check name="Camera Controls" label="Camera Controls">
@@ -483,22 +494,6 @@
       <on_enable function="World.EnableFly" />
       <on_check control="FlyBtnState" />
     </menu_item_check>
-    <menu_item_separator />
-    <menu_item_call name="Create Landmark Here"
-                    label="Create Landmark Here">
-      <on_click function="World.CreateLandmark" userdata="" />
-      <on_enable function="World.EnableCreateLandmark" userdata="" />
-    </menu_item_call>
-    <menu_item_call name="Set Home to Here" label="Set Home to Here">
-      <on_click function="World.SetHomeLocation" userdata="" />
-      <on_enable function="World.EnableSetHomeLocation" userdata="" />
-    </menu_item_call>
-    <menu_item_separator />
-    <menu_item_call name="Teleport Home" label="Teleport Home"
-                    shortcut="control|shift|H">
-      <on_click function="World.TeleportHome" userdata="" />
-      <on_enable function="World.EnableTeleportHome" userdata="" />
-    </menu_item_call>
     <menu_item_separator />
     <menu_item_call name="Set Away" label="Set Away">
       <on_click function="World.SetAway" userdata="" />
@@ -812,6 +807,32 @@
     </menu_item_call>
   </menu>
 
+  <menu name="Landmarks" create_jump_keys="true" label="Landmarks" 
+        opaque="true" tear_off="true">
+    <menu_item_call name="New Landmark..." label="New Landmark...">
+      <on_click function="Landmarks.NewLandmark" userdata="" />
+    </menu_item_call>
+
+    <menu_item_call name="Manage Landmark" label="Manage Landmarks">
+      <on_click function="Landmarks.ManageLandmarks" userdata="" />
+    </menu_item_call>
+    <menu_item_separator />
+    <menu_item_call name="Teleport Home" label="Teleport Home">
+      <on_click function="Landmarks.TeleportHome" userdata="" />
+    </menu_item_call>
+
+    <menu_item_call name="Set Home to Current Location" 
+                    label="Set Home to Current Location">
+      <on_click function="Landmarks.SetHomeToCurrentLocation" userdata="" />
+    </menu_item_call>
+    <menu_item_separator />
+    <menu name="Recent Places" create_jump_keys="true"
+          label="Recently Visited Landmarks" opaque="true" tear_off="true">
+    </menu>
+    <menu name="Received Landmarks" create_jump_keys="true" 
+          label="Received Landmarks" opaque="true" tear_off="true">
+    </menu>
+  </menu>
 
 
   <!-- ADVANCED -->
