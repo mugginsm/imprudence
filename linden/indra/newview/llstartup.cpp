@@ -111,6 +111,7 @@
 #include "llhudmanager.h"
 #include "llhttpclient.h"
 #include "llimagebmp.h"
+#include "llinterface.h"
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llkeyboard.h"
@@ -2667,7 +2668,7 @@ bool idle_startup()
 			gRlvHandler.processRetainedCommands();
 		}
 // [/RLVa:KB]
-
+ 		Snowglobe::Interface::statusLoginComplete() ;
 		return TRUE;
 	}
 
@@ -3582,6 +3583,7 @@ void LLStartUp::multimediaInit()
 
 	LLViewerMedia::initClass();
 	LLViewerParcelMedia::initClass();
+	Snowglobe::Interface::startup() ;
 }
 
 bool LLStartUp::dispatchURL()
