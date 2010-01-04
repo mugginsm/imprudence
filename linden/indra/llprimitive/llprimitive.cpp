@@ -120,6 +120,9 @@ const char *SCULPT_DEFAULT_TEXTURE = "be293869-d0d9-0a69-5989-ad27f1946fd4"; // 
 // can't be divided by 2.   See DEV-19108
 const F32	TEXTURE_ROTATION_PACK_FACTOR = ((F32) 0x08000);
 
+// reX: added constant
+const U16 MAX_REXPARAM_MATERIALS = 8; // Max. supported amount of textured submeshes
+
 //static 
 // LEGACY: by default we use the LLVolumeMgr::gVolumeMgr global
 // TODO -- eliminate this global from the codebase!
@@ -1557,9 +1560,254 @@ BOOL LLNetworkData::isValid(U16 param_type, U32 size)
 		return (size == 16);
 	case PARAMS_SCULPT:
 		return (size == 17);
+	// reX: added
+	//! todo better way, has variable size depending on contents
+	case PARAMS_REX:
+		return TRUE;
 	}
 	
 	return FALSE;
+}
+
+//============================================================================
+
+// reX: new class
+
+LLRexParams::LLRexParams() :
+	mFlags(FLAGS_ISVISIBLE),
+	mExtFlags(EXTFLAGS_NONE),
+	mDrawDistance(0.0f),
+	mLOD(1.0f),
+    mFixedMaterial(FIXEDMATERIAL_DEFAULT)
+{
+	mType = PARAMS_REX;
+}
+
+BOOL LLRexParams::pack(LLDataPacker& dp) const
+{
+	dp.packString(mClassName.c_str(), "classname");
+	dp.packU8(mFlags, "flags");
+	dp.packU8(mExtFlags, "extendedflags");
+	dp.packF32(mDrawDistance, "drawdistance");
+	dp.packF32(mLOD, "lod");
+	dp.packUUID(mMeshID, "meshid");
+	dp.packUUID(mCollisionMeshID, "collisionmeshid");
+
+	U16 materialCount = (U16)mMaterialID.size();
+    // Refuse to pack in a greater material count than is sane :)
+    if (materialCount > MAX_REXPARAM_MATERIALS) materialCount = MAX_REXPARAM_MATERIALS;
+	dp.packU16(materialCount, "materialcount");
+	for (U16 i = 0; i < materialCount; i++)
+	{
+		dp.packUUID(mMaterialID[i], "materialid");
+	}
+    dp.packU8(mFixedMaterial, "fixedmaterial");
+    dp.packUUID(mParticleScriptID, "particlescriptid");
+    
+	return TRUE;
+}
+
+BOOL LLRexParams::unpack(LLDataPacker &dp)
+{   
+	std::string className;
+	dp.unpackString(className, "classname");
+	setClassName(className);
+
+	U8 flags;
+	dp.unpackU8(flags, "flags");
+	setFlags(flags);
+
+	U8 extFlags;
+	dp.unpackU8(extFlags, "extendedflags");
+	setExtendedFlags(extFlags);
+
+	F32 drawDistance;
+	dp.unpackF32(drawDistance, "drawdistance");
+	setDrawDistance(drawDistance);
+
+	F32 lod;
+	dp.unpackF32(lod, "lod");
+	setLOD(lod);
+
+	LLUUID meshID;
+	dp.unpackUUID(meshID, "meshid");
+	setMeshID(meshID);
+
+	LLUUID collisionMeshID;
+	dp.unpackUUID(collisionMeshID, "collisionmeshid");
+	setCollisionMeshID(collisionMeshID);
+
+	U16 materialCount;
+	dp.unpackU16(materialCount, "materialcount");
+	setNumMaterials(materialCount);
+	for (U16 i = 0; i < materialCount; i++)
+	{
+		LLUUID materialID;
+		dp.unpackUUID(materialID, "materialid");
+		setMaterialID(i, materialID);
+	}
+
+    // These are new parameters, possibly do not exist
+    U8 fixedMaterial = 0;
+    if (dp.hasNext())
+        dp.unpackU8(fixedMaterial, "fixedmaterial"); 
+    if (fixedMaterial >= FIXEDMATERIAL_COUNT)
+        fixedMaterial = FIXEDMATERIAL_DEFAULT;
+	setFixedMaterial(static_cast<FixedOgreMaterial>(fixedMaterial));
+
+    LLUUID particleScriptID = LLUUID::null;
+    if (dp.hasNext())
+        dp.unpackUUID(particleScriptID, "particlescriptid");       
+    setParticleScriptID(particleScriptID);
+
+	return TRUE;
+}
+
+bool LLRexParams::operator==(const LLNetworkData& data) const
+{
+	if (data.mType != PARAMS_REX)
+	{
+		return false;
+	}
+	const LLRexParams *param = (const LLRexParams*)&data;
+	if (param->mClassName != mClassName ||
+		param->mFlags != mFlags ||
+		param->mExtFlags != mExtFlags ||
+		param->mDrawDistance != mDrawDistance ||
+		param->mLOD != mLOD ||
+		param->mMeshID != mMeshID ||
+		param->mCollisionMeshID != mCollisionMeshID ||
+		param->mMaterialID.size() != mMaterialID.size() ||
+        param->getFixedMaterial() != mFixedMaterial ||
+        param->mParticleScriptID != mParticleScriptID)
+	{
+		return false;
+	}
+	for (U16 i = 0; i < mMaterialID.size(); i++)
+	{
+		if (param->mMaterialID[i] != mMaterialID[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void LLRexParams::copy(const LLNetworkData& data)
+{
+	const LLRexParams *param = (LLRexParams*)&data;
+
+	mClassName = param->mClassName;
+	mFlags = param->mFlags;
+	mExtFlags = param->mExtFlags;
+	mDrawDistance = param->mDrawDistance;
+	mLOD = param->mLOD;
+	mMeshID = param->mMeshID;
+	mCollisionMeshID = param->mCollisionMeshID;
+
+	U16 materialCount = (U16)param->mMaterialID.size();
+	setNumMaterials(materialCount);
+	for (U16 i = 0; i < materialCount; i++)
+	{
+		mMaterialID[i] = param->mMaterialID[i];
+	}
+    mFixedMaterial = param->mFixedMaterial;
+    mParticleScriptID = param->mParticleScriptID;
+}
+
+void LLRexParams::setClassName(const std::string& className)
+{
+	mClassName = className;
+}
+
+void LLRexParams::setIsMesh(BOOL isMesh)
+{
+	mFlags &= ~FLAGS_ISMESH;
+	if (isMesh) mFlags |= FLAGS_ISMESH;
+}
+
+void LLRexParams::setIsVisible(BOOL isVisible)
+{
+	mFlags &= ~FLAGS_ISVISIBLE;
+	if (isVisible) mFlags |= FLAGS_ISVISIBLE;
+}
+
+void LLRexParams::setCastShadows(BOOL castShadows)
+{
+	mFlags &= ~FLAGS_CASTSHADOWS;
+	if (castShadows) mFlags |= FLAGS_CASTSHADOWS;
+}
+
+void LLRexParams::setShowText(BOOL showText)
+{
+	mFlags &= ~FLAGS_SHOWTEXT;
+	if (showText) mFlags |= FLAGS_SHOWTEXT;
+}
+
+void LLRexParams::setScaleMesh(BOOL scaleMesh)
+{
+	mFlags &= ~FLAGS_SCALEMESH;
+	if (scaleMesh) mFlags |= FLAGS_SCALEMESH;
+}
+
+void LLRexParams::setSolidAlpha(BOOL solidAlpha)
+{
+	mFlags &= ~FLAGS_SOLIDALPHA;
+	if (solidAlpha) mFlags |= FLAGS_SOLIDALPHA;
+}
+
+void LLRexParams::setIsBillboard(BOOL isBillboard)
+{
+	mFlags &= ~FLAGS_ISBILLBOARD;
+	if (isBillboard) mFlags |= FLAGS_ISBILLBOARD;
+}
+
+void LLRexParams::setUseParticleScript(BOOL useParticleScript)
+{
+	mFlags &= ~FLAGS_USEPARTICLESCRIPT;
+	if (useParticleScript) mFlags |= FLAGS_USEPARTICLESCRIPT;
+}
+
+void LLRexParams::setUseMaterialScripts(BOOL useMaterialScripts)
+{
+	mExtFlags &= ~EXTFLAGS_USEMATERIALSCRIPTS;
+	if (useMaterialScripts) mExtFlags |= EXTFLAGS_USEMATERIALSCRIPTS;
+}
+
+void LLRexParams::setNumMaterials(U16 numMaterials)
+{
+	mMaterialID.resize(numMaterials);
+}
+
+const LLUUID& LLRexParams::getMaterialID(U16 index) const
+{	
+	if (index >= mMaterialID.size()) return LLUUID::null;
+	return mMaterialID[index];
+}
+
+BOOL LLRexParams::setMaterialID(U16 index, const LLUUID& materialID)
+{
+	if (index >= mMaterialID.size()) return FALSE;
+	mMaterialID[index] = materialID;
+	return TRUE;
+}
+
+void LLRexParams::setDrawDistance(F32 drawDistance)
+{
+	if (drawDistance < 0.0f) drawDistance = 0.0f;
+	mDrawDistance = drawDistance;
+}
+
+void LLRexParams::setLOD(F32 lod)
+{
+	if (lod < 0.0f) lod = 0.0f;
+	mLOD = lod;
+}
+
+void LLRexParams::setFixedMaterial(FixedOgreMaterial material)
+{
+   mFixedMaterial = material;
 }
 
 //============================================================================

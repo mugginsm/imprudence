@@ -42,8 +42,12 @@ void send_generic_message(const std::string& method,
 						  const std::vector<std::string>& strings,
 						  const LLUUID& invoice = LLUUID::null);
 
-void process_generic_message(LLMessageSystem* msg, void**);
+void send_generic_message_binary(const char* method,
+						  const std::vector<std::string>& strings,
+						  const std::vector<std::vector<U8> >& data, 
+						  const LLUUID& invoice = LLUUID::null);
 
+void process_generic_message(LLMessageSystem* msg, void**);
 
 extern LLDispatcher gGenericDispatcher;
 

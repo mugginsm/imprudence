@@ -76,6 +76,43 @@ void send_generic_message(const std::string& method,
 	gAgent.sendReliableMessage();
 }
 
+void send_generic_message_binary(const char* method,
+                                 const std::vector<std::string>& strings, const std::vector<std::vector<U8> >& data, const LLUUID& invoice)
+{
+	LLMessageSystem* msg = gMessageSystem;
+	msg->newMessage("GenericMessage");
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->addUUIDFast(_PREHASH_TransactionID, LLUUID::null); //not used
+	msg->nextBlock("MethodData");
+	msg->addString("Method", method);
+	msg->addUUID("Invoice", invoice);
+	if (strings.empty() && data.empty())
+	{
+		msg->nextBlock("ParamList");
+		msg->addString("Parameter", NULL);
+	}
+	else
+	{
+        // First send all strings, then any binary data
+		std::vector<std::string>::const_iterator it = strings.begin();
+		std::vector<std::string>::const_iterator end = strings.end();
+		for(; it != end; ++it)
+		{
+			msg->nextBlock("ParamList");
+			msg->addString("Parameter", (*it).c_str());
+		}
+
+        for (U32 i = 0; i < data.size(); ++i)
+        {
+            msg->nextBlock("ParamList");
+            msg->addVariableBinaryData("Parameter", &data[i][0], data[i].size());
+        }
+	}
+	gAgent.sendReliableMessage();
+}
+
 
 
 void process_generic_message(LLMessageSystem* msg, void**)

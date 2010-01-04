@@ -74,6 +74,26 @@
 
 #include <boost/bind.hpp>
 
+
+// reX: new includes
+#include "llogre.h"
+#include "llogreobject.h"
+#include "rexogrelegacymaterial.h"
+#include "llrexhud.h"
+#include "llfloaterfriends.h"
+//#include "rexvoice.h"
+//#include "voiceengine.h"
+//#include "llavatar.h"
+//#include "AvatarGeneratorScene.h"
+#include "llogrehtmlrenderer.h"
+#include "rexRttCamera.h"
+//#include "updaterutils.h"
+#include "llcallingcard.h"
+//#include "llfloatereditcameraview.h"
+#include "rexpaneldata.h"
+#include "llogrepostprocess.h"
+#include "llogreassetloader.h"
+
 #if LL_WINDOWS
 	#include "llwindebug.h"
 #endif
@@ -218,6 +238,26 @@ F32 gSimLastTime; // Used in LLAppViewer::init and send_stats()
 F32 gSimFrames;
 
 std::string gDisabledMessage; // Set in LLAppViewer::initConfiguration used in idle_startup
+
+// reX: new globals
+extern BOOL gFirstWearablesUpdate;
+// If false, we are connecting to Second Life, and several Ogre features will be disabled
+BOOL gInRex = TRUE;
+// Whether we're really connecting to a reX server, with added features (mesh uploads, media urls per texture etc.)
+BOOL gInPureRex = TRUE;
+// Whether to show the avatar storage URL edit field (testing purposes only)
+BOOL gShowLoginAvatarStorageUrl = FALSE;
+// reX: what renderer to use
+extern BOOL gOgreRender;
+// reX: sphere mode toggle
+BOOL gSphereMode = FALSE;
+// Reconnect parameters
+//ReconnectParams gReconnect = {
+//	false,
+//	"",
+//	"",
+//	""
+//};
 
 BOOL gHideLinks = FALSE; // Set in LLAppViewer::initConfiguration, used externally
 
@@ -739,6 +779,23 @@ bool LLAppViewer::init()
 	//
 	initWindow();
 
+    // Setup ogre scene
+    LLOgreRenderer::getPointer()->setupScene(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"ogre_scene.xml").c_str());
+    LLOgreAssetLoader::initClass();
+    RexOgreLegacyMaterial::initClass();
+    // Initialize avatar stuff
+    //LLAvatar::initClass();
+    //! Init cloth physics
+    //Rex::Cloth::initClass();
+    //Rex::Cloth::setPhysicsEnabled(false);
+    // Setup static parameters for Ogre avatar (default animations)
+    //LLAvatar::setupDefaultAnimations(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"ogre_avatar_animations.xml").c_str());
+	// Initialize RexData & RexPrimData handlers
+	RexPanelData::initClass();
+    RexPrimData::initClass();
+    // Initialize agent related reX message handlers
+    //LLAgent::initClass();
+
 	// call all self-registered classes
 	LLInitClassList::instance().fireCallbacks();
 
@@ -1024,7 +1081,7 @@ bool LLAppViewer::mainLoop()
 				const F64 min_idle_time = 0.0; //(.0010); // min idle time = 1 ms
 				const F64 max_idle_time = run_multiple_threads ? min_idle_time : llmin(.005*10.0*gFrameTimeSeconds, 0.005); // 5 ms a second
 				idleTimer.reset();
-				while(1)
+				/* while(1) */
 				{
 					S32 work_pending = 0;
 					S32 io_pending = 0;
@@ -3248,8 +3305,10 @@ void LLAppViewer::idle()
 	// Cap out-of-control frame times
 	// Too low because in menus, swapping, debugger, etc.
 	// Too high because idle called with no objects in view, etc.
+
+	// reX: changed higher because in ideal rendering conditions, exceeding this framerate causes avatar to spin too fast
 	const F32 MIN_FRAME_RATE = 1.f;
-	const F32 MAX_FRAME_RATE = 200.f;
+	const F32 MAX_FRAME_RATE = 500.f;
 
 	F32 frame_rate_clamped = 1.f / dt_raw;
 	frame_rate_clamped = llclamp(frame_rate_clamped, MIN_FRAME_RATE, MAX_FRAME_RATE);
@@ -4046,6 +4105,25 @@ void LLAppViewer::pingMainloopTimeout(const std::string& state, F32 secs)
 	}
 }
 
+
+// reX: new function
+void LLAppViewer::setViewerMode(bool rexMode, bool pureRexMode)
+{
+   if (rexMode)
+   {
+      gSecondLife = "realXtend";
+      gInRex = TRUE;
+      gInPureRex = pureRexMode;
+      gOgreRender = pureRexMode;
+   }
+   else
+   {
+      gSecondLife = "Second Life";
+	  gInRex = FALSE;
+      gInPureRex = FALSE;
+      gOgreRender = FALSE;
+   }
+}
 void LLAppViewer::handleLoginComplete()
 {
 	initMainloopTimeout("Mainloop Init");

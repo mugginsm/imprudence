@@ -114,6 +114,9 @@ public:
 	// Show in-world hover tips.  Allow to turn off for movie making, game playing.
 	// Public so menu can directly toggle.
 	static BOOL	sShowHoverTips;
+
+	// reX
+   static const char* DEFAULT_DESC;
 };
 
 

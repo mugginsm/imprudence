@@ -37,7 +37,13 @@
 #include "llviewerimage.h"
 #include "llframetimer.h"
 #include "llapr.h"
+// reX: new includes
+#include "llbufferstream.h"
+#include "rexprimdata.h"
 #include <map>
+
+// ReX: forward reference
+class RexOgreMaterial;
 
 class LLViewerTextureAnim;
 class LLDrawPool;
@@ -212,11 +218,99 @@ public:
 	BOOL canBeFlexible() const;
 	BOOL setIsFlexible(BOOL is_flexible);
 			
+	// reX: new functions
+	// Ogre update
+	void updateOgrePosition();
+	void updateOgreLight();
+	void updateOgreMeshMaterials(bool force_update);
+	void preloadOgreMeshMaterials();
+	/*virtual*/ void updateOgreGeometry();
+   /*virtual*/ void setDescriptionTexture(const std::string &description);
+   virtual void onOgreAssetLoaded(LLAssetType::EType assetType, const LLUUID& uuid);
+    const std::string& getRexClassName() const;
+    
+    RexPrimData::RexDrawType getRexDrawType() const;
+	BOOL getRexIsMesh() const;
+	BOOL getRexIsVisible() const;
+	BOOL getRexCastShadows() const;
+	BOOL getRexLightCastsShadows() const;
+	BOOL getRexShowText() const;
+	BOOL getRexScaleMesh() const;
+	BOOL getRexSolidAlpha() const;
+    BOOL getRexIsBillboard() const;
+	int getRexSelectionPriority() const;
+    F32 getRexLOD() const;
+	F32 getRexDrawDistance() const;
+    const LLUUID& getRexMeshID() const;
+	const LLUUID& getRexCollisionMeshID() const;
+    U16 getRexNumMaterials() const;
+	const LLUUID& getRexMaterialID(U16 index) const;
+	const RexMaterialDef& getRexMaterialDef(U16 index) const;
+    const LLUUID& getRexAnimationPackID() const;
+    const std::string& getRexAnimationName() const;
+    F32 getRexAnimationRate() const;
+    const LLUUID& getRexSoundID() const;
+	const LLUUID& getRexSoundSourceID() const;
+    F32 getRexSoundRadius() const;
+    F32 getRexSoundVolume() const;
+	FixedOgreMaterial getRexFixedMaterial() const;
+	const LLUUID& getRexParticleScriptID() const;
+	std::string getRexData();
+	
+    RexPrimData& getRexPrimData() { return mRexPrimData; }
+    void onRexPrimDataChanged(bool local_origin);
+    void sendRexPrimData();
+    void setRexPrimDataReceived() { mRexPrimDataReceived = true; }
+
+	void setRexClassName(const std::string& name, bool suppressSend = false);
+    void setRexDrawType(RexPrimData::RexDrawType drawType, bool suppressSend = false);
+	void setRexIsVisible(BOOL enabled, bool suppressSend = false);
+	void setRexCastShadows(BOOL enabled, bool suppressSend = false);
+	void setRexLightCastsShadows(BOOL enabled, bool suppressSend = false);
+	void setRexShowText(BOOL enabled, bool suppressSend = false);
+	void setRexScaleMesh(BOOL enabled, bool suppressSend = false);
+	void setRexSolidAlpha(BOOL enabled, bool suppressSend = false);
+	void setRexLOD(F32 lod, bool suppressSend = false);
+	void setRexSelectionPriority(int priority, bool suppressSend = false);
+    void setRexDrawDistance(F32 drawDistance, bool suppressSend = false);
+	void setRexMeshID(const LLUUID& meshID, bool suppressSend = false);
+	void setRexCollisionMeshID(const LLUUID& meshID, bool suppressSend = false);
+	void setRexNumMaterials(U16 numMaterials, bool suppressSend = false);
+	void setRexMaterialID(U16 index, const LLUUID& materialID, bool suppressSend = false);
+	void setRexMaterialDef(U16 index, const RexMaterialDef& materialDef, bool suppressSend = false);
+	void setRexFixedMaterial(FixedOgreMaterial material, bool suppressSend = false);
+	void setRexParticleScriptID(const LLUUID& particleScriptID, bool suppressSend = false);
+	void setRexAnimationPackID(const LLUUID& animationPackageID, bool suppressSend = false);
+    void setRexAnimationName(const std::string& name, bool suppressSend = false);
+    void setRexAnimationRate(F32 rate, bool suppressSend = false);
+    void setRexSoundID(const LLUUID& soundID, bool suppressSend = false);
+	void setRexSoundSourceID(LLUUID soundSourceID);
+    void setRexSoundRadius(F32 radius, bool suppressSend = false);
+    void setRexSoundVolume(F32 volume, bool suppressSend = false);
+    void setRexData(std::string data);
+	void createRexSoundSource(BOOL create);
+
+   void setUseClonedMaterial(bool useCloned);
+
 protected:
 	S32	computeLODDetail(F32	distance, F32 radius);
 	BOOL calcLOD();
 	LLFace* addFace(S32 face_index);
 	void updateTEData();
+	// reX: new functions
+	void updateOgreMesh();
+   //! Update/create new billboard to represent this volume
+   void updateOgreBillboard();
+   //! Update particle systems of this object (if any)
+   void updateOgreParticles();
+   //! Update Ogre skeleton of this object (if any)
+   void updateOgreSkeleton();
+   //! Internal method, set particle system into use, or disable (null ID)
+   void setParticleSystem(const LLUUID& particleScriptID);
+   //! Internal method, set skeleton into use, or disable (null ID)
+   void setOgreSkeleton(const LLUUID& skeletonID);
+   //! Speed up loading of particle system textures
+   void pumpParticleTextures();
 
 public:
 	LLViewerTextureAnim *mTextureAnimp;
@@ -237,6 +331,46 @@ private:
 	LLVolumeInterface *mVolumeImpl;
 	LLPointer<LLViewerImage> mSculptTexture;
 	
+	// rex: new member variables
+    RexPrimData mRexPrimData;
+	BOOL		mForceTextureAreaUpdate;
+   std::string mCurrentTextureText;
+   std::string mCurrentDescription;
+   //! Material name for the new material that's created when something is written on the object
+   std::string mMaterialNameText;	
+	//! Textures for Ogre mesh display currently in use (legacy mode)
+   std::vector<LLPointer<LLViewerImage> > mOgreTextures;
+	//! Materials currently in use (material script mode)
+   std::vector<RexOgreMaterial* > mOgreMaterials;
+    //! Fullbright status for Ogre mesh
+    BOOL mMeshFullbright;	
+	//! Solidalpha status for Ogre mesh
+	BOOL mMeshSolidAlpha;
+    //! Current particle script in use
+    LLUUID mCurrentParticleScriptID;
+    //! Current skeleton in use
+    LLUUID mCurrentSkeletonID;
+    //! Particle update on first time geom.rebuild
+    BOOL mParticleFirstTime;
+    //! Ogre skeleton update on first time geom. rebuild
+    BOOL mSkeletonFirstTime;
+    //! Is skeleton updated and do we need to rebuild ogre mesh
+    BOOL mSkeletonUpdate;
+    //! If RexPrimData received, we should no longer use PARAMS_REX block
+    bool mRexPrimDataReceived;
+
+    //! If true, clone the Ogre material instead of using the actual material. Needed when per-object materials are needed.
+    std::vector<bool> mUseClonedOgreMaterial;
+    StringVector mCloneMaterialName;
+    StringVector mCurrentMaterials;
+    std::vector<bool> mRecreateClonedMaterial;
+
+   //! Current fixed material type
+   FixedOgreMaterial mFixedMaterial;
+
+   // RexData
+   std::string mRexData;
+   
 	// statics
 public:
 	static F32 sLODSlopDistanceFactor;// Changing this to zero, effectively disables the LOD transition slop 
@@ -247,6 +381,28 @@ protected:
 	static S32 sNumLODChanges;
 	
 	friend class LLVolumeImplFlexible;
+};
+
+// reX: new class
+//! http responder for writing description url to texture
+class TextTextureHttpResponder : public LLHTTPClient::Responder
+{
+public:
+   //! constructor
+   TextTextureHttpResponder(LLVOVolume *node);
+   //! destructor
+   ~TextTextureHttpResponder();
+   
+   //! Parse the received content and handle it
+   void result(const LLBufferStream &stream); 
+
+   //! process http request result
+	void completedRaw(U32 status, const std::string& reason, const LLChannelDescriptors& channels,
+							const LLIOPipe::buffer_ptr_t& buffer);
+
+private:
+   //! Receiver for
+   LLVOVolume* mNode;
 };
 
 #endif // LL_LLVOVOLUME_H

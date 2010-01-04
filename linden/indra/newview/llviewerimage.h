@@ -41,6 +41,10 @@
 #include <map>
 #include <list>
 
+// reX: forward reference
+class RexOgreLegacyMaterial;
+class RexOgreTexture;
+
 #define MIN_VIDEO_RAM_IN_MEGA_BYTES    32
 #define MAX_VIDEO_RAM_IN_MEGA_BYTES    512 // 512MB max for performance reasons.
 
@@ -271,6 +275,26 @@ public:
 	S32 getOriginalWidth() { return mOrigWidth; }
 	S32 getOriginalHeight() { return mOrigHeight; }
 
+	// reX: new function
+	//! Update texture of Ogre material (if image has it)
+	/*! Performs update only in reX mode
+	 */
+	bool updateOgreMaterial(LLImageRaw* image);
+    // reX: new function
+    RexOgreLegacyMaterial* getOgreMaterial();
+    // reX: new function
+    RexOgreTexture* getOgreTexture();
+    // reX: new function
+    void resetBindTime();
+	// reX: new function
+    void setMediaURL(const std::string& url) { mMediaURL = url; }
+    // reX: new function
+    const std::string& getMediaURL() const { return mMediaURL; }
+    // reX: new function
+    void setMediaRefreshRate(int rate) { mMediaRefreshRate = rate; }
+    // reX: new function
+    int getMediaRefreshRate() const { return mMediaRefreshRate; }
+
 private:
 	/*virtual*/ void cleanup(); // Cleanup the LLViewerImage (so we can reinitialize it)
 
@@ -347,6 +371,12 @@ private:
 	LLPointer<LLImageRaw> mAuxRawImage;
 
 	LLHost mTargetHost;	// if LLHost::invalid, just request from agent's simulator
+
+	// reX: new member variables
+    RexOgreLegacyMaterial* mOgreMaterial;
+    RexOgreTexture* mOgreTexture;
+    std::string mMediaURL;
+    int mMediaRefreshRate;
 	
 public:
 	static const U32 sCurrentFileVersion;

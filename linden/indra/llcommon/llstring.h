@@ -305,6 +305,10 @@ typedef LLStringUtilBase<char> LLStringUtil;
 typedef LLStringUtilBase<llwchar> LLWStringUtil;
 typedef std::basic_string<llwchar> LLWString;
 
+// reX: typedefs for string vectors
+//typedef std::vector<LLString> LLStringVector;
+typedef std::vector<std::string> StringVector;
+
 //@ Use this where we want to disallow input in the form of "foo"
 //  This is used to catch places where english text is embedded in the code
 //  instead of in a translatable XUI file.

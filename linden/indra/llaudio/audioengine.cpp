@@ -387,6 +387,16 @@ void LLAudioEngine::idle(F32 max_decode_time)
 		// Update this source
 		sourcep->update();
 		sourcep->updatePriority();
+		
+		// reX
+		if(sourcep->isRexSound())
+		{
+			if(sourcep->AgentWithinRexSoundRadius())
+				// Trigger location based RexSound
+				triggerRexSound(sourcep);
+			else
+				stopRexSound(sourcep);
+		}
 
 		if (sourcep->isDone())
 		{
@@ -936,6 +946,48 @@ void LLAudioEngine::triggerSound(const LLUUID &audio_uuid, const LLUUID& owner_i
 	asp->play(audio_uuid);
 }
 
+// reX: new function
+void LLAudioEngine::triggerRexSound(LLAudioSource *sourcep)
+{
+	if (mMuted)
+	{
+		return;
+	}
+
+	sourcep->updatePriority();
+	
+	if(sourcep->mRexPlayOnce)
+	{
+		sourcep->play(sourcep->mRexSoundID);
+		sourcep->mRexPlayOnce = FALSE;
+		return;
+	}
+	
+	if(sourcep->isRexLoop() || sourcep->isAmbient())
+	{
+		sourcep->play(sourcep->mRexSoundID);
+	}
+}
+
+// reX: new function
+void LLAudioEngine::stopRexSound(LLAudioSource *sourcep)
+{
+	if (mMuted)
+	{
+		return;
+	}
+	sourcep->updatePriority();
+	
+	/*if(sourcep->mRexPlayOnce)
+	{
+		sourcep->play(sourcep->mRexSoundID);
+		sourcep->mRexPlayOnce = FALSE;
+		return;
+	}*/
+	
+	sourcep->stop(sourcep->mRexSoundID);
+}
+
 
 void LLAudioEngine::setListenerPos(LLVector3 aVec)
 {
@@ -1385,7 +1437,14 @@ LLAudioSource::LLAudioSource(const LLUUID& id, const LLUUID& owner_id, const F32
 	mPlayedOnce(false),
 	mChannelp(NULL),
 	mCurrentDatap(NULL),
-	mQueuedDatap(NULL)
+	mQueuedDatap(NULL),
+	mRexSound(FALSE),			// reX
+	mRexLoop(FALSE),			// reX
+	mRexSoundID(NULL),			// reX
+	mHasRadius(FALSE),			// reX
+	mAgentInsideRadius(FALSE),	// reX
+	mRexPlayOnce(FALSE)			// reX
+	//mHasDuration(FALSE)		// reX
 {
 }
 
@@ -1529,7 +1588,13 @@ bool LLAudioSource::isDone()
 {
 	const F32 MAX_AGE = 60.f;
 	const F32 MAX_UNPLAYED_AGE = 15.f;
-
+	
+	if(isRexSound())
+	{
+		// reX: RexSounds die only when the user delete's them
+		return false;
+	}
+	
 	if (isLoop())
 	{
 		// Looped sources never die on their own.
@@ -1696,6 +1761,27 @@ LLAudioBuffer *LLAudioSource::getCurrentBuffer()
 	}
 
 	return mCurrentDatap->getBuffer();
+}
+
+// reX: new function
+BOOL LLAudioSource::AgentWithinRexSoundRadius()
+{
+	LLVector3 source_pos = LLVector3(getPositionGlobal());
+	LLVector3 obj_to_agent = gAudiop->getListenerPos() - source_pos;
+	F32 distance = obj_to_agent.length();
+	
+	if((mHasRadius && distance <= mRadius) || isAmbient())
+	{
+		return TRUE;
+	}
+	else
+	{	
+		if(!isRexLoop())
+		{
+			mRexPlayOnce = TRUE;
+		}
+		return FALSE;	
+	}
 }
 
 

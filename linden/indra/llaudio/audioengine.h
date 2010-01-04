@@ -146,6 +146,10 @@ public:
 					  const LLVector3d &pos_global = LLVector3d::zero);
 	bool preloadSound(const LLUUID &id);
 
+	// reX: support for location based sounds
+	void triggerRexSound(LLAudioSource *asp);
+	void stopRexSound(LLAudioSource *asp);
+
 	void addAudioSource(LLAudioSource *asp);
 	void cleanupAudioSource(LLAudioSource *asp);
 
@@ -314,12 +318,38 @@ public:
 	const LLUUID &getID() const		{ return mID; }
 	bool isDone();
 
+	// reX start
+	void setRexSound(const BOOL rex_sound)							{ mRexSound = rex_sound; }
+	BOOL isRexSound() const											{ return mRexSound; }
+	
+	void setRexSoundID(const LLUUID &uuid)							{ mRexSoundID = uuid; }
+
+	void setRexLoop(const BOOL rex_loop)							{ mRexLoop = rex_loop; }
+	BOOL isRexLoop() const											{ return mRexLoop; }
+
+	// Duration stuff disabled for now
+	//void setDuration(const BOOL enable)							{ mHasDuration = enable; }
+	//BOOL hasDuration() const										{ return mHasDuration; }
+	//void defineDuration(const F32 &duration)						{ mDuration = duration; }
+	
+	void setRadius(const BOOL enable)								{ mHasRadius = enable; }
+	BOOL hasRadius() const											{ return mHasRadius; }
+	void defineRadius(const F32 radius)							{ mRadius = radius; }
+    F32 getRadius() const                                           { return mRadius; }
+
+	void setRexPlayOnce(const BOOL once)							{ mRexPlayOnce = once; }
+	BOOL isRexPlayOnce() const										{ return mRexPlayOnce; }
+	
+	BOOL AgentWithinRexSoundRadius();
+	// reX end
+
 	LLAudioData *getCurrentData();
 	LLAudioData *getQueuedData();
 	LLAudioBuffer *getCurrentBuffer();
 
 	bool setupChannel();
 	bool play(const LLUUID &audio_id);	// Start the audio source playing
+	BOOL stop(const LLUUID &audio_id); // reX: Stop the audio source playing
 
 	bool hasPendingPreloads() const;	// Has preloads that haven't been done yet
 
@@ -343,7 +373,19 @@ protected:
 	S32             mType;
 	LLVector3d		mPositionGlobal;
 	LLVector3		mVelocity;
-
+	
+	// reX
+	LLUUID			mRexSoundID;
+	BOOL			mRexSound;
+	BOOL			mRexLoop;
+	BOOL			mHasDuration;
+	BOOL			mHasRadius;
+	BOOL			mAgentInsideRadius;
+	BOOL			mRexPlayOnce;
+	//BOOL			mRexLoopStarted;
+	F32				mDuration;
+	F32				mRadius;
+	
 	//LLAudioSource	*mSyncMasterp;	// If we're a slave, the source that we're synced to.
 	LLAudioChannel	*mChannelp;		// If we're currently playing back, this is the channel that we're assigned to.
 	LLAudioData		*mCurrentDatap;

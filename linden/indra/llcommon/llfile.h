@@ -178,60 +178,6 @@ private:
 	bool _ShouldClose;
 };
 
-
-
-#else
-//Use standard file streams on non windows platforms
-//#define	llifstream	std::ifstream
-//#define	llofstream	std::ofstream
-
-class	llifstream	:	public	std::ifstream
-{
-public:
-	llifstream() : std::ifstream()
-	{
-	}
-
-	explicit llifstream(const std::string& _Filename, std::_Ios_Openmode _Mode = in)
-		: std::ifstream(_Filename.c_str(), _Mode)
-	{
-	}
-	void open(const std::string& _Filename, std::_Ios_Openmode _Mode = in)	/* Flawfinder: ignore */
-	{
-		std::ifstream::open(_Filename.c_str(), _Mode);
-	}
-};
-
-
-class	llofstream	:	public	std::ofstream
-{
-public:
-	llofstream() : std::ofstream()
-	{
-	}
-
-	explicit llofstream(const std::string& _Filename, std::_Ios_Openmode _Mode = out)
-		: std::ofstream(_Filename.c_str(), _Mode)
-	{
-	}
-
-	void open(const std::string& _Filename, std::_Ios_Openmode _Mode = out)	/* Flawfinder: ignore */
-	{
-		std::ofstream::open(_Filename.c_str(), _Mode);
-	}
-
-};
-
 #endif
-
-/**
- * @breif filesize helpers.
- *
- * The file size helpers are not considered particularly efficient,
- * and should only be used for config files and the like -- not in a
- * loop.
- */
-std::streamsize llifstream_size(llifstream& fstr);
-std::streamsize llofstream_size(llofstream& fstr);
 
 #endif // not LL_LLFILE_H

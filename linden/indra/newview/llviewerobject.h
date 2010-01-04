@@ -51,6 +51,7 @@
 #include "v3math.h"
 #include "llvertexbuffer.h"
 #include "llpartdata.h"
+#include "rexogreassetnotifiable.h"
 
 class LLAgent;			// TODO: Get rid of this.
 class LLAudioSource;
@@ -75,6 +76,8 @@ class LLViewerPartSourceScript;
 class LLViewerRegion;
 class LLViewerObjectMedia;
 class LLVOInventoryListener;
+// reX: forward reference
+class LLOgreObject;
 
 typedef enum e_object_update_type
 {
@@ -117,7 +120,7 @@ public:
 
 //============================================================================
 
-class LLViewerObject : public LLPrimitive, public LLRefCount
+class LLViewerObject : public LLPrimitive, public LLRefCount, public RexOgreAssetNotifiable
 {
 protected:
 	~LLViewerObject(); // use unref()
@@ -130,6 +133,12 @@ protected:
 	};
 	std::map<U16, ExtraParameter*> mExtraParameterList;
 
+	// reX: new member variables
+	// Ogre object (contains scene node, may contain mesh, manualobject etc.)
+	LLOgreObject* mOgreObject;
+	// Ogre object rebuild pending
+	bool mOgreUpdatePending;
+
 public:
 	typedef std::list<LLPointer<LLViewerObject> > child_list_t;
 	typedef std::list<LLPointer<LLViewerObject> > vobj_list_t;
@@ -139,10 +148,14 @@ public:
 	LLViewerObject(const LLUUID &id, const LLPCode type, LLViewerRegion *regionp, BOOL is_global = FALSE);
 	MEM_TYPE_NEW(LLMemType::MTYPE_OBJECT);
 
+	// reX: new function
+   LLOgreObject *getOgreObject() { return mOgreObject; }
+
 	virtual void markDead();				// Mark this object as dead, and clean up its references
 	BOOL isDead() const									{return mDead;}
 	BOOL isOrphaned() const								{ return mOrphaned; }
 	BOOL isParticleSource() const;
+   bool isOgreUpdatePending() const { return mOgreUpdatePending; }
 
 	static void initVOClasses();
 	static void cleanupVOClasses();
@@ -482,6 +495,16 @@ public:
 	
 	friend class LLViewerObjectList;
 	friend class LLViewerMediaList;
+
+	// reX: new functions
+	// Ogre geometry update
+	void markOgreUpdate();
+	virtual void updateOgreGeometry();
+   //! Creates a new (Ogre) texture from object description and applies it to all faces
+	virtual void setDescriptionTexture(const std::string &description) {};
+	// Ogre asset loading notify
+   virtual void onOgreAssetLoaded(LLAssetType::EType assetType, const LLUUID& uuid) {};
+   void authorizeMediaPlayback();
 
 public:
 	//counter-translation

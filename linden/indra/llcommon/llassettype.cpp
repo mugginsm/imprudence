@@ -70,6 +70,10 @@ asset_info_t asset_types[] =
 	{ LLAssetType::AT_ANIMATION, "ANIMATION" },
 	{ LLAssetType::AT_GESTURE, "GESTURE" },
 	{ LLAssetType::AT_SIMSTATE, "SIMSTATE" },
+	// reX: new asset types
+	{ LLAssetType::AT_MESH, "OGRE_MESH" },
+	{ LLAssetType::AT_SKELETON, "OGRE_SKELETON" },
+	{ LLAssetType::AT_MATERIAL, "OGRE_MATERIAL" },
 	{ LLAssetType::AT_NONE, "NONE" },
 };
 
@@ -129,7 +133,35 @@ const char* LLAssetType::mAssetTypeNames[LLAssetType::AT_COUNT] =
 	"jpeg",
 	"animatn",
 	"gesture",
-	"simstate"
+	"simstate",
+	// reX: new asset types	
+	"",			// 20 empties for official future expansion
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",		
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"ogremesh",
+	"ogreskel",
+   "ogremate",
+   "g.avatar",
+   "ogrepart",
+   "phycloth",
+   "flashani"
 };
 
 // This table is meant for decoding to human readable form. Put any
@@ -159,7 +191,35 @@ const char* LLAssetType::mAssetTypeHumanNames[LLAssetType::AT_COUNT] =
 	"jpeg image",
 	"animation",
 	"gesture",
-	"simstate"
+	"simstate",
+	// reX: new asset types
+	"",			// 20 empties for official future expansion
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",		
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"ogre 3d model",
+	"ogre skeleton",
+   "ogre material",
+   "generic avatar data",
+   "ogre particle script",
+   "physics cloth",
+   "flash animation"
 };
 
 ///----------------------------------------------------------------------------
@@ -248,6 +308,10 @@ EDragAndDropType LLAssetType::lookupDragAndDropType( EType asset )
 	case AT_BODYPART:		return DAD_BODYPART;
 	case AT_ANIMATION:		return DAD_ANIMATION;
 	case AT_GESTURE:		return DAD_GESTURE;
+    case AT_MESH:           return DAD_OGREASSET;
+    case AT_PARTICLE_SCRIPT: return DAD_OGREASSET;
+    case AT_MATERIAL:       return DAD_OGREASSET;
+    case AT_SKELETON:       return DAD_OGREASSET;
 	default: 				return DAD_NONE;
 	};
 }

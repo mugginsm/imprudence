@@ -75,7 +75,8 @@
 //
 // Constants
 //
-const char* DEFAULT_DESC = "(No Description)";
+// reX: made part of class
+const char* LLHoverView::DEFAULT_DESC = "(No Description)";
 const F32 DELAY_BEFORE_SHOW_TIP = 0.35f;
 
 //
@@ -83,6 +84,13 @@ const F32 DELAY_BEFORE_SHOW_TIP = 0.35f;
 //
 
 LLHoverView *gHoverView = NULL;
+
+//
+// Extern globals
+//
+
+// reX
+extern BOOL gInPureRex;
 
 //
 // Static member functions
@@ -632,10 +640,9 @@ void LLHoverView::draw()
 	// To toggle off hover tips, you have to just suppress the draw.
 	// The picking is still needed to do cursor changes over physical
 	// and scripted objects.  JC
-	if (!sShowHoverTips) 
-	{
-		return;
-	}
+	
+	// reX: disable hover tips in rex worlds
+	if ((!sShowHoverTips) || (gInPureRex)) return;
 
 	const F32 MAX_HOVER_DISPLAY_SECS = 5.f;
 	if (mHoverTimer.getElapsedTimeF32() > MAX_HOVER_DISPLAY_SECS)

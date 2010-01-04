@@ -98,6 +98,15 @@
 #include "llvowlsky.h"
 #include "llmanip.h"
 
+// reX: new includes
+#include "llogreobject.h"
+#include "llogreassetloader.h"
+#include "llogremediaengine.h"
+
+// reX
+extern BOOL gInRex;
+extern BOOL gOgreRender;
+
 //#define DEBUG_UPDATE_TYPE
 
 BOOL gVelocityInterpolate = TRUE;
@@ -5160,3 +5169,43 @@ void LLViewerObject::resetChildrenPosition(const LLVector3& offset, BOOL simplif
 	return ;
 }
 
+// reX: new function
+// Mark object for Ogre geometry rebuild
+void LLViewerObject::markOgreUpdate()
+{
+	// If Ogre object has already been deleted, no update
+	if (!mOgreObject) return;
+
+	// If not in reX and not in Ogre rendering mode, do not queue updates
+	if ((!gInRex) && (!gOgreRender)) return;
+
+	LLOgreRenderer* renderer = LLOgreRenderer::getPointer();
+
+	// Ensure there's no double update
+	if (!mOgreUpdatePending)
+	{
+		renderer->addOgreUpdate(this);
+		mOgreUpdatePending = true;
+	}
+}
+
+// rex: new function
+// virtual
+void LLViewerObject::updateOgreGeometry()
+{
+	mOgreUpdatePending = false;
+}
+
+// reX: new function
+void LLViewerObject::authorizeMediaPlayback()
+{
+    llinfos << "Allowing texture media playback" << llendl;
+    LLOgreMediaEngine* me = LLOgreMediaEngine::getInstance();
+    if (me && me->isAvailable())
+    {
+        for (U32 i = 0; i < getNumTEs(); ++i)
+        {
+            me->authorizeMediaPlayback(mTEImages[i]->getID());
+        }
+    }
+}

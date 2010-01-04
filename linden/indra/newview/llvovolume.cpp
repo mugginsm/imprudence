@@ -66,6 +66,21 @@
 #include "llselectmgr.h"
 #include "pipeline.h"
 
+// reX: new includes
+#include <OGRE/Ogre.h>
+#include "llogre.h"
+#include "llogreobject.h"
+#include "llogreassetloader.h"
+#include "llogre.h"
+#include "llogrefont.h"
+#include "llappviewer.h"
+#include "llhoverview.h"
+#include "rexpaneldata.h"
+#include "rexogrelegacymaterial.h"
+#include "rexogrematerial.h"
+#include "rexparticlescript.h"
+#include "audioengine.h"	// LLAudioSource & gAudiop
+
 const S32 MIN_QUIET_FRAMES_COALESCE = 30;
 const F32 FORCE_SIMPLE_RENDER_AREA = 512.f;
 const F32 FORCE_CULL_AREA = 8.f;
@@ -73,27 +88,61 @@ const S32 MAX_SCULPT_REZ = 128;
 
 BOOL gAnimateTextures = TRUE;
 extern BOOL gHideSelectedObjects;
+extern LLAudioEngine* gAudiop;		// reX
 
 F32 LLVOVolume::sLODFactor = 1.f;
 F32	LLVOVolume::sLODSlopDistanceFactor = 0.5f; //Changing this to zero, effectively disables the LOD transition slop 
 F32 LLVOVolume::sDistanceFactor = 1.0f;
 S32 LLVOVolume::sNumLODChanges = 0;
 
+// reX: Whether we're in a reX world: use maximum LOD for prims there to eliminate slowdown from lod changes
+extern BOOL gInRex;
+// reX: Extended prim properties only allowed in pure rex mode (?)
+extern BOOL gInPureRex;
+// reX: Whether using Ogre rendering currently
+extern BOOL gOgreRender;
+
+// From llface.cpp
+void xform(LLVector2 &tex_coord, F32 cosAng, F32 sinAng, F32 offS, F32 offT, F32 magS, F32 magT);
+void planarProjection(LLVector2 &tc, const LLVolumeFace::VertexData &vd, const LLVector3 &mCenter, const LLVector3& vec);
+void sphericalProjection(LLVector2 &tc, const LLVolumeFace::VertexData &vd, const LLVector3 &mCenter, const LLVector3& vec);
+void cylindricalProjection(LLVector2 &tc, const LLVolumeFace::VertexData &vd, const LLVector3 &mCenter, const LLVector3& vec);
+
 LLVOVolume::LLVOVolume(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	: LLViewerObject(id, pcode, regionp),
-	  mVolumeImpl(NULL)
+	// reX
+   mVolumeImpl(NULL), mMeshFullbright(FALSE), mMeshSolidAlpha(FALSE), mForceTextureAreaUpdate(FALSE), mFixedMaterial(FIXEDMATERIAL_DEFAULT),
+   mCurrentParticleScriptID(LLUUID::null),
+   mCurrentSkeletonID(LLUUID::null),
+   mSkeletonUpdate(FALSE),
+   mParticleFirstTime(TRUE),
+   mSkeletonFirstTime(TRUE),//, mUseClonedOgreMaterial(false), mRecreateClonedMaterial(false)
+   mRexPrimDataReceived(false)
 {
 	mTexAnimMode = 0;
 	mRelativeXform.setIdentity();
 	mRelativeXformInvTrans.setIdentity();
 
-	mLOD = MIN_LOD;
+	// reX
+	if (!gInRex)
+	{
+		mLOD = MIN_LOD;
+	}
+	else
+	{
+		mLOD = MAX_LOD;
+	}
 	mSculptLevel = -2;
 	mTextureAnimp = NULL;
 	mVObjRadius = LLVector3(1,1,0.5f).length();
 	mNumFaces = 0;
 	mLODChanged = FALSE;
 	mSculptChanged = FALSE;
+
+    // reX, check for queued RexData & RexPrimData in case we received them before the object existed
+    RexPanelData::getQueuedRexData(id, mRexData);
+    if (RexPrimData::getQueuedRexPrimData(id, mRexPrimData))
+        mRexPrimDataReceived = true;
 }
 
 LLVOVolume::~LLVOVolume()
@@ -102,6 +151,7 @@ LLVOVolume::~LLVOVolume()
 	mTextureAnimp = NULL;
 	delete mVolumeImpl;
 	mVolumeImpl = NULL;
+	createRexSoundSource(FALSE);	// reX
 }
 
 
@@ -409,8 +459,11 @@ BOOL LLVOVolume::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 void LLVOVolume::updateTextures(LLAgent &agent)
 {
 	const F32 TEXTURE_AREA_REFRESH_TIME = 5.f; // seconds
-	if (mDrawable.notNull() && mTextureUpdateTimer.getElapsedTimeF32() > TEXTURE_AREA_REFRESH_TIME)
+	
+	// reX: added forcing of texture area update
+	if ((mForceTextureAreaUpdate) || (mDrawable.notNull() && mTextureUpdateTimer.getElapsedTimeF32() > TEXTURE_AREA_REFRESH_TIME))
 	{
+		mForceTextureAreaUpdate = FALSE;
 		if (mDrawable->isVisible())
 		{
 			updateTextures();
@@ -420,6 +473,10 @@ void LLVOVolume::updateTextures(LLAgent &agent)
 
 void LLVOVolume::updateTextures()
 {
+	// reX
+	//! Size accumulator of all faces for Ogre mesh textures
+	F32 accumSize = 0.0;
+
 	// Update the pixel area of all faces
 
 	if (!gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SIMPLE))
@@ -479,6 +536,11 @@ void LLVOVolume::updateTextures()
 		
 		face->setVirtualSize(vsize);
 		imagep->addTextureStats(vsize);
+		
+		// reX
+        if (gOgreRender) imagep->resetBindTime(); // Fake texture binding in Ogre mode
+		accumSize += vsize;		
+		
 		if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_AREA))
 		{
 			if (vsize < min_vsize) min_vsize = vsize;
@@ -522,6 +584,9 @@ void LLVOVolume::updateTextures()
 			current_discard < 0)) //no previous rebuild
 		{
 			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, FALSE);
+
+			// reX
+			markOgreUpdate();
 			mSculptChanged = TRUE;
 		}
 
@@ -551,6 +616,43 @@ void LLVOVolume::updateTextures()
 	{ //flexi phasing issues make this happen
 		mPixelArea = old_area;
 	}
+
+	// reX
+	// hack: pump up texture stats for Ogre mesh textures & materials (based on the underlying prim's total screen space), also reset their bind time
+    if (getRexIsMesh() || getRexIsBillboard())
+    {
+		for (U32 i = 0; i < mOgreTextures.size(); ++i)
+	    {
+			if (mOgreTextures[i].notNull())			
+		    {
+				LLViewerImage* image = mOgreTextures[i];
+			    image->addTextureStats(accumSize);
+			    image->resetBindTime();
+		    }
+	    }
+    }
+
+    for (U32 i = 0; i < mOgreMaterials.size(); ++i)
+    {
+        if (mOgreMaterials[i])
+            mOgreMaterials[i]->pumpImages(accumSize);
+    }
+
+    pumpParticleTextures();
+}
+
+// reX: new function
+void LLVOVolume::pumpParticleTextures()
+{
+    if (mCurrentParticleScriptID != LLUUID::null)
+    {
+	    LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+	    if (assetLoader)
+        {
+            RexParticleScript* script = assetLoader->getParticleScript(mCurrentParticleScriptID);
+            if (script) script->pumpImages();
+        }
+    }
 }
 
 F32 LLVOVolume::getTextureVirtualSize(LLFace* face)
@@ -618,6 +720,8 @@ void LLVOVolume::setScale(const LLVector3 &scale, BOOL damped)
 		//since drawable transforms do not include scale, changing volume scale
 		//requires an immediate rebuild of volume verts.
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_POSITION, TRUE);
+		// reX
+		markOgreUpdate();
 	}
 }
 
@@ -652,6 +756,15 @@ LLDrawable *LLVOVolume::createDrawable(LLPipeline *pipeline)
 		gPipeline.setLight(mDrawable, TRUE);
 	}
 	
+	// reX
+	// Create Ogre object, no offsetnode
+	if ((!mOgreObject) && (gInRex))
+	{
+		mOgreObject = new LLOgreObject(LLOgreRenderer::getPointer(), false);
+        mOgreObject->setViewerObject(this);
+	}
+	updateOgreLight();
+
 	updateRadius();
 	bool force_update = true; // avoid non-alpha mDistance update being optimized away
 	mDrawable->updateDistance(*LLViewerCamera::getInstance(), force_update);
@@ -839,8 +952,16 @@ BOOL LLVOVolume::calcLOD()
 	// DON'T Compensate for field of view changing on FOV zoom.
 	distance *= 3.14159f/3.f;
 
+	// reX
+	if (!gInRex)
+	{
 	cur_detail = computeLODDetail(llround(distance, 0.01f), 
 									llround(radius, 0.01f));
+	}
+	else
+	{
+		cur_detail = MAX_LOD;
+	}
 
 	if (cur_detail != mLOD)
 	{
@@ -866,6 +987,8 @@ BOOL LLVOVolume::updateLOD()
 	if (lod_changed)
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, FALSE);
+		// reX
+		markOgreUpdate();
 		mLODChanged = TRUE;
 	}
 
@@ -886,6 +1009,8 @@ BOOL LLVOVolume::setDrawableParent(LLDrawable* parentp)
 	{
 		// rebuild vertices in parent relative space
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
+		// reX
+		markOgreUpdate();
 
 		if (mDrawable->isActive() && !parentp->isActive())
 		{
@@ -932,6 +1057,9 @@ void LLVOVolume::setParent(LLViewerObject* parent)
 		{
 			gPipeline.markMoved(mDrawable);
 			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
+
+			// reX
+			markOgreUpdate();
 		}
 	}
 }
@@ -1110,6 +1238,9 @@ void LLVOVolume::updateRelativeXform()
 
 		mRelativeXformInvTrans.transpose();
 	}
+
+    // reX
+    updateOgrePosition();
 }
 
 BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
@@ -1138,6 +1269,12 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 		return TRUE; // No update to complete
 	}
 
+	// reX
+	//! For some reason prim texture parameter updates like rotation weren't happening
+	//! in Ogre mode when parameter was 0 (done in llviewerobject.cpp), so added this
+	if (mDrawable->isState(LLDrawable::REBUILD_TCOORD))
+		mFaceMappingChanged = TRUE;
+
 	if (mVolumeChanged || mFaceMappingChanged )
 	{
 		compiled = TRUE;
@@ -1155,6 +1292,9 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 			regenFaces();
 			genBBoxes(FALSE);
 		}
+
+		// reX
+		markOgreUpdate();
 	}
 	else if ((mLODChanged) || (mSculptChanged))
 	{
@@ -1184,6 +1324,8 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 			sNumLODChanges += new_num_faces ;
 	
 			drawable->setState(LLDrawable::REBUILD_VOLUME); // for face->genVolumeTriangles()
+			// reX
+			markOgreUpdate();
 
 			{
 				LLFastTimer t(LLFastTimer::FTM_GEN_TRIANGLES);
@@ -1452,6 +1594,9 @@ void LLVOVolume::setIsLight(BOOL is_light)
 			gPipeline.setLight(mDrawable, FALSE);
 		}
 	}
+
+	// reX
+	updateOgreLight();
 }
 
 void LLVOVolume::setLightColor(const LLColor3& color)
@@ -1819,8 +1964,38 @@ void LLVOVolume::parameterChanged(U16 param_type, LLNetworkData* data, BOOL in_u
 		if (is_light != mDrawable->isState(LLDrawable::LIGHT))
 		{
 			gPipeline.setLight(mDrawable, is_light);
+
+			// reX
+			if (mOgreObject) mOgreObject->setLight(is_light);
 		}
-	}
+    }
+	
+	// reX, rebuild RexPrimData from the deprecated PARAMS_REX block, if RexPrimData not received yet
+    if ((param_type == LLNetworkData::PARAMS_REX) && (!local_origin) && (!mRexPrimDataReceived))
+    {
+        LLRexParams* rexParams = (LLRexParams*)data;
+        mRexPrimData.setFromRexParams(*rexParams);
+    }
+
+	if ((param_type == LLNetworkData::PARAMS_LIGHT) || (param_type == LLNetworkData::PARAMS_REX))
+		updateOgreLight();
+
+    if ((param_type == LLNetworkData::PARAMS_REX) && (!mRexPrimDataReceived))
+    {
+        onRexPrimDataChanged(local_origin);
+    }
+}
+
+void LLVOVolume::onRexPrimDataChanged(bool local_origin)
+{
+    updateOgreLight();
+    updateOgreParticles();
+    updateOgreSkeleton();
+
+    // If RexPrimData changes with non local origin, rebuild geometry
+    // (however not all changes are rendering related, this wastes some rebuilds)
+    if (!local_origin)
+        markOgreUpdate();
 }
 
 void LLVOVolume::setSelected(BOOL sel)
@@ -2868,4 +3043,1596 @@ void LLHUDPartition::shift(const LLVector3 &offset)
 	//HUD objects don't shift with region crossing.  That would be silly.
 }
 
+// reX: new function
+// Update Ogre object position/orientation/scale/visibility
+void LLVOVolume::updateOgrePosition()
+{
+	if (mOgreObject && (!mDrawable.isNull()))
+	{
+		LLVector3 pos = getRenderPosition();
+		//LLQuaternion rot = mDrawable->getWorldRotation();
+        LLQuaternion rot = getRenderRotation(); // Doing this instead gets rid of linked prim rotation bug
 
+		mOgreObject->setPosition(pos);
+
+		if (!getRexIsMesh() && !getRexIsBillboard())
+		{
+			bool visible = true;
+
+			// Check for prim forced invisible
+			if (mDrawable.notNull())
+			{
+				if (mDrawable->isState(LLDrawable::INVISIBLE|LLDrawable::FORCE_INVISIBLE))
+					visible = false;
+			}
+
+			if (!getRexIsVisible())
+				visible = false;
+
+			mOgreObject->setVisible(visible);
+			mOgreObject->setOrientation(rot);
+			mOgreObject->setScale(LLVector3::all_one); // Prim scaling is already in their vertex data
+		}
+		else
+		{
+			//! \todo Hack to get typical Ogre mesh into correct orientation in SL coord system
+			LLQuaternion meshRot = LLQuaternion(Ogre::Math::HALF_PI, LLVector3(1,0,0));
+			meshRot *= rot;
+			mOgreObject->setOrientation(meshRot);
+
+			LLVector3 scale = getScale();
+			if (getRexScaleMesh())
+			{
+            const Ogre::AxisAlignedBox &aabbox = mOgreObject->getBoundingBox();
+
+				Ogre::Vector3 size = aabbox.getMaximum() - aabbox.getMinimum();
+				if (size.x != 0.0) scale.mV[VX] /= size.x;
+				if (size.y != 0.0) scale.mV[VZ] /= size.y;
+				if (size.z != 0.0) scale.mV[VY] /= size.z;
+			}
+			//! \todo May need changing also
+			mOgreObject->setScale(LLVector3(scale.mV[VX], scale.mV[VZ], scale.mV[VY]));
+		}
+	}
+}
+
+// reX: new function
+// Update Ogre light parameters
+void LLVOVolume::updateOgreLight()
+{
+	if (mOgreObject)
+	{
+		mOgreObject->setLight(getIsLight());
+		
+		mOgreObject->setLightParameters(
+			getLightColor(),
+			getLightRadius(),
+			getLightFalloff(),
+			getRexLightCastsShadows()); 
+	}
+}
+
+// reX: new function
+// Asset loading notification
+void LLVOVolume::onOgreAssetLoaded(LLAssetType::EType assetType, const LLUUID& uuid)
+{
+    if (assetType == LLAssetType::AT_MESH)
+    {
+        // Rebuild volume (actually, set mesh we just loaded)
+	    markOgreUpdate();
+    }
+    if (assetType == LLAssetType::AT_PARTICLE_SCRIPT)
+    {
+        if (uuid == getRexParticleScriptID())
+        {
+            setParticleSystem(uuid);
+        }
+    }
+    if (assetType == LLAssetType::AT_SKELETON)
+    {
+       if (uuid == LLUUID(getRexAnimationPackID()))
+       {
+          setOgreSkeleton(uuid);
+       }
+    }
+    if (assetType == LLAssetType::AT_MATERIAL)
+    {
+	    markOgreUpdate();
+    }
+}
+
+// reX: new function
+// Set particle system into use
+void LLVOVolume::setParticleSystem(const LLUUID& particleScriptID)
+{
+    if (particleScriptID != mCurrentParticleScriptID)
+    {
+        if (particleScriptID != LLUUID::null)
+        {
+	        LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+	        if (!assetLoader) return;
+
+            mOgreObject->removeParticleSystems();
+
+            RexParticleScript* script = assetLoader->getParticleScript(particleScriptID);
+            if (script)
+            {
+                const std::vector<std::string>& names = script->getParticleSystemNames();
+                bool flipY = script->getNumImages() != 0;
+                for (unsigned i = 0; i < names.size(); i++)
+                {
+                    mOgreObject->addParticleSystem(names[i], flipY);   
+                }
+                // Some boost right in the beginning of initting the effect
+                script->pumpImages();
+            }
+
+        }
+        else
+        {
+            mOgreObject->removeParticleSystems();
+        }
+    }
+    
+    mCurrentParticleScriptID = particleScriptID;
+}
+
+// reX: new function
+// Update particles based on parameters
+void LLVOVolume::updateOgreParticles()
+{
+    if (!mOgreObject) return;
+
+    const LLUUID& particleScriptID = getRexParticleScriptID();
+
+    if (particleScriptID != LLUUID::null) 
+    {  
+        LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+        if (!assetLoader) return;
+
+        if (!assetLoader->areParticleScriptsLoaded(particleScriptID))
+        {
+		    assetLoader->loadAsset(particleScriptID, LLAssetType::AT_PARTICLE_SCRIPT, this, true);
+        }
+        else
+        {
+            setParticleSystem(particleScriptID);
+        }
+    }
+    else
+    {
+        setParticleSystem(LLUUID::null);
+    }
+}
+
+// reX new function
+void LLVOVolume::updateOgreSkeleton()
+{
+   if (!mOgreObject) return;
+   bool success = false;
+
+   const LLUUID ogreSkeletonID = getRexAnimationPackID();
+
+   if (ogreSkeletonID != LLUUID::null)
+   {
+      LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+      success = true;
+ 
+      if (assetLoader && !assetLoader->isSkeletonLoaded(ogreSkeletonID))
+      {
+         assetLoader->loadAsset(ogreSkeletonID, LLAssetType::AT_SKELETON, this, true);
+      }
+      else
+      {
+          setOgreSkeleton(ogreSkeletonID);
+      }
+   }
+   if (!success)
+      setOgreSkeleton(LLUUID::null);
+}
+
+// reX: new function
+void LLVOVolume::setOgreSkeleton(const LLUUID& skeletonID)
+{
+    if (getRexIsMesh())
+    {
+        if (skeletonID != LLUUID::null)
+        {
+	        LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+	        if (!assetLoader) return;
+
+           mSkeletonUpdate = (mOgreObject->setSkeleton(assetLoader->getSkeletonName(skeletonID), getRexAnimationName(), getRexAnimationRate()) == false);
+        }
+        else
+        {
+            mOgreObject->setSkeleton(std::string());
+        }
+    }
+    mCurrentSkeletonID = skeletonID;
+}
+
+// reX: new function
+// Update/load mesh. Called from updateOgreGeometry() under following conditions
+// - valid Ogre object exists
+// - getRexIsMesh() indicates that we are a mesh
+void LLVOVolume::updateOgreMesh()
+{
+	bool force_material_update = false;
+	
+    mOgreObject->setBillboard(false);
+
+	// If fullbright or solidalpha status has changed, force update of materials
+	BOOL isFullbright = getTE(0)->getFullbright();
+	BOOL isSolidAlpha = getRexSolidAlpha();
+   FixedOgreMaterial fixedMaterial = getRexFixedMaterial();
+	if ((isFullbright != mMeshFullbright) || (isSolidAlpha != mMeshSolidAlpha) || (fixedMaterial != mFixedMaterial))
+	{
+		mMeshFullbright = isFullbright;
+		mMeshSolidAlpha = isSolidAlpha;
+      mFixedMaterial = fixedMaterial;
+		force_material_update = true;
+	}
+	
+	const LLUUID& meshID = getRexMeshID();
+	if (meshID == LLUUID::null)
+	{
+		mOgreObject->removeMesh();
+		return;
+	}
+
+	LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+	if (!assetLoader) return;
+	
+	const std::string& meshName = assetLoader->getMeshName(meshID);
+	Ogre::Entity* entity = mOgreObject->getEntity();
+
+    bool enableShadows = getRexCastShadows();
+
+	// Different mesh, mesh not yet loaded, or shadowing changed
+	if ((!entity) || (entity->getMesh()->getName() != meshName) || (entity->getCastShadows() != enableShadows) || mSkeletonUpdate)
+	{
+		if (assetLoader->isMeshLoaded(meshID))
+		{
+			mOgreObject->setMesh(meshName, enableShadows);
+			force_material_update = true;
+		}
+		else
+		{
+			// If there is no mesh yet, queue for loading and register us for notification
+			assetLoader->loadAsset(meshID, LLAssetType::AT_MESH, this, true);
+			preloadOgreMeshMaterials();
+			mOgreObject->removeMesh(); // Remove old while new mesh loads
+			return;
+		}
+	}
+
+	// Now we should have a valid entity, set parameters
+	entity = mOgreObject->getEntity();
+	if (entity)
+	{
+        F32 lodBias = getRexLOD();
+		if (lodBias < 0.001) lodBias = 0.001;
+        entity->setCastShadows(enableShadows);
+		entity->setMeshLodBias(lodBias);
+      mOgreObject->setAnimationLodBias(lodBias);
+		mOgreObject->setRenderingDistance(getRexDrawDistance());
+		mOgreObject->setVisible(getRexIsVisible());
+
+		// Set/update mesh materials
+		updateOgreMeshMaterials(force_material_update);
+	}
+
+	// Update scale & rotation
+	updateOgrePosition();
+}
+
+// reX: new function
+void LLVOVolume::updateOgreBillboard()
+{
+   bool force_material_update = false;
+	
+   BOOL isFullbright = TRUE; // Billboards are always fullbright (not affected by lights, as having them affected by lights wouldn't make sense)
+	BOOL isSolidAlpha = getRexSolidAlpha();
+   FixedOgreMaterial material = getRexFixedMaterial();
+	if ((isFullbright != mMeshFullbright) || (isSolidAlpha != mMeshSolidAlpha) || (material != mFixedMaterial))
+	{
+		mMeshFullbright = isFullbright;
+		mMeshSolidAlpha = isSolidAlpha;
+      mFixedMaterial = material;
+		force_material_update = true;
+	}
+
+   if (mOgreObject->isBillboard() == false)
+   {
+      force_material_update = true;
+   }
+
+   mOgreObject->setBillboard(this->getRexIsBillboard());
+
+   // Now we should have a valid entity, set parameters
+   Ogre::MovableObject *mo = mOgreObject->getMovableObject();
+	if (mo)
+	{
+		mOgreObject->setRenderingDistance(getRexDrawDistance());
+		mo->setVisible(getRexIsVisible());
+
+		// Set/update mesh materials
+		updateOgreMeshMaterials(force_material_update);
+	}
+
+   updateOgrePosition();
+}
+
+// reX: new function
+// Start preloading mesh textures. Called from updateOgreMesh() when loading the mesh asset
+//! \todo may actually be useless, unnecessary and/or counterproductive, testing needed
+//! (due to addTextureStats() being an important factor in deciding how textures actually load)
+void LLVOVolume::preloadOgreMeshMaterials()
+{
+    LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+    if (!assetLoader) return;
+
+    // Have to rely on the stored material count, as info from the entity itself is unavailable
+    U16 materials = getRexNumMaterials();
+
+    if (materials != mOgreTextures.size())
+    {
+        mOgreTextures.resize(materials, NULL);
+        mOgreMaterials.resize(materials, NULL);
+    }
+
+    for (U16 i = 0; i < materials; ++i)
+    {
+        const RexMaterialDef& matDef = getRexMaterialDef(i);
+        const LLUUID& assetID = matDef.mAssetID;
+
+        if (!matDef.mUseMaterialScript)
+        {
+            if (assetID != LLUUID::null)
+            {
+                LLViewerImage* image = gImageList.getImage(assetID);
+                mOgreTextures[i] = image;
+                //image->addTextureStats(1024.0 * 1024.0); // Add some boost
+                image->resetBindTime();
+            }
+            else
+                mOgreTextures[i] = NULL;
+
+            mOgreMaterials[i] = NULL;
+        }
+        else
+        {
+            // If material not yet loaded, load it now
+            if (assetID != LLUUID::null)
+            {
+                RexOgreMaterial* mat = assetLoader->getMaterial(assetID);
+                mOgreMaterials[i] = mat;
+    
+                if (!mat)
+                    assetLoader->loadAsset(assetID, LLAssetType::AT_MATERIAL, this);
+            }
+            else 
+                mOgreMaterials[i] = NULL;
+
+            mOgreTextures[i] = NULL;
+        }
+    }
+
+	mForceTextureAreaUpdate = TRUE;
+}
+
+// reX: new function
+// Update mesh textures. Called from updateOgreMesh() under following conditions
+// - valid Ogre object & entity exists
+void LLVOVolume::updateOgreMeshMaterials(bool force_update)
+{
+    LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+    if (!assetLoader) return;
+
+    // Now that we know it, update material count (one for each subentity)
+    U16 materials = mOgreObject->getNumMaterials();
+
+    setRexNumMaterials(materials);
+
+    // Resize the currently-in-use texture/material vectors as necessary
+    if (materials != mOgreTextures.size())
+    {
+        mOgreTextures.resize(materials, NULL);
+        mOgreMaterials.resize(materials, NULL);
+    }
+
+    std::string suffix = RexOgreLegacyMaterial::getFixedMaterialSuffix(mFixedMaterial);
+    if (suffix.empty())
+    {
+        if (mMeshSolidAlpha) suffix += "salpha";
+    }
+    if (mMeshFullbright) suffix = "fb" + suffix;
+
+    mCloneMaterialName.resize(materials, LLStringUtil::null);
+    mUseClonedOgreMaterial.resize(materials, false);
+    for (U16 i = 0; i < materials; ++i)
+    {
+        const RexMaterialDef& matDef = getRexMaterialDef(i);
+        const LLUUID& materialID = matDef.mAssetID;
+        bool useMaterialScripts = matDef.mUseMaterialScript;
+
+        if (materialID != LLUUID::null) 
+        {
+            bool changed = false;
+            if (force_update) changed = true;
+
+            // See if textures nonexistent or changed
+            if (useMaterialScripts)
+            {
+                if ((!mOgreMaterials[i]) || (mOgreMaterials[i]->getID() != materialID))
+                    changed = true;
+            }
+            else
+            {
+                if ((mOgreTextures[i].isNull()) || (mOgreTextures[i]->getID() != materialID))
+                    changed = true;
+            }
+
+            if ((changed) || (mUseClonedOgreMaterial[i] == true && mCloneMaterialName[i].empty()))
+            {
+                mOgreObject->beginMaterialUpdate();
+
+                std::string materialName;
+                RexOgreLegacyMaterial* legacyMat = NULL;
+
+                if (!useMaterialScripts)
+                {
+                    LLViewerImage* image = gImageList.getImage(materialID);
+                    mOgreTextures[i] = image;
+                    mOgreMaterials[i] = NULL;
+                    legacyMat = image->getOgreMaterial();
+                    if (legacyMat)
+                        materialName = legacyMat->getName() + suffix;
+                    else
+                        materialName = RexOgreLegacyMaterial::sDefaultMaterialName + suffix;
+
+                    //image->addTextureStats(1024.0 * 1024.0); // Add some boost when building or changing texture
+                    image->resetBindTime();
+                }
+                else
+                {
+                    // If material not yet loaded, load it now
+                    if (materialID != LLUUID::null)
+                    {
+                        RexOgreMaterial* mat = assetLoader->getMaterial(materialID);
+                        mOgreMaterials[i] = mat;
+                        mOgreTextures[i] = NULL;
+        
+                        if (!mat)
+                        {
+                            assetLoader->loadAsset(materialID, LLAssetType::AT_MATERIAL, this);
+                        }
+                        else materialName = mat->getName();
+                    }
+                }
+
+                if (mUseClonedOgreMaterial[i])
+                {
+//                      std::string texNum = Ogre::StringConverter::toString(i);
+
+                    // out with the old
+                    if (mCloneMaterialName[i].empty())
+                    {
+                        mCloneMaterialName[i] = RexOgreLegacyMaterial::generateUniqueMaterialName();
+
+                        // in with the new
+                         const Ogre::MaterialPtr &oldMaterial = Ogre::MaterialManager::getSingleton().getByName(materialName);
+                         Ogre::MaterialPtr newMaterial = oldMaterial->clone(mCloneMaterialName[i]);
+              
+                         materialName = mCloneMaterialName[i];
+                         // Note: RexOgreMaterial's don't get clones added, but since they don't update themselves on texture changes
+                         // the same way as RexLegacyOgreMaterial's do, it (hopefully) shouldn't matter
+                         if (legacyMat) 
+                             legacyMat->addClone(materialName);
+                    }
+                }
+
+                mOgreObject->setMaterialName(materialName, i);
+            }	
+        }
+        else
+        {
+            mOgreObject->beginMaterialUpdate();
+            mOgreTextures[i] = NULL;
+            mOgreMaterials[i] = NULL;
+
+            mOgreObject->setMaterialName(RexOgreLegacyMaterial::sDefaultMaterialName + suffix, i);
+        }
+    }
+
+    //// If there are more submeshes than we want to support, set them to default untextured, but with correct variation
+    //if (allMaterials > materials)
+    //{
+    //    mOgreObject->beginMaterialUpdate(); // Note: it doesn't do harm to call this multiple times
+
+    //    for (U16 i = materials; i < allMaterials; i++)
+    //    {
+    //        mOgreObject->setMaterialName(RexOgreLegacyMaterial::sDefaultMaterialName + suffix, i);
+    //    }
+    //}
+
+    mOgreObject->endMaterialUpdate();
+    mForceTextureAreaUpdate = TRUE;
+}
+
+// reX: new function
+// Create/update Ogre manual object geometry or mesh for the volume
+void LLVOVolume::updateOgreGeometry()
+{
+    LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
+    if (!assetLoader) return;
+
+	// Note: we are in Ogre context here, no need for context switching
+	mOgreUpdatePending = false;
+
+	// Have a valid Ogre object?
+	if (!mOgreObject) return;
+
+    // On first time, update particle system (because we get the network parameter update when the ogreobject doesn't yet exist)
+    if (mParticleFirstTime)
+    {
+        mParticleFirstTime = FALSE;
+        updateOgreParticles();
+    }
+    if (mSkeletonFirstTime)
+    {
+      mSkeletonFirstTime = FALSE;
+      updateOgreSkeleton();
+    }
+
+	// Are we supposed to be a mesh?
+	if (getRexIsMesh())
+	{
+		updateOgreMesh();
+		return;
+	}
+
+   if (getRexIsBillboard())
+   {
+      updateOgreBillboard();
+      return;
+   }
+
+	// Remove previously existing renderables
+	mOgreObject->removeMesh();
+	mOgreObject->removeManualObject();
+   mOgreObject->removeBillboard();
+
+	// If we are a hud attachment, skip
+	if (isHUDAttachment())
+	{		
+		return;
+	}
+
+	// Have a valid volume?
+	LLVolume* volume = getVolume();
+	if (!volume)
+	{
+		return;
+	}
+
+	// Check for null or dead drawable 
+	if ((mDrawable.isNull()) || (mDrawable->isDead()))
+	{
+		return;
+	}
+
+	// Create new manual object
+	Ogre::ManualObject* manualObject = mOgreObject->createManualObject();
+
+	S32 faces = volume->getNumVolumeFaces();
+	S32 index_offset = 0;
+	LLViewerImage *prevImagep = 0;
+	bool first_face = true;
+	bool isAlpha = false;
+	bool prevAlpha = false;
+	BOOL isFullbright = false;
+	BOOL prevFullbright = false;
+           
+    FixedOgreMaterial fixedMaterial = getRexFixedMaterial();
+
+	// Loop first to estimate vertex count
+	S32 total_vertices = 0;
+	S32 total_indices = 0;
+	for (S32 f = 0; f < faces; ++f)
+	{
+		const LLVolumeFace& vf = volume->getVolumeFace(f);
+
+		total_vertices += (S32)vf.mVertices.size();
+		total_indices += (S32)vf.mIndices.size();
+	}
+
+   mCurrentMaterials.resize(mNumFaces, LLStringUtil::null);
+   mRecreateClonedMaterial.resize(mNumFaces, false);
+   mUseClonedOgreMaterial.resize(mNumFaces, false);
+         
+
+	LLVector3 scale = isVolumeGlobal() ? LLVector3(1,1,1) : getScale();
+
+   S32 facePitch = (S32)sqrtf(mNumFaces);
+   S32 faceDepth = (S32)ceil(mNumFaces / (F32)facePitch);
+	for (S32 f = 0; f < mNumFaces; ++f)
+	{
+		// Get face, associated image, color
+		LLFace *facep = mDrawable->getFace(f);
+		const LLVolumeFace& vf = volume->getVolumeFace(f);
+		if (!facep) continue;
+		LLViewerImage *imagep = facep->getTexture();
+		if (!imagep) continue;
+		const LLColor4& c = facep->getRenderColor();
+
+		// Check for face being very transparent 
+		if (c.mV[VALPHA] <= 0.11) continue;
+
+      LLVector2 faceRatio((f % facePitch) / (F32)(facePitch), (f / facePitch) / (F32)(faceDepth));
+		
+		// Get amount of vertices / indices
+		S32 num_vertices = (S32)vf.mVertices.size();
+		S32 num_indices = (S32)vf.mIndices.size();
+		if ((!num_vertices) || (!num_indices)) continue;
+
+		// See if it's a different texture, begin new section then (and another new batch :))
+		isAlpha = (c.mV[VALPHA] < 0.99);
+		isFullbright = getTE(f)->getFullbright();
+      bool alphaChanged = (prevAlpha != isAlpha);
+      bool fullBrightChanged = (prevFullbright != isFullbright);
+
+		if ((first_face) || (prevImagep != imagep) || alphaChanged || fullBrightChanged)
+		{
+			if (first_face)
+			{
+				// Start first manual object section, estimate amounts
+				manualObject->estimateVertexCount(total_vertices);
+				manualObject->estimateIndexCount(total_indices);
+			}
+			else
+			{
+				// End the previous manual object section and start new
+				manualObject->end();
+				index_offset = 0;
+			}
+
+			first_face = false;
+			prevImagep = imagep;
+			prevAlpha = isAlpha;
+			prevFullbright = isFullbright;
+
+		 	// Get Ogre material for this image
+			RexOgreLegacyMaterial *ogreMaterial = imagep->getOgreMaterial();
+
+         std::string suffix = RexOgreLegacyMaterial::getFixedMaterialSuffix(fixedMaterial);
+         if (suffix.empty())
+         {
+			    if (isAlpha)
+			    {
+    				suffix += "alpha";
+			    }
+			    else
+			    {
+    				if (getRexSolidAlpha()) suffix += "salpha";
+	    		}
+         }
+			if (isFullbright) suffix = "fb" + suffix;
+
+         std::string materialName;
+			if (ogreMaterial)
+            materialName = ogreMaterial->getName() + suffix;
+         else
+            materialName = RexOgreLegacyMaterial::sDefaultMaterialName + suffix;
+
+        // Hack support of materials for prims for now: use first materialscript for all faces
+        const RexMaterialDef& matDef = getRexMaterialDef(0);
+        if (matDef.mUseMaterialScript)
+        {
+            materialName = RexOgreLegacyMaterial::sDefaultMaterialName + suffix;
+
+            mOgreMaterials.resize(1, NULL);
+            mOgreTextures.resize(1, NULL);
+
+            const LLUUID& materialID = matDef.mAssetID;
+            if (materialID != LLUUID::null)
+            {
+                RexOgreMaterial* mat = assetLoader->getMaterial(materialID);
+                mOgreMaterials[0] = mat;
+        
+                if (!mat)
+                {
+                    assetLoader->loadAsset(materialID, LLAssetType::AT_MATERIAL, this);
+                }
+                else materialName = mat->getName();
+            }
+            else mOgreMaterials[0] = NULL;
+
+            mOgreTextures[0] = NULL;
+        }
+
+         std::string oldMaterial = mCurrentMaterials[f];
+         mCurrentMaterials[f] = materialName;
+         if (oldMaterial.empty())
+            oldMaterial = materialName;
+
+         if (mUseClonedOgreMaterial[f])
+			{
+            mCloneMaterialName.resize(mNumFaces, LLStringUtil::null);
+//            std::string faceString = Ogre::StringConverter::toString(f);
+            if (mCloneMaterialName[f].empty())
+            {
+               mCloneMaterialName[f] = RexOgreLegacyMaterial::generateUniqueMaterialName();
+
+               const Ogre::MaterialPtr &material = Ogre::MaterialManager::getSingleton().getByName(materialName);
+               Ogre::MaterialPtr newMaterial = material->clone(mCloneMaterialName[f]);
+            
+               materialName = mCloneMaterialName[f];
+               ogreMaterial->addClone(materialName);
+			   } else if (mRecreateClonedMaterial[f])
+            {
+               const Ogre::MaterialPtr &baseMaterial = Ogre::MaterialManager::getSingleton().getByName(materialName);
+               Ogre::MaterialPtr clonematerial = Ogre::MaterialManager::getSingleton().getByName(mCloneMaterialName[f]);
+               baseMaterial->copyDetailsTo(clonematerial);
+               materialName = mCloneMaterialName[f];
+               mRecreateClonedMaterial[f] = false;
+            } else if (materialName == oldMaterial)
+               materialName = mCloneMaterialName[f];
+            else
+            {
+               mUseClonedOgreMaterial[f] = false;
+               mRecreateClonedMaterial[f] = true;
+            }
+         }
+         
+
+         manualObject->begin(materialName, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+		}
+
+		// Prepare parameters for texture mapping
+		F32 r = 0.0f, os = 0.0f, ot = 0.0f, ms = 1.0f, mt = 1.0f, cos_ang = 1.0f, sin_ang = 0.0f;
+		U8 texgen = LLTextureEntry::TEX_GEN_DEFAULT;
+		const LLTextureEntry* tep = facep->getTextureEntry();	
+		if (tep)
+		{
+			texgen = tep->getTexGen();
+			r  = tep->getRotation();
+			os = tep->mOffsetS;
+			ot = tep->mOffsetT;
+			ms = tep->mScaleS;
+			mt = tep->mScaleT;
+			cos_ang = cos(r);
+			sin_ang = sin(r);
+		}
+
+		for (S32 i = 0; i < num_vertices; ++i)
+		{
+			const LLVolumeFace::VertexData &v = vf.mVertices[i];
+
+			// Set position & normal & colour: perform position scaling here 
+			// computationally, so that HW scaling doesn't throw lighting off
+			LLVector3 pos = v.mPosition;
+			pos.scaleVec(scale); 
+			manualObject->position(LLOgreRenderer::toOgreVector(pos));			
+			LLVector3 normal = v.mNormal;
+			normal.normVec();
+			manualObject->normal(LLOgreRenderer::toOgreVector(v.mNormal));
+			manualObject->colour(c.mV[0], c.mV[1], c.mV[2], c.mV[3]);
+
+			// Texture mapping (from llface.cpp)
+			LLVector2 tc = v.mTexCoord;
+			if (texgen != LLTextureEntry::TEX_GEN_DEFAULT)
+			{
+				LLVector3 vec = v.mPosition; 
+			
+				vec.scaleVec(scale);
+
+				switch (texgen)
+				{
+					case LLTextureEntry::TEX_GEN_PLANAR:
+						planarProjection(tc, vf.mVertices[i], vf.mCenter, vec);
+						break;
+					// These are supposedly broken
+					case LLTextureEntry::TEX_GEN_SPHERICAL:
+						sphericalProjection(tc, vf.mVertices[i], vf.mCenter, vec);
+						break;
+					case LLTextureEntry::TEX_GEN_CYLINDRICAL:
+						cylindricalProjection(tc, vf.mVertices[i], vf.mCenter, vec);
+						break;
+					default:
+						break;
+				}		
+			}
+
+         LLVector2 tc2 = v.mTexCoord;
+			xform(tc, cos_ang, sin_ang, os, ot, ms, mt);
+			manualObject->textureCoord(tc.mV[0], tc.mV[1]);
+
+         // Second set of texture coords for light mapping the primitive
+         // Makes the assumption the original texture coords are always clamped to [0,1]
+         // Divides the coords evenly to the texture
+         tc2.mV[0] /= (F32)(facePitch);
+         tc2.mV[1] /= (F32)(faceDepth);
+         manualObject->textureCoord(tc2.mV[0] + faceRatio.mV[0], tc2.mV[1] + faceRatio.mV[1]);
+		}
+
+		for (S32 i = 0; i < num_indices; i += 3)
+		{
+			// Create triangles from indices
+			manualObject->triangle(
+				vf.mIndices[i] + index_offset,
+				vf.mIndices[i+1] + index_offset,
+				vf.mIndices[i+2] + index_offset);
+		}
+
+		index_offset += num_vertices;
+	}
+
+	// Did we make any faces?
+	if (!first_face)
+	{
+		// End the last section of the manual object
+		manualObject->end();		
+
+		// Convert manual object to mesh
+		std::string meshName = mOgreObject->convertToMesh(manualObject);
+
+		updateOgrePosition();
+
+      // disable skeleton for primitives
+      mOgreObject->setSkeleton(std::string());
+
+		// Now create entity from it
+		mOgreObject->setMesh(meshName, getRexCastShadows());
+		mOgreObject->setRenderingDistance(getRexDrawDistance());		 
+
+		// Reapply description texture if one exists
+		if (mCurrentDescription.length() > 0)
+		{
+			setDescriptionTexture(mCurrentDescription);
+		}
+	}
+
+	// Manual object has served its purpose, now destroy
+	LLOgreRenderer::getPointer()->getSceneMgr()->destroyManualObject(manualObject);
+}
+
+// reX: new function
+void LLVOVolume::setDescriptionTexture(const std::string &description)
+{ 
+	// If we should be a mesh, don't apply
+	if (getRexIsMesh() || getRexIsBillboard()) return;
+
+    if (!getRexShowText()) return;
+	
+	//mMaterialNameText.clear();
+
+//   //! \todo disabled for now
+//   return;
+//   mCurrentTextureText.clear();
+   // see if we have a description
+	if (description.empty() || description == LLHoverView::DEFAULT_DESC)
+		 return;
+
+	if (description.size() >= 7 && description.substr(0, 7).compare("http://") == 0)
+	{	
+		// Fetch data from web
+		llinfos << "Fetching data from web: " << description << llendl;
+		LLHTTPClient::ResponderPtr responder = new TextTextureHttpResponder(this);
+		LLHTTPClient::get(description, responder);
+		return;
+	}
+
+	// Save in case we fail for not having an entity yet, then we can reapply
+	mCurrentDescription = description;
+
+    // If we are a hud attachment, skip
+	if (isHUDAttachment())
+	{
+		return;
+	}
+
+	// Have a valid volume?
+	LLVolume* volume = getVolume();
+	if (!volume)
+	{
+		return;
+	}
+
+	// Check for null or dead drawable 
+	if ((mDrawable.isNull()) || (mDrawable->isDead()))
+	{
+		return;
+	}
+
+	// Check for existence of valid Ogre object & entity
+	if (!mOgreObject)
+		return;
+
+	Ogre::Entity* entity = mOgreObject->getEntity();
+	if (!entity) 
+		return;
+
+	bool reapply = (mCurrentTextureText == description);	
+
+//   mCurrentTextureText = description;
+
+//   Ogre::Texture *texture = 0;
+   Ogre::TexturePtr texture;
+
+	//LLViewerImage *oldImage = 0;
+	//S32 f;
+	//for (f = 0; f < mNumFaces; ++f)
+	//{
+	// Get first face and associated ogre material
+	LLFace *facep = mDrawable->getFace(0);
+	if (!facep) 
+		return;
+
+	LLViewerImage *imagep = facep->getTexture();
+	if (!imagep)
+		return;
+
+	//oldImage = imagep;
+
+	RexOgreLegacyMaterial* ogreMaterial = imagep->getOgreMaterial();
+	if (!ogreMaterial) 
+		return;
+
+	BOOL isFullbright = getTE(0)->getFullbright();
+	std::string suffix = "";
+	if (isFullbright) suffix = "fb";
+
+	Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ogreMaterial->getName() + suffix);
+	if (material.isNull())
+		return;
+
+	std::string newName;
+	if (!reapply)
+	{
+		newName = RexOgreLegacyMaterial::generateUniqueMaterialName();
+		if (newName.empty())
+			return;
+	}
+	else 
+	{
+		newName = mMaterialNameText;
+	}	
+
+	//continue;
+
+	// Remove old material and texture
+	LLOgreRenderer::getPointer()->setOgreContext();
+	Ogre::MaterialManager::getSingleton().remove(mMaterialNameText);
+	if (!reapply)
+	{
+		Ogre::TextureManager::getSingleton().remove(mMaterialNameText);
+	}
+	LLOgreRenderer::getPointer()->setSLContext();
+	mMaterialNameText = newName;
+
+	Ogre::MaterialPtr newMaterial = material->clone(newName);
+	ogreMaterial->addClone(newName);
+
+	mOgreObject->beginMaterialUpdate();
+	entity->setMaterialName(newName);
+	mOgreObject->endMaterialUpdate();
+
+//     imagep->getOgreMaterial()->setMaterial(newMaterial);
+     
+	Ogre::Pass *pass = newMaterial->getTechnique(0)->getPass(0);
+	S32 numtextures = pass->getNumTextureUnitStates();
+
+	if (!reapply)
+	{
+//      if (!texture)
+		if (texture.isNull())
+		{
+//         LLOgreRenderer::getPointer()->setOgreContext();
+//         const std::string &texName = imagep->getID().getString();
+		// Remove old texture before creating new
+//         Ogre::ResourcePtr oldtexture = Ogre::TextureManager::getSingleton().getByName(texName);
+//         if (oldtexture.isNull() == false)
+//            Ogre::TextureManager::getSingleton().remove(oldtexture);
+
+//         LLOgreRenderer::getPointer()->setSLContext();
+         
+		texture = LLOgreFont::createTextureFromString(mMaterialNameText, description, std::string("None"), 128, 128);
+		if (texture.isNull())
+			return;
+		mCurrentTextureText = description;
+	 }
+  }
+  else
+  {
+	  texture = Ogre::TextureManager::getSingleton().getByName(mMaterialNameText);
+	  if (texture.isNull())
+		  return;
+  }
+
+  if (numtextures < 4)
+  {
+     bool found = false;
+     S32 n;
+     for (n=0 ; n<numtextures ; ++n)
+     {
+        if (pass->getTextureUnitState(n)->getTextureName().compare(texture->getName()) == 0)
+        {
+           pass->getTextureUnitState(n)->setTextureName(texture->getName());
+           found = true;
+           break;
+        }
+     }
+     if (!found)
+     {
+        // Add text as second texture layer
+        pass->createTextureUnitState(texture->getName());
+        pass->getTextureUnitState(numtextures)->setColourOperation(Ogre::LBO_ALPHA_BLEND);
+        pass->getTextureUnitState(numtextures)->setTextureVScale(-1.0);
+     }
+  }
+   //}
+}
+
+// reX: new function
+TextTextureHttpResponder::TextTextureHttpResponder(LLVOVolume *node) : mNode(node)
+{
+   if (mNode)
+      mNode->ref();
+}
+
+// reX: new function
+TextTextureHttpResponder::~TextTextureHttpResponder()
+{
+   if (mNode)
+      mNode->unref();
+}
+//! Parse the received content and handle it
+void TextTextureHttpResponder::result(const LLBufferStream &stream)
+{
+//   stream.mStreamBuf.
+   // do stuff
+//   std::string str;
+//   std::stringstream ss;
+//   ss << stream.mStreamBuf;
+//   ss >> str;
+//   std::istream str = stream;
+//   stream.get(
+//   std::string str = stream.get();
+   llinfos << "Result: " << stream << llendl;
+
+//   delete this;
+}
+
+// reX: new function
+void TextTextureHttpResponder::completedRaw(U32 status, const std::string &reason, const LLChannelDescriptors &channels,
+                                       const LLIOPipe::buffer_ptr_t &buffer)
+{
+   llinfos << "status: " << status << llendl;
+
+   if (200 <= status  &&  status < 300)
+	{
+      LLBufferStream istr(channels, buffer.get());
+		result(istr);
+	}
+	else
+		error(status, reason);
+}
+
+// reX: new function
+void LLVOVolume::sendRexPrimData()
+{
+    mRexPrimData.send(this->getID());
+}
+
+// reX: new function
+void LLVOVolume::setRexDrawType(RexPrimData::RexDrawType drawType, bool suppressSend)
+{
+    mRexPrimData.setDrawType(drawType);
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexAnimationPackID(const LLUUID& animationPackageID, bool suppressSend)
+{
+    mRexPrimData.setAnimationPackID(animationPackageID);
+    if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexAnimationName(const std::string& animationName, bool suppressSend)
+{
+    mRexPrimData.setAnimationName(animationName);
+    if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexAnimationRate(F32 animationRate, bool suppressSend)
+{
+    mRexPrimData.setAnimationRate(animationRate);
+    if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexSoundID(const LLUUID& soundID, bool suppressSend)
+{
+    mRexPrimData.setSoundID(soundID);
+	
+	if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexSoundSourceID(LLUUID soundSourceID)
+{
+	// Server doesn't need this information
+    mRexPrimData.setSoundSourceID(soundSourceID);
+}
+
+// reX: new function
+void LLVOVolume::setRexSoundVolume(F32 volume, bool suppressSend)
+{
+    mRexPrimData.setSoundVolume(volume);
+
+	if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexSoundRadius(F32 radius, bool suppressSend)
+{
+    mRexPrimData.setSoundRadius(radius);
+
+	if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexClassName(const std::string& name, bool suppressSend)
+{
+    mRexPrimData.setClassName(name);
+    if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+	}
+}
+
+// reX: new function
+void LLVOVolume::setRexIsVisible(BOOL enabled, bool suppressSend)
+{
+    mRexPrimData.setIsVisible(enabled);
+
+    if (mRexPrimData.isChanged())
+    {
+	    if (getRexIsMesh()) markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexCastShadows(BOOL enabled, bool suppressSend)
+{
+    mRexPrimData.setCastShadows(enabled);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData(); 
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexLightCastsShadows(BOOL enabled, bool suppressSend)
+{
+    mRexPrimData.setLightCastsShadows(enabled);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+
+// reX: new function
+void LLVOVolume::setRexShowText(BOOL enabled, bool suppressSend)
+{
+    mRexPrimData.setShowText(enabled);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexScaleMesh(BOOL enabled, bool suppressSend)
+{
+    mRexPrimData.setScaleMesh(enabled);
+
+    if (mRexPrimData.isChanged())
+    {
+	    if (getRexIsMesh()) markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexSolidAlpha(BOOL enabled, bool suppressSend)
+{
+    mRexPrimData.setSolidAlpha(enabled);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexLOD(F32 lod, bool suppressSend)
+{
+    mRexPrimData.setLOD(lod);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexSelectionPriority(int priority, bool suppressSend)
+{
+    mRexPrimData.setSelectionPriority(priority);
+
+    if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+
+// reX: new function
+void LLVOVolume::setRexDrawDistance(F32 drawDistance, bool suppressSend)
+{
+    mRexPrimData.setDrawDistance(drawDistance);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+
+// reX: new function
+void LLVOVolume::setRexMeshID(const LLUUID& meshID, bool suppressSend)
+{
+    mRexPrimData.setMeshID(meshID);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexCollisionMeshID(const LLUUID& meshID, bool suppressSend)
+{
+    mRexPrimData.setCollisionMeshID(meshID);
+
+    if (mRexPrimData.isChanged())
+    {
+	    // Affects only serverside collision detection, no rebuild necessary
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexNumMaterials(U16 numMaterials, bool suppressSend)
+{
+    mRexPrimData.setNumMaterials(numMaterials);
+
+    if (mRexPrimData.isChanged())
+    {
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexMaterialID(U16 index, const LLUUID& materialID, bool suppressSend)
+{
+    mRexPrimData.setMaterialID(index, materialID);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+
+// reX: new function
+void LLVOVolume::setRexMaterialDef(U16 index, const RexMaterialDef& materialDef, bool suppressSend)
+{
+    mRexPrimData.setMaterialDef(index, materialDef);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexFixedMaterial(FixedOgreMaterial material, bool suppressSend)
+{
+    mRexPrimData.setFixedMaterial(material);
+
+    if (mRexPrimData.isChanged())
+    {
+        markOgreUpdate();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexParticleScriptID(const LLUUID& particleScriptID, bool suppressSend)
+{
+    mRexPrimData.setParticleScriptID(particleScriptID);
+
+    if (mRexPrimData.isChanged())
+    {
+        updateOgreParticles();
+        if (!suppressSend) sendRexPrimData();
+    }
+}
+
+// reX: new function
+void LLVOVolume::setRexData(std::string data)
+{
+	mRexData = data;
+}
+
+// reX: new fuction
+void LLVOVolume::createRexSoundSource(BOOL create)
+{	
+    if (!gAudiop)
+        return;
+	
+	// Delete the old audio source (if exists)
+	LLAudioSource *temp_asp = gAudiop->findAudioSource(mRexPrimData.getSoundSourceID());
+	if(temp_asp)
+	{	
+		gAudiop->cleanupAudioSource(temp_asp);
+	}
+
+	// Add a new audio source
+	if(gAudiop && create && mRexPrimData.getSoundID().notNull())
+	{
+		LLUUID source_id;
+		source_id.generate();
+		
+		BOOL loop = TRUE;	//TRUE on default at the moment
+		F32 radius = mRexPrimData.getSoundRadius();
+		F32 gain = mRexPrimData.getSoundVolume();
+
+		LLAudioSource *asp = new LLAudioSource(source_id, gAgent.getID(), gain);
+		gAudiop->addAudioSource(asp);
+
+		asp->setRexSoundID(mRexPrimData.getSoundID());
+		asp->setRexSound(TRUE);
+		asp->setRexLoop(loop);
+		
+		if(radius == 0)
+		{
+			asp->setAmbient(TRUE); // Ambient means that the sound volume level is same everywhere in the world
+			asp->setRadius(FALSE);
+		}
+		else
+		{
+			asp->setRadius(TRUE);
+			asp->defineRadius(radius);
+			asp->setPositionGlobal(getPositionGlobal());
+		}				
+		mRexPrimData.setSoundSourceID(source_id);
+	}
+}
+
+// reX: new function
+void LLVOVolume::setUseClonedMaterial(bool useCloned)
+{
+   mUseClonedOgreMaterial.clear();
+   mUseClonedOgreMaterial.resize(std::max(mNumFaces, (S32)mOgreObject->getNumMaterials()), true);
+//   mUseClonedOgreMaterial = useCloned;
+}
+
+// reX: new function
+const std::string& LLVOVolume::getRexClassName() const
+{
+    return mRexPrimData.getClassName();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexIsMesh() const
+{
+    return mRexPrimData.getDrawType() == RexPrimData::DRAWTYPE_MESH;
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexIsVisible() const
+{
+    return mRexPrimData.getIsVisible();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexCastShadows() const
+{
+    return mRexPrimData.getCastShadows();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexLightCastsShadows() const
+{
+    return mRexPrimData.getLightCastsShadows();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexShowText() const
+{
+    return mRexPrimData.getShowText();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexScaleMesh() const
+{
+    return mRexPrimData.getScaleMesh();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexSolidAlpha() const
+{
+    return mRexPrimData.getSolidAlpha();
+}
+
+// reX: new function
+BOOL LLVOVolume::getRexIsBillboard() const
+{
+    return mRexPrimData.getDrawType() == RexPrimData::DRAWTYPE_BILLBOARD;
+}
+
+// reX: new function
+F32 LLVOVolume::getRexLOD() const
+{
+    return mRexPrimData.getLOD();
+}
+
+// reX: new function
+int LLVOVolume::getRexSelectionPriority() const
+{
+    return mRexPrimData.getSelectionPriority();
+}
+
+// reX: new function
+F32 LLVOVolume::getRexDrawDistance() const
+{
+    return mRexPrimData.getDrawDistance();
+}
+
+// reX: new function
+const LLUUID& LLVOVolume::getRexMeshID() const
+{
+    return mRexPrimData.getMeshID();
+}
+
+// reX: new function
+const LLUUID& LLVOVolume::getRexCollisionMeshID() const
+{
+    return mRexPrimData.getCollisionMeshID();
+}
+
+// reX: new function
+RexPrimData::RexDrawType LLVOVolume::getRexDrawType() const
+{
+    return mRexPrimData.getDrawType();
+}
+
+// reX: new function
+const LLUUID& LLVOVolume::getRexAnimationPackID() const
+{
+    return mRexPrimData.getAnimationPackID();
+}
+
+// reX: new function
+const std::string& LLVOVolume::getRexAnimationName() const
+{
+    return mRexPrimData.getAnimationName();
+}
+
+// reX: new function
+F32 LLVOVolume::getRexAnimationRate() const
+{
+    return mRexPrimData.getAnimationRate();
+}
+
+// reX: new function
+const LLUUID& LLVOVolume::getRexSoundID() const
+{
+    return mRexPrimData.getSoundID();
+}
+// reX: new function
+const LLUUID& LLVOVolume::getRexSoundSourceID() const
+{
+	return mRexPrimData.getSoundSourceID();
+}
+
+// reX: new function
+F32 LLVOVolume::getRexSoundVolume() const
+{
+    return mRexPrimData.getSoundVolume();
+}
+
+// reX: new function
+F32 LLVOVolume::getRexSoundRadius() const
+{
+    return mRexPrimData.getSoundRadius();
+}
+
+// reX: new function
+U16 LLVOVolume::getRexNumMaterials() const
+{
+    return mRexPrimData.getNumMaterials();
+}
+
+// reX: new function
+const LLUUID& LLVOVolume::getRexMaterialID(U16 index) const
+{
+    // This is sort of hack, should use the materialdef's instead for handling both asset ID & per-submesh material script usage at once
+    return mRexPrimData.getMaterialID(index);
+}
+
+// reX: new function
+const RexMaterialDef& LLVOVolume::getRexMaterialDef(U16 index) const
+{
+    return mRexPrimData.getMaterialDef(index);
+}
+
+// reX: new function
+const LLUUID& LLVOVolume::getRexParticleScriptID() const
+{
+    return mRexPrimData.getParticleScriptID();
+}
+
+// reX: new function
+FixedOgreMaterial LLVOVolume::getRexFixedMaterial() const
+{
+    return mRexPrimData.getFixedMaterial();
+}
+
+// reX: new function
+std::string LLVOVolume::getRexData()
+{
+	return mRexData;
+}

@@ -106,7 +106,9 @@ public:
 	{
 		PARAMS_FLEXIBLE = 0x10,
 		PARAMS_LIGHT    = 0x20,
-		PARAMS_SCULPT   = 0x30
+		PARAMS_SCULPT   = 0x30,	
+		// reX: new extra parameter type
+		PARAMS_REX		= 0x100
 	};
 	
 public:
@@ -128,6 +130,104 @@ extern const F32 LIGHT_MAX_FALLOFF;
 extern const F32 LIGHT_MIN_CUTOFF;
 extern const F32 LIGHT_DEFAULT_CUTOFF;
 extern const F32 LIGHT_MAX_CUTOFF;
+
+// reX: new class
+enum FixedOgreMaterial
+{
+   //! No special material
+   FIXEDMATERIAL_DEFAULT = 0,
+   //! Additive blending
+   FIXEDMATERIAL_ADDITIVEBLENDING,
+   //! Additive blending with no depth check
+   FIXEDMATERIAL_ADDITIVEBLENDING_NODEPTHCHECK,
+   //! Number of fixed materials
+   FIXEDMATERIAL_COUNT
+};
+
+extern const U16 MAX_REXPARAM_MATERIALS;
+
+class LLRexParams : public LLNetworkData
+{
+public:
+	enum
+	{
+        FLAGS_NONE = 0x00,
+		FLAGS_ISMESH = 0x01,
+		FLAGS_ISVISIBLE = 0x02,
+		FLAGS_CASTSHADOWS = 0x04,
+		FLAGS_SHOWTEXT = 0x08,
+		FLAGS_SCALEMESH = 0x10,
+		FLAGS_SOLIDALPHA = 0x20,
+        FLAGS_ISBILLBOARD = 0x40,
+        FLAGS_USEPARTICLESCRIPT = 0x80
+	};
+
+	enum
+	{
+        EXTFLAGS_NONE = 0x00,
+		EXTFLAGS_USEMATERIALSCRIPTS = 0x80
+	};
+
+protected:
+	std::string mClassName;
+	U8 mFlags;
+	U8 mExtFlags;
+	F32 mDrawDistance;
+	F32 mLOD;
+	LLUUID mMeshID;
+	LLUUID mCollisionMeshID;
+	std::vector<LLUUID> mMaterialID;
+   FixedOgreMaterial mFixedMaterial;
+   LLUUID mParticleScriptID;
+	
+	void setFlags(U8 flags) { mFlags = flags; } 
+	void setExtendedFlags(U8 flags) { mExtFlags = flags; } 
+
+public:
+	LLRexParams();
+	/*virtual*/ BOOL pack(LLDataPacker &dp) const;
+	/*virtual*/ BOOL unpack(LLDataPacker &dp);
+	/*virtual*/ bool operator==(const LLNetworkData& data) const;
+	/*virtual*/ void copy(const LLNetworkData& data);	
+
+	void setClassName(const std::string& className);
+	void setIsMesh(BOOL isMesh);
+	void setIsVisible(BOOL isVisible);
+	void setCastShadows(BOOL castShadows);
+	void setShowText(BOOL showText);
+	void setScaleMesh(BOOL scaleMesh);
+	void setSolidAlpha(BOOL solidAlpha);
+   void setIsBillboard(BOOL isBillboard);
+   void setUseParticleScript(BOOL useParticleScript);
+   void setUseMaterialScripts(BOOL useMaterialScripts);
+	void setDrawDistance(F32 drawDistance);
+	void setLOD(F32 lod);
+	void setMeshID(const LLUUID& meshID) { mMeshID = meshID; }
+	void setCollisionMeshID(const LLUUID& collisionMeshID) { mCollisionMeshID = collisionMeshID; }
+	void setNumMaterials(U16 numMaterials);
+	BOOL setMaterialID(U16 index, const LLUUID& materialID);
+   void setFixedMaterial(FixedOgreMaterial material);
+   void setParticleScriptID(const LLUUID& particleScriptID) { mParticleScriptID = particleScriptID; }
+
+	const std::string& getClassName() const { return mClassName; } 
+	BOOL getIsMesh() const { return (mFlags & FLAGS_ISMESH) ? TRUE : FALSE; } 
+	BOOL getIsVisible() const { return (mFlags & FLAGS_ISVISIBLE) ? TRUE : FALSE; }
+	BOOL getCastShadows() const { return (mFlags & FLAGS_CASTSHADOWS) ? TRUE : FALSE; }
+	BOOL getShowText() const { return (mFlags & FLAGS_SHOWTEXT) ? TRUE : FALSE; }
+	BOOL getScaleMesh() const { return (mFlags & FLAGS_SCALEMESH) ? TRUE : FALSE; }
+	BOOL getSolidAlpha() const { return (mFlags & FLAGS_SOLIDALPHA) ? TRUE : FALSE; }
+   BOOL getIsBillboard() const { return (mFlags & FLAGS_ISBILLBOARD) ? TRUE : FALSE; }
+   BOOL getUseParticleScript() const { return (mFlags & FLAGS_USEPARTICLESCRIPT) ? TRUE : FALSE; }
+   BOOL getUseMaterialScripts() const { return (mExtFlags & EXTFLAGS_USEMATERIALSCRIPTS) ? TRUE : FALSE; }
+	F32 getDrawDistance() const { return mDrawDistance; } 
+	F32 getLOD() const { return mLOD; }
+	const LLUUID& getMeshID() const { return mMeshID; }
+	const LLUUID& getCollisionMeshID() const { return mCollisionMeshID; }
+	U16 getNumMaterials() const { return (U16)mMaterialID.size(); }
+	const LLUUID& getMaterialID(U16 index) const;
+   FixedOgreMaterial getFixedMaterial() const { return mFixedMaterial; }
+   const LLUUID& getParticleScriptID() const { return mParticleScriptID; }
+};
 
 class LLLightParams : public LLNetworkData
 {

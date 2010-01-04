@@ -131,6 +131,44 @@ public:
 		// simstate file
 		AT_SIMSTATE = 22,
 
+	    // reX: new asset types
+		// room for official future expansion
+		AT_RESERVED1 = 23,
+		AT_RESERVED2 = 24,
+		AT_RESERVED3 = 25,
+		AT_RESERVED4 = 26,
+		AT_RESERVED5 = 27,
+		AT_RESERVED6 = 28,
+		AT_RESERVED7 = 29,
+		AT_RESERVED8 = 30,
+		AT_RESERVED9 = 31,
+		AT_RESERVED10 = 32,
+		AT_RESERVED11 = 33,
+		AT_RESERVED12 = 34,
+		AT_RESERVED13 = 35,
+		AT_RESERVED14 = 36,
+		AT_RESERVED15 = 37,
+		AT_RESERVED16 = 38,
+		AT_RESERVED17 = 39,
+		AT_RESERVED18 = 40,
+		AT_RESERVED19 = 41,
+		AT_RESERVED20 = 42,
+
+		// Ogre mesh
+		AT_MESH = 43,
+		// Ogre skeleton
+		AT_SKELETON = 44,
+      // Ogre material
+      AT_MATERIAL = 45,
+      // Generic avatar data from ASS
+      AT_GENERIC_AVATAR = 46,
+      // Ogre particle script
+      AT_PARTICLE_SCRIPT = 47,
+      // Physics affected cloth
+      AT_PHYSICS_CLOTH = 48,
+      // Flash (swf) animation
+      AT_FLASH_ANIMATION = 49,
+
 		// +*********************************************+
 		// |  TO ADD AN ELEMENT TO THIS ENUM:            |
 		// +*********************************************+
@@ -140,7 +178,7 @@ public:
 		// | 4. ADD TO LLAssetType::mAssetTypeHumanNames |
 		// +*********************************************+
 
-		AT_COUNT = 23,
+		AT_COUNT = 50,
 
 		AT_NONE = -1
 	};

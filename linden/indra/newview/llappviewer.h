@@ -152,6 +152,18 @@ public:
 	// *NOTE:Mani Fix this for login abstraction!!
 	void handleLoginComplete();
 
+	// reX: new functions
+	//void forceQuit(const char *launchFileOnQuit, const char *parameters);
+	//void restart_rex(const char* parameters);
+	void setViewerMode(bool rexMode, bool pureRexMode);	
+	//void start_reconnect();
+	//void reconnect_viewer(std::string const& location, std::string const& username,
+	//				  std::string const& password);
+	//void userLogOut();
+	//void requestLogOut(); // called from menu.logout
+	//void LoggedOut();
+						  
+	
 protected:
 
 	virtual bool initWindow(); // Initialize the viewer's window.
