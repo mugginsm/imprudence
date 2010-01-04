@@ -9542,6 +9542,65 @@ class LLAdvancedCheckXUINames : public view_listener_t
 
 
 
+//////////////////////
+// TRACE XUI TO LOG //
+//////////////////////
+
+
+class LLAdvancedToggleTraceXUIToLog : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		toggle_trace_xui(NULL);
+		return true;
+	}
+};
+
+class LLAdvancedCheckTraceXUIToLog : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool new_value = check_trace_xui(NULL);
+		std::string control_name = userdata["control"].asString();
+		gMenuHolder->findControl(control_name)->setValue(new_value);
+		return true;
+	}
+};
+
+
+
+//////////////////////////
+// TRACE XUI TO CONSOLE //
+//////////////////////////
+
+
+class LLAdvancedTraceXUIToConsole : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		handle_trace_xui_to_console(NULL);
+		return true;
+	}
+};
+
+
+
+/////////////////
+// PREVIEW XUI //
+/////////////////
+
+
+class LLAdvancedPreviewXUI : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		handle_preview_xui(NULL);
+		return true;
+	}
+};
+
+
+
 ////////////////////////
 // GRAB BAKED TEXTURE //
 ////////////////////////
@@ -10830,6 +10889,10 @@ void initialize_menus()
 	addMenu(new LLAdvancedSaveUIToXML(), "Advanced.SaveUIToXML");
 	addMenu(new LLAdvancedToggleXUINames(), "Advanced.ToggleXUINames");
 	addMenu(new LLAdvancedCheckXUINames(), "Advanced.CheckXUINames");
+	addMenu(new LLAdvancedToggleTraceXUIToLog(), "Advanced.ToggleTraceXUIToLog");
+	addMenu(new LLAdvancedCheckTraceXUIToLog(), "Advanced.CheckTraceXUIToLog");
+	addMenu(new LLAdvancedTraceXUIToConsole(), "Advanced.TraceXUIToConsole");
+	addMenu(new LLAdvancedPreviewXUI(), "Advanced.PreviewXUI");
 
 	// Advanced > Character > Grab Baked Texture
 	addMenu(new LLAdvancedGrabBakedTexture(), "Advanced.GrabBakedTexture");
