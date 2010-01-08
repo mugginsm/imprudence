@@ -1422,7 +1422,6 @@ void LLViewerWindow::initBase()
 	llassert( !gConsole );
 	gConsole = new LLConsole(
 		"console",
-		gSavedSettings.getS32("ConsoleBufferSize"),
 		getChatConsoleRect(),
 		gSavedSettings.getS32("ChatFontSize"),
 		gSavedSettings.getF32("ChatPersistTime") );
