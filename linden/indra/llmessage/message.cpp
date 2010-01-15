@@ -3487,6 +3487,18 @@ void LLMessageSystem::addBinaryData(const char *varname, const void *data, S32 s
 	mMessageBuilder->addBinaryData(LLMessageStringTable::getInstance()->getString(varname),data, size);
 }
 
+// reX, new function
+void LLMessageSystem::addVariableBinaryDataFast(const char *varname, const void *data, S32 size)
+{
+	mMessageBuilder->addVariableBinaryData(varname, data, size);
+}
+
+// reX, new function
+void LLMessageSystem::addVariableBinaryData(const char *varname, const void *data, S32 size)
+{
+	mMessageBuilder->addVariableBinaryData(LLMessageStringTable::getInstance()->getString(varname),data, size);
+}
+
 void LLMessageSystem::addS8Fast(const char *varname, S8 v)
 {
 	mMessageBuilder->addS8(varname, v);

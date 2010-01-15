@@ -27,7 +27,7 @@ extern LLAgent gAgent;
 LLOgreMediaEngine* LLOgreMediaEngine::mInstance = 0;
 
 RexMediaUrlDispatchHandler LLOgreMediaEngine::smRexMediaUrlHandler;
-const LLString RexMediaUrlDispatchHandler::key = "RexMediaUrl";
+const std::string RexMediaUrlDispatchHandler::key = "RexMediaUrl";
 
 bool RexMediaUrlDispatchHandler::operator ()(const LLDispatcher *dispatcher, const std::string &key, const LLUUID &invoice, const LLDispatchHandler::sparam_t &string)
 {
@@ -179,7 +179,7 @@ void LLOgreMediaEngine::assignMediaUrl(LLViewerImage* const image, const std::st
 
 void LLOgreMediaEngine::removeMediaUrl(LLViewerImage* const image)
 {
-    LLString url = image->getMediaURL();
+    std::string url = image->getMediaURL();
 
     image->getOgreMaterial()->setStatic(false);
 
@@ -191,7 +191,7 @@ void LLOgreMediaEngine::removeMediaUrl(LLViewerImage* const image)
     Ogre::ExternalTextureSource* source = mgr.getCurrentPlugIn();
     source->destroyAdvancedTexture(image->getOgreMaterial()->getName());
 
-    image->setMediaURL(LLString());
+    image->setMediaURL(std::string());
 }
 
 void LLOgreMediaEngine::authorizeMediaPlayback(const LLUUID& id)

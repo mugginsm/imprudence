@@ -778,6 +778,12 @@ void LLWebBrowserCtrl::onClickLinkNoFollow( const EventType& eventIn )
 	mEventEmitter.update( &LLWebBrowserCtrlObserver::onClickLinkNoFollow, event );
 }
 
+// reX: new function
+LLWebBrowserTexture *LLWebBrowserCtrl::getTexture() const
+{
+   return mWebBrowserImage;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 LLWebBrowserTexture::LLWebBrowserTexture( S32 width, S32 height, LLWebBrowserCtrl* browserCtrl, LLMediaBase *media_source ) :

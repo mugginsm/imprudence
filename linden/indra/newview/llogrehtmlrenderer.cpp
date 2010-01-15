@@ -48,7 +48,7 @@ void LLOgreHtmlObserver::onNavigateComplete( const EventType& eventIn )
 }
 
 //! constructor
-LLOgreHtmlRenderer::LLOgreHtmlRenderer(const LLString &name, const LLString &material, const LLString &url, float updateInterval)
+LLOgreHtmlRenderer::LLOgreHtmlRenderer(const std::string &name, const std::string &material, const std::string &url, float updateInterval)
 : LLFloater(name, "FloaterWebTestRect", "Rex's amazing Web Browzer!")
    , mBrowserDepth(0)
    , mBrowserWidth(0)
@@ -96,19 +96,19 @@ LLOgreHtmlRenderer::LLOgreHtmlRenderer(const LLString &name, const LLString &mat
    {
       mExternalMaterial = false;
       // Create test plane to see web content
-      LLString materialName = name;
+      std::string materialName = name;
       materialName.append("_material");
       mMaterial = Ogre::MaterialManager::getSingleton().create(materialName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
       mMaterial->getTechnique(0)->getPass(0)->setLightingEnabled(false);
       createTexture(mBrowserWidth, mBrowserHeight);
       
-      LLString planeName = name;
+      std::string planeName = name;
       planeName.append("_plane");
       Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 90);
       mPlaneMesh = Ogre::MeshManager::getSingleton().createPlane(planeName,
             Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane,
             50,50,1,1,true,1,1,1,-Ogre::Vector3::UNIT_Z);
-      LLString planeEntName = name;
+      std::string planeEntName = name;
       planeEntName.append("_plane_ent");
       mPlaneEnt = LLOgreRenderer::getPointer()->getSceneMgr()->createEntity(planeEntName, planeName);
 	   mPlaneEnt->setMaterialName(materialName);
@@ -247,8 +247,8 @@ void LLOgreHtmlRenderer::show()
    sId++;
  //  if (!sInstance)
 //	{
-   LLString name = "webtest";
-   LLString number;
+   std::string name = "webtest";
+   std::string number;
    std::stringstream ss;
    ss << sId;
    ss >> number;
@@ -266,7 +266,7 @@ LLOgreHtmlRenderer *LLOgreHtmlRenderer::fromUrl(LLViewerImage *image, const std:
    return createRenderer(image->getOgreMaterial()->getName(), url, updateInterval);
 }
 
-LLOgreHtmlRenderer *LLOgreHtmlRenderer::createRenderer(const LLString& materialName, const std::string &url, float updateInterval)
+LLOgreHtmlRenderer *LLOgreHtmlRenderer::createRenderer(const std::string& materialName, const std::string &url, float updateInterval)
 {
     // First try to find renderer already rendering to this material   
     for (RendererList::iterator i = sRenderers.begin(); i != sRenderers.end(); ++i)
@@ -291,7 +291,7 @@ LLOgreHtmlRenderer *LLOgreHtmlRenderer::createRenderer(const LLString& materialN
     return sInstance;
 }
 
-void LLOgreHtmlRenderer::releaseRenderer(const LLString& materialName)
+void LLOgreHtmlRenderer::releaseRenderer(const std::string& materialName)
 {
 	LLOgreHtmlRenderer *renderer = 0;
 
@@ -427,7 +427,7 @@ void LLOgreHtmlRenderer::createTexture(S32 width, S32 height)
    if (browser_depth == 2)
       ogreFormat = Ogre::PF_B8G8R8;
 
-   LLString textureName = this->getName();
+   std::string textureName = this->getName();
    textureName.append("_texture");
 
    // create dynamic texture

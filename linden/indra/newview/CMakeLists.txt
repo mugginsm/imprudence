@@ -37,6 +37,8 @@ include(UI)
 include(UnixInstall)
 include(ViewerArtwork)
 include(ViewerMiscLibs)
+# reX
+include(Ogre)
 
 if (WINDOWS)
     include(CopyWinLibs)
@@ -62,9 +64,38 @@ include_directories(
     ${LSCRIPT_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     ${GSTREAMER_INCLUDE_DIRS}
+	# reX
+    ${OGRE_INCLUDE_DIRS}
+    ${LIBS_PREBUILT_DIR}/include/python
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tightvnc/tightvnc
     )
 
 set(viewer_SOURCE_FILES
+	# reX
+	llmeshcache.cpp
+	llobjectmanager.cpp
+	llobjectgroup.cpp
+	lllightmap.cpp
+	llhtmltexturesystem.cpp
+	llogre.cpp
+	llogreassetloader.cpp
+	llogrefont.cpp
+	llogrehtmlrenderer.cpp
+	llogremediaengine.cpp
+	llogreobject.cpp
+	llogrepostprocess.cpp
+	llrexhud.cpp
+	rexclienteffect.cpp
+	rexflashanimationmanager.cpp
+	rexogrelegacymaterial.cpp
+	rexogrematerial.cpp
+	rexogrematerialeffect.cpp
+	rexogretexture.cpp
+	rexpaneldata.cpp
+	rexparticlescript.cpp
+	rexprimdata.cpp
+	RexRttCamera.cpp
+	
 	importtracker.cpp
 	exporttracker.cpp
 	chatbar_as_cmdline.cpp
@@ -483,6 +514,34 @@ endif (LINUX)
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
+	# reX
+	llmeshcache.h
+	llobjectmanager.h
+	llobjectgroup.h
+	lllightmap.h
+	llhtmltexturesystem.h
+	llogre.h
+	llogreassetloader.h
+	llogrefont.h
+	llogrehtmlrenderer.h
+	llogremediaengine.h
+	llogreobject.h
+	llogrepostprocess.h
+	llrexhud.h
+	rexambientlightoverride.h
+	rexclienteffect.h
+	rexflashanimationmanager.h
+	rexogreassetnotifiable.h
+	rexogrelegacymaterial.h
+	rexogrematerial.h
+	rexogrematerialeffect.h
+	rexogretexture.h
+	rexpaneldata.h
+	rexparticlescript.h
+	rexprimdata.h
+	RexRttCamera.h
+	rexsky.h
+	
     floaterlogin.h
     hippoGridManager.h
     hippoLimits.h
@@ -1459,6 +1518,8 @@ if (WINDOWS)
 endif (WINDOWS)
 
 target_link_libraries(${VIEWER_BINARY_NAME}
+	# reX
+    ${OGRE_LIBRARIES}
     ${LLAUDIO_LIBRARIES}
     ${LLCHARACTER_LIBRARIES}
     ${LLIMAGE_LIBRARIES}

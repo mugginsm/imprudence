@@ -60,6 +60,9 @@ public:
 	/** All add* methods expect pointers to canonical varname strings. */
 	virtual void addBinaryData(const char *varname, const void *data, 
 							   S32 size);
+    // reX, new function
+	virtual void addVariableBinaryData(const char *varname, const void *data, 
+							   S32 size);
 	virtual void addBOOL(const char* varname, BOOL b);
 	virtual void addS8(const char* varname, S8 s);
 	virtual void addU8(const char* varname, U8 u);

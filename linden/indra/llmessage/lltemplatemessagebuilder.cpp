@@ -394,6 +394,13 @@ void LLTemplateMessageBuilder::addBinaryData(const char *varname,
 	addData(varname, data, MVT_FIXED, size);
 }
 
+// reX, new function
+void LLTemplateMessageBuilder::addVariableBinaryData(const char *varname, 
+											const void *data, S32 size)
+{
+	addData(varname, data, MVT_VARIABLE, size);
+}
+
 void LLTemplateMessageBuilder::addS8(const char *varname, S8 s)
 {
 	addData(varname, &s, MVT_S8, sizeof(s));

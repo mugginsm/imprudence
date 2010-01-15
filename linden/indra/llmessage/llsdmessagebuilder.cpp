@@ -117,6 +117,15 @@ void LLSDMessageBuilder::addBinaryData(
 	(*mCurrentBlock)[varname] = v;
 }
 
+// reX, new function
+void LLSDMessageBuilder::addVariableBinaryData(
+	const char* varname, 
+	const void* data,
+	S32 size)
+{
+    addBinaryData(varname, data, size);
+}
+
 void LLSDMessageBuilder::addS8(const char* varname, S8 v)
 {
 	(*mCurrentBlock)[varname] = v;

@@ -83,6 +83,14 @@
 #include "llwaterparammanager.h"
 #include "llpostprocess.h"
 
+// reX: new includes
+#include "llogre.h"
+//#include "AvatarGeneratorScene.h" don't need this for now! -Patrick Sapinski (Sunday, January 10, 2010)
+#include "rexflashanimationmanager.h"
+// reX
+
+BOOL gOgreRender = TRUE;
+
 extern LLPointer<LLImageGL> gStartImageGL;
 
 LLPointer<LLImageGL> gDisconnectedImagep = NULL;
@@ -499,8 +507,12 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLFastTimer t(LLFastTimer::FTM_UPDATE_TEXTURES);
 		if (LLDynamicTexture::updateAllInstances())
 		{
-			gGL.setColorMask(true, true);
-			glClear(GL_DEPTH_BUFFER_BIT);
+			// reX: Ogre will clear framebuffer itself     
+	        if (!gOgreRender) 
+		    {			
+				gGL.setColorMask(true, true);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			}
 		}
 	}
 
@@ -570,6 +582,13 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			LLPipeline::sUseOcclusion = 3;
 		}
 
+        // reX
+        if (gOgreRender)
+        {
+            LLPipeline::sUseOcclusion = 0;
+            water_clip = 0;
+        }
+
 		LLPipeline::sFastAlpha = gSavedSettings.getBOOL("RenderFastAlpha");
 		LLPipeline::sUseFarClip = gSavedSettings.getBOOL("RenderUseFarClip");
 		LLVOAvatar::sMaxVisible = gSavedSettings.getS32("RenderAvatarMaxVisible");
@@ -619,41 +638,50 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			LLGLState::checkTextureChannels();
 			LLGLState::checkClientArrays();
 
-			if (!for_snapshot)
+			// reX: skip in ogre mode
+			if (!gOgreRender)
 			{
-				if (gFrameCount > 1)
-				{ //for some reason, ATI 4800 series will error out if you 
-				  //try to generate a shadow before the first frame is through
-					gPipeline.generateSunShadow(*LLViewerCamera::getInstance());
+				if (!for_snapshot)
+				{
+					if (gFrameCount > 1)
+					{ //for some reason, ATI 4800 series will error out if you 
+					  //try to generate a shadow before the first frame is through
+						gPipeline.generateSunShadow(*LLViewerCamera::getInstance());
+	
+	
+	
+	
+					}
+	
+					LLGLState::checkStates();
+					LLGLState::checkTextureChannels();
+					LLGLState::checkClientArrays();
+	
+					glh::matrix4f proj = glh_get_current_projection();
+					glh::matrix4f mod = glh_get_current_modelview();
+					glViewport(0,0,512,512);
+					LLVOAvatar::updateFreezeCounter() ;
+					LLVOAvatar::updateImpostors();
+	
+					glh_set_current_projection(proj);
+					glh_set_current_modelview(mod);
+					glMatrixMode(GL_PROJECTION);
+					glLoadMatrixf(proj.m);
+					glMatrixMode(GL_MODELVIEW);
+					glLoadMatrixf(mod.m);
+					gViewerWindow->setupViewport();
+	
+					LLGLState::checkStates();
+					LLGLState::checkTextureChannels();
+					LLGLState::checkClientArrays();
+	
 				}
-
-				LLGLState::checkStates();
-				LLGLState::checkTextureChannels();
-				LLGLState::checkClientArrays();
-
-				glh::matrix4f proj = glh_get_current_projection();
-				glh::matrix4f mod = glh_get_current_modelview();
-				glViewport(0,0,512,512);
-				LLVOAvatar::updateFreezeCounter() ;
-				LLVOAvatar::updateImpostors();
-
-				glh_set_current_projection(proj);
-				glh_set_current_modelview(mod);
-				glMatrixMode(GL_PROJECTION);
-				glLoadMatrixf(proj.m);
-				glMatrixMode(GL_MODELVIEW);
-				glLoadMatrixf(mod.m);
-				gViewerWindow->setupViewport();
-
-				LLGLState::checkStates();
-				LLGLState::checkTextureChannels();
-				LLGLState::checkClientArrays();
-
+				glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			}
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
-		if (!for_snapshot)
+		// reX: skip in ogre mode
+		if ((!gOgreRender) && (!for_snapshot))
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Imagery");
 			gPipeline.generateWaterReflection(*LLViewerCamera::getInstance());
@@ -713,6 +741,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 
 		LLPipeline::sUseOcclusion = occlusion;
 
+		// reX: skip in Ogre mode
+		if (!gOgreRender)
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Sky");
 			LLFastTimer t(LLFastTimer::FTM_UPDATE_SKY);	
@@ -772,77 +802,148 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLPipeline::updateRenderDeferred();
 		
 		stop_glerror();
-
-		if (to_texture)
+		// reX
+		if (!gOgreRender)
 		{
-			gGL.setColorMask(true, true);
-			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
+			if (to_texture)
 			{
-				gPipeline.mDeferredScreen.bindTarget();
-				gPipeline.mDeferredScreen.clear();
-			}
-			else
-			{
-				gPipeline.mScreen.bindTarget();
-				gPipeline.mScreen.clear();
+				gGL.setColorMask(true, true);
+				if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
+				{
+					gPipeline.mDeferredScreen.bindTarget();
+					gPipeline.mDeferredScreen.clear();
+				}
+				else
+				{
+	
+					gPipeline.mScreen.bindTarget();
+					gPipeline.mScreen.clear();
+	
+				}
+				
+				gGL.setColorMask(true, false);
 			}
 			
-			gGL.setColorMask(true, false);
+			LLAppViewer::instance()->pingMainloopTimeout("Display:RenderGeom");
+			
+			if (!(LLAppViewer::instance()->logoutRequestSent() && LLAppViewer::instance()->hasSavedFinalSnapshot())
+					&& !gRestoreGL)
+			{
+	
+				gGL.setColorMask(true, false);
+				if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
+				{
+					gPipeline.renderGeomDeferred(*LLViewerCamera::getInstance());
+				}
+				else
+				{
+	
+	
+					gPipeline.renderGeom(*LLViewerCamera::getInstance(), TRUE);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+				}
+				
+				gGL.setColorMask(true, true);
+	
+				//store this frame's modelview matrix for use
+				//when rendering next frame's occlusion queries
+				for (U32 i = 0; i < 16; i++)
+				{
+					gGLLastModelView[i] = gGLModelView[i];
+				}
+				stop_glerror();
+			}
+
+			LLAppViewer::instance()->pingMainloopTimeout("Display:RenderFlush");		
+			
+			if (to_texture)
+			{
+				if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
+				{
+					gPipeline.mDeferredScreen.flush();
+				}
+				else
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+				{
+					gPipeline.mScreen.flush();
+				}
+			}
+	
+			/// We copy the frame buffer straight into a texture here,
+			/// and then display it again with compositor effects.
+			/// Using render to texture would be faster/better, but I don't have a 
+			/// grasp of their full display stack just yet.
+			// gPostProcess->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+				
+			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
+			{
+				gPipeline.renderDeferredLighting();
+			}
+		LLPipeline::sUnderWaterRender = FALSE;
 		}
-		
-		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderGeom");
-		
-		if (!(LLAppViewer::instance()->logoutRequestSent() && LLAppViewer::instance()->hasSavedFinalSnapshot())
-				&& !gRestoreGL)
+		else
 		{
+            // reX: render once in SL mode to get avatars to select
+            static bool firstRender = true;
+            if (firstRender)
+            {
+			    if (!(LLAppViewer::instance()->logoutRequestSent() && LLAppViewer::instance()->hasSavedFinalSnapshot())
+					&& !gRestoreGL)
+			    {
+    				gGL.setColorMask(true, false);
+				    LLPipeline::sUnderWaterRender = LLViewerCamera::getInstance()->cameraUnderWater() ? TRUE : FALSE;
+				    gPipeline.renderGeom(*LLViewerCamera::getInstance(), TRUE);
+    				LLPipeline::sUnderWaterRender = FALSE;
+				    gGL.setColorMask(true, true);
 
-			gGL.setColorMask(true, false);
-			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
-			{
-				gPipeline.renderGeomDeferred(*LLViewerCamera::getInstance());
-			}
-			else
-			{
-				gPipeline.renderGeom(*LLViewerCamera::getInstance(), TRUE);
-			}
-			
-			gGL.setColorMask(true, true);
+                    firstRender = false;
+                }
+            }
 
-			//store this frame's modelview matrix for use
-			//when rendering next frame's occlusion queries
+            // reX: this is needed for rendering selection highlights correctly
 			for (U32 i = 0; i < 16; i++)
 			{
 				gGLLastModelView[i] = gGLModelView[i];
 			}
-			stop_glerror();
-		}
 
-		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderFlush");		
-		
-		if (to_texture)
-		{
-			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
-			{
-				gPipeline.mDeferredScreen.flush();
-			}
-			else
-			{
-				gPipeline.mScreen.flush();
-			}
+			LLOgreRenderer::getPointer()->render();			
 		}
-
-		/// We copy the frame buffer straight into a texture here,
-		/// and then display it again with compositor effects.
-		/// Using render to texture would be faster/better, but I don't have a 
-		/// grasp of their full display stack just yet.
-		// gPostProcess->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
-		
-		if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
-		{
-			gPipeline.renderDeferredLighting();
-		}
-
-		LLPipeline::sUnderWaterRender = FALSE;
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderUI");
 		if (!for_snapshot)
@@ -1046,13 +1147,27 @@ void render_ui(F32 zoom_factor, int subfield)
 		BOOL to_texture = gPipeline.canUseVertexShaders() &&
 							LLPipeline::sRenderGlow;
 
-		if (to_texture)
+		// reX
+		if ((to_texture) && (!gOgreRender))
 		{
 			gPipeline.renderBloom(gSnapshot, zoom_factor, subfield);
 		}
 
-		render_hud_elements();
-		render_hud_attachments();
+		// reX: in Ogre mode, clear depth now
+		if (gOgreRender)
+		{
+			glClear(GL_DEPTH_BUFFER_BIT);		
+		}
+		
+		// reX: Do not render 3D UI elements when AG visible //commented out for now, not using AG yet -Patrick Sapinski (Sunday, January 10, 2010)
+/*      bool noRenderWorld = (AvatarGeneratorScene::isVisible() || LLOgreRenderer::getPointer()->getFlashAnimationManager()->isAnimationRunning());
+		if (!noRenderWorld)
+		{ */
+            if (gOgreRender) LLHUDObject::renderAll();
+
+			render_hud_elements();
+			render_hud_attachments();
+/*		}*/
 	}
 
 	LLGLSDefault gls_default;

@@ -409,6 +409,10 @@ public:
 	void addBinaryDataFast(const char *varname, const void *data, S32 size);
 	void addBinaryData(const char *varname, const void *data, S32 size);
 
+    // reX, new functions
+	void addVariableBinaryDataFast(const char *varname, const void *data, S32 size);
+	void addVariableBinaryData(const char *varname, const void *data, S32 size);
+
 	void	addBOOLFast( const char* varname, BOOL b);						// typed, checks storage space
 	void	addBOOL( const char* varname, BOOL b);						// typed, checks storage space
 	void	addS8Fast(	const char *varname, S8 s);							// typed, checks storage space

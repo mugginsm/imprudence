@@ -58,7 +58,7 @@
 #include "OGRE/OgreParticleSystemRenderer.h"
 #include "OGRE/OgreBillboardParticleRenderer.h"
 
-#include "tightvnc/TightVNCPluginFactory.h"
+#include "../tightvnc/tightvnc/TightVNCPluginFactory.h"
 
 extern BOOL gInRex;
 extern BOOL gInPureRex;

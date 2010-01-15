@@ -11,7 +11,7 @@
 #include "OGRE/Ogre.h"
 
 #include "llobjectmanager.h"
-#include "DynamicAnimationManager.h"
+//#include "DynamicAnimationManager.h" REX avatar stuff commented out for now -Patrick Sapinski (Friday, January 08, 2010)
 #include "llviewerobject.h"
 
 
@@ -101,7 +101,7 @@ Ogre::MovableObject *LLOgreObject::getMovableObject() const
 }
 
 //! Set mesh to use. Return TRUE if successful, FALSE if failed
-bool LLOgreObject::setMesh(const LLString& meshName, bool castShadows, const LLVector3& offset)
+bool LLOgreObject::setMesh(const std::string& meshName, bool castShadows, const LLVector3& offset)
 {
 //   if (Ogre::MeshManager::getSingleton().resourceExists(meshName) == false)
 //      return false;
@@ -184,7 +184,7 @@ bool LLOgreObject::setMesh(const LLString& meshName, bool castShadows, const LLV
 	return true;
 }
 
-bool LLOgreObject::setSkeleton(const LLString &skeletonName, const LLString &animation, F32 rate)
+bool LLOgreObject::setSkeleton(const std::string &skeletonName, const std::string &animation, F32 rate)
 {
    mMeshSkeletallyAnimated = true;
    mCurrentSkeleton = skeletonName;
@@ -193,7 +193,7 @@ bool LLOgreObject::setSkeleton(const LLString &skeletonName, const LLString &ani
    return applySkeleton(mCurrentSkeleton, animation, rate);
 }
 
-bool LLOgreObject::applySkeleton(const LLString &skeletonName, const LLString &animation, F32 rate)
+bool LLOgreObject::applySkeleton(const std::string &skeletonName, const std::string &animation, F32 rate)
 {
    bool success = false;
    mRenderer->setOgreContext();
@@ -269,7 +269,7 @@ Ogre::ManualObject* LLOgreObject::createManualObject()
 }
 
 //! Convert a manual object to mesh
-LLString LLOgreObject::convertToMesh(Ogre::ManualObject* object)
+std::string LLOgreObject::convertToMesh(Ogre::ManualObject* object)
 {
 	// Possible vertexbuffer etc. operations, so switch context
 	// Note that for all sanity, one should already be in Ogre context before calling this,
@@ -297,7 +297,7 @@ LLString LLOgreObject::convertToMesh(Ogre::ManualObject* object)
 	// Return to SL context now
 	mRenderer->setSLContext();
 
-	return LLString(meshName);
+	return std::string(meshName);
 }
 //! Set manual object to use
 void LLOgreObject::setManualObject(Ogre::ManualObject* manualObject, const LLVector3& offset)
@@ -502,7 +502,7 @@ void LLOgreObject::removeMesh(bool removeManualMesh)
         if (objMgr && mGroupingEnabled) objMgr->objectRemoved(this);
 
         // A precausion. In any cause should not cause trouble
-        Rex::DynamicAnimationManager::getSingleton().removeEntity(mEntity);
+        //Rex::DynamicAnimationManager::getSingleton().removeEntity(mEntity); rex avatar stuff -Patrick Sapinski (Friday, January 08, 2010)
 
 		// Detach from offsetnode if exists, else from the main scene node
 		if (mOffsetNode)
@@ -573,7 +573,7 @@ void LLOgreObject::removeBillboard()
    }
 }
 
-bool LLOgreObject::addParticleSystem(const LLString& name, bool flipYCoord)
+bool LLOgreObject::addParticleSystem(const std::string& name, bool flipYCoord)
 {
    Ogre::ParticleSystem* system = mRenderer->createParticleSystem(name, flipYCoord);
    if (system)
@@ -621,7 +621,7 @@ void LLOgreObject::setGlobalAnimationLods(const AnimationLodList &lods)
    smDefaultAnimationLods = lods;
 }
 
-void LLOgreObject::loadAnimations(const LLString &skeleton, const StringVector &animations)
+void LLOgreObject::loadAnimations(const std::string &skeleton, const StringVector &animations)
 {
    llinfos << "Merging animations from skeleton " << skeleton << llendl;
    if (!mEntity || mEntity->hasSkeleton() == false)
@@ -670,7 +670,7 @@ void LLOgreObject::loadAnimations(const LLString &skeleton, const StringVector &
 }
 
 //! Get animation state of the entity. Return null if entity or animation state doesn't exist
-Ogre::AnimationState* LLOgreObject::getAnimState(Ogre::Entity *entity, const LLString& animName)
+Ogre::AnimationState* LLOgreObject::getAnimState(Ogre::Entity *entity, const std::string& animName)
 {
 	if (!entity) return 0;
 
@@ -687,13 +687,13 @@ Ogre::AnimationState* LLOgreObject::getAnimState(Ogre::Entity *entity, const LLS
 }
 
 //! Enable an exclusive animation (fades out all other animations of same priority with fadeOut parameter)
-bool LLOgreObject::enableExclusiveAnim(const LLString& animName, bool looped, F32 fadeIn, F32 fadeOutOthers, bool highPriority)
+bool LLOgreObject::enableExclusiveAnim(const std::string& animName, bool looped, F32 fadeIn, F32 fadeOutOthers, bool highPriority)
 {
     // Disable all other active animations
 	std::list<LLOgreObjectAnim>::iterator i = mActiveAnims.begin();
 	while (i != mActiveAnims.end())
 	{
-        const LLString& otherAnimName = i->mAnimState->getAnimationName();
+        const std::string& otherAnimName = i->mAnimState->getAnimationName();
         if ((otherAnimName != animName) && (i->mHighPriority == highPriority))
         {
 			i->mStatus = LLOgreObjectAnim::STATUS_FADEOUT;
@@ -709,7 +709,7 @@ bool LLOgreObject::enableExclusiveAnim(const LLString& animName, bool looped, F3
 //! Enable an animation. Return false if the animation doesn't exist
 /*! \todo add possibility to start from middle of animation
  */
-bool LLOgreObject::enableAnim(const LLString& animName, bool looped, F32 fadeIn, bool highPriority)
+bool LLOgreObject::enableAnim(const std::string& animName, bool looped, F32 fadeIn, bool highPriority)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -766,7 +766,7 @@ bool LLOgreObject::enableAnim(const LLString& animName, bool looped, F32 fadeIn,
 //! Check whether non-looping animation has finished
 /*! If looping, returns always false
  */
-bool LLOgreObject::hasAnimationFinished(const LLString& animName)
+bool LLOgreObject::hasAnimationFinished(const std::string& animName)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -791,7 +791,7 @@ bool LLOgreObject::hasAnimationFinished(const LLString& animName)
 }
 
 //! Check whether animation is active
-bool LLOgreObject::isAnimationActive(const LLString& animName, bool checkFadeOut)
+bool LLOgreObject::isAnimationActive(const std::string& animName, bool checkFadeOut)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -821,7 +821,7 @@ bool LLOgreObject::isAnimationActive(const LLString& animName, bool checkFadeOut
 
 
 //! Set autostop on animation
-bool LLOgreObject::setAnimAutoStop(const LLString& animName, bool enable)
+bool LLOgreObject::setAnimAutoStop(const std::string& animName, bool enable)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -842,7 +842,7 @@ bool LLOgreObject::setAnimAutoStop(const LLString& animName, bool enable)
 }
 
 //! Set autostop on animation
-bool LLOgreObject::setAnimNumLoops(const LLString& animName, unsigned int nRepeats)
+bool LLOgreObject::setAnimNumLoops(const std::string& animName, unsigned int nRepeats)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -866,7 +866,7 @@ bool LLOgreObject::setAnimNumLoops(const LLString& animName, unsigned int nRepea
 }
 
 //! Disable an animation. Return false if the animation doesn't exist or isn't active
-bool LLOgreObject::disableAnim(const LLString& animName, F32 fadeOut)
+bool LLOgreObject::disableAnim(const std::string& animName, F32 fadeOut)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -900,7 +900,7 @@ void LLOgreObject::disableAllAnims(F32 fadeOut)
 }
 
 
-void LLOgreObject::setAnimToEnd(const LLString& animName)
+void LLOgreObject::setAnimToEnd(const std::string& animName)
 {
    Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (animState)
@@ -910,7 +910,7 @@ void LLOgreObject::setAnimToEnd(const LLString& animName)
 }
 
 //! Change speedfactor of an active animation. Return false if the animation doesn't exist or isn't active
-bool LLOgreObject::setAnimSpeed(const LLString& animName, F32 speedFactor)
+bool LLOgreObject::setAnimSpeed(const std::string& animName, F32 speedFactor)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -931,7 +931,7 @@ bool LLOgreObject::setAnimSpeed(const LLString& animName, F32 speedFactor)
 }
 
 //! Change weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-bool LLOgreObject::setAnimWeight(const LLString& animName, F32 weight)
+bool LLOgreObject::setAnimWeight(const std::string& animName, F32 weight)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;
@@ -952,7 +952,7 @@ bool LLOgreObject::setAnimWeight(const LLString& animName, F32 weight)
 }
 
 //! Change time position of an active animation. Return false if the animation doesn't exist or isn't active
-bool LLOgreObject::setAnimTimePosition(const LLString& animName, F32 newPosition)
+bool LLOgreObject::setAnimTimePosition(const std::string& animName, F32 newPosition)
 {
 	Ogre::AnimationState* animState = getAnimState(mEntity, animName);
 	if (!animState) return false;

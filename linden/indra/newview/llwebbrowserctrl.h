@@ -267,7 +267,12 @@ class LLWebBrowserCtrl :
 		virtual void onClickLinkHref( const EventType& eventIn );
 		virtual void onClickLinkNoFollow( const EventType& eventIn );
 		virtual void onMediaContentsChange( const EventType& event_in );
-	
+
+		// reX: new function
+      LLWebBrowserTexture *getTexture() const;
+        // reX: new function
+      LLMediaBase* getMediaSource() const { return mMediaSource; }
+
 	protected:
 		void convertInputCoords(S32& x, S32& y);
 

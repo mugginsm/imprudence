@@ -91,6 +91,9 @@ class LLMediaImplLLMozLib :
 		/* virtual */ bool clearCookies();
 		/* virtual */ bool reset();
 
+		// reX: To allow dynamically refreshed pages.
+		void forceUpdateMedia(); ///< Causes the page contents to be manually refreshed, even though the dirty flag wasn't set.
+
 		// LLMozLib observerables
 		virtual void onNavigateBegin( const EventType& eventIn );
 		virtual void onNavigateComplete( const EventType& eventIn );

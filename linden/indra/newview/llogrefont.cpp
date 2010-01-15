@@ -15,7 +15,7 @@
 
 
 
-Ogre::TexturePtr LLOgreFont::createTextureFromString(const LLString &name, const LLString &text, const LLString &fontName, U32 width, U32 height)
+Ogre::TexturePtr LLOgreFont::createTextureFromString(const std::string &name, const std::string &text, const std::string &fontName, U32 width, U32 height)
 {
    Ogre::TexturePtr texture;
    Ogre::ResourcePtr oldtexture = Ogre::TextureManager::getSingleton().getByName(name);
@@ -55,7 +55,7 @@ Ogre::TexturePtr LLOgreFont::createTextureFromString(const LLString &name, const
    return texture;
 }
 
-bool LLOgreFont::writeToTexture(Ogre::TexturePtr &texture, const LLString &text, Ogre::Font *font,
+bool LLOgreFont::writeToTexture(Ogre::TexturePtr &texture, const std::string &text, Ogre::Font *font,
                                 const Ogre::Image::Box &destRect, const Ogre::ColourValue &colour,
                                 TextJustify justify,  bool wordwrap)
 {

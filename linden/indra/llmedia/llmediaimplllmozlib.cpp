@@ -154,7 +154,10 @@ bool LLMediaImplLLMozLib::init()
 
 	// plugins only work with some client-side hackery and they cause
 	// exception handling issues (DEV-10020) so we turn them off
-	LLMozLib::getInstance()->enablePlugins( false );
+	// LLMozLib::getInstance()->enablePlugins( false );
+    
+    // reX needs flash :)
+	LLMozLib::getInstance()->enablePlugins( true );
 
 	// second life client needs the bitmap flipped
 	LLMozLib::getInstance()->flipWindow( mWindowId, true );
@@ -251,6 +254,12 @@ bool LLMediaImplLLMozLib::updateMedia()
 	updateState();
 
 	return false;
+}
+
+void LLMediaImplLLMozLib::forceUpdateMedia()
+{
+	mNeedsUpdate = true;
+	updateMedia();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

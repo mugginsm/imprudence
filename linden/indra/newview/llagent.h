@@ -385,6 +385,8 @@ public:
 	void			rotate(F32 angle, F32 x, F32 y, F32 z);
 	void			rotate(const LLMatrix3 &matrix);
 	void			rotate(const LLQuaternion &quaternion);
+	// reX: new function
+	void			setLookDir(const LLQuaternion &quaternion);
 	void			pitch(F32 angle);
 	void			roll(F32 angle);
 	void			yaw(F32 angle);

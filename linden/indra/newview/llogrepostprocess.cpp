@@ -5,7 +5,7 @@
 
 extern LLDispatcher gGenericDispatcher;
 
-const LLString PostProcessDispatchHandler::mMessageID("RexPostP");
+const std::string PostProcessDispatchHandler::mMessageID("RexPostP");
 bool PostProcessDispatchHandler::operator()(
 		const LLDispatcher* dispatcher,
 		const std::string& key,

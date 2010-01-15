@@ -1245,6 +1245,17 @@ void LLAgent::rotate(const LLQuaternion &quaternion)
 	mFrameAgent.rotate(quaternion); 
 }
 
+// reX: new function
+//-----------------------------------------------------------------------------
+// setLookLoc()
+//-----------------------------------------------------------------------------
+void LLAgent::setLookDir(const LLQuaternion &quaternion) 
+{
+	LLVector3 newrot(1,0,0);
+	newrot.rotVec(quaternion);
+	mFrameAgent.lookDir(newrot);
+}
+
 
 //-----------------------------------------------------------------------------
 // getReferenceUpVector()

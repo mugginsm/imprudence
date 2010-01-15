@@ -30,9 +30,9 @@ public:
 		const LLUUID& invoice,
 		const sparam_t& string);
 
-   virtual LLStringUtil getKey() const { return key ; }
+	virtual std::string getKey() const { return key ; }
 
-   const static LLStringUtil key;
+   const static std::string key;
 };
 
 class LLOgreMediaEngine : public Ogre::FrameListener

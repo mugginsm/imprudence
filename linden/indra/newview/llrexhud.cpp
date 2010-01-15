@@ -27,7 +27,7 @@ using namespace boost::python;
 // Global pointer to hud object. 
 extern LLRexHud* gRexHud;
 RexScriptCommandDispatchHandler LLRexHud::smRexScriptCommandHandler;
-const LLString RexScriptCommandDispatchHandler::key = "RexScr";
+const std::string RexScriptCommandDispatchHandler::key = "RexScr";
 
 bool LLRexHud::mSendMouseButtons = false;
 bool LLRexHud::mSendMouseWheel = false;
@@ -87,8 +87,8 @@ void rxDrawText(std::string vText, float vX, float vY, int vFontType, int vHAlig
 			case 3:  LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF)->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
 			case 4:  LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF_SMALL)->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
 			case 5:  LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF_BIG)->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
-			case 6:  LLFontGL::sSansSerifHuge->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
-			case 7:  LLFontGL::sSansSerif42->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
+			case 6:  LLFontGL::getFontSansSerifHuge()->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
+			case 7:  LLFontGL::getFontSansSerif()->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
 			default: LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF)->renderUTF8(vText, 0,S32(vX),S32(vY), gRexHud->DrawColor,LLFontGL::HAlign(vHAlign), LLFontGL::VAlign(vVAlign)); break;
 		}
 	}
@@ -105,8 +105,8 @@ S32 rxGetTextWidth(std::string vText,int vFontType)
 			case 3: return LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF)->getWidth(vText); break;
 			case 4: return LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF_SMALL)->getWidth(vText); break;
 			case 5: return LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF_BIG)->getWidth(vText); break;
-			case 6: return LLFontGL::sSansSerifHuge->getWidth(vText); break;
-			case 7: return LLFontGL::sSansSerif42->getWidth(vText); break;
+			case 6: return LLFontGL::getFontSansSerifHuge()->getWidth(vText); break;
+			case 7: return LLFontGL::getFontSansSerif()->getWidth(vText); break;
 			default: return LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF)->getWidth(vText); break;
 		}
 	}
@@ -124,8 +124,8 @@ S32 rxGetTextHeight(int vFontType)
 			case 3: return S32(LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF)->getLineHeight()); break;
 			case 4: return S32(LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF_SMALL)->getLineHeight()); break;
 			case 5: return S32(LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF_BIG)->getLineHeight()); break;
-			case 6: return S32(LLFontGL::sSansSerifHuge->getLineHeight()); break;
-			case 7: return S32(LLFontGL::sSansSerif42->getLineHeight()); break;
+			case 6: return S32(LLFontGL::getFontSansSerifHuge()->getLineHeight()); break;
+			case 7: return S32(LLFontGL::getFontSansSerif()->getLineHeight()); break;
 			default: return S32(LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF)->getLineHeight()); break;
 		}
 	}
@@ -179,7 +179,7 @@ static PyMethodDef logMethods[] = {
 
 
 
-LLRexHud::LLRexHud(const LLString& name, const LLRect& rect, BOOL mouse_opaque, U32 follows) : LLView(name,rect,mouse_opaque,follows)
+LLRexHud::LLRexHud(const std::string& name, const LLRect& rect, BOOL mouse_opaque, U32 follows) : LLView(name,rect,mouse_opaque,follows)
 {
 	try
 	{
@@ -225,6 +225,7 @@ LLRexHud::LLRexHud(const LLString& name, const LLRect& rect, BOOL mouse_opaque, 
 	}
     catch (std::exception& e)
     {
+		e;
         llwarns << "General exception " << llendl;
     }
 }
@@ -348,10 +349,10 @@ bool RexScriptCommandDispatchHandler::operator ()(const LLDispatcher *dispatcher
 {
 	if (string.size() >= 2)
 	{
-		LLString StrComponentName(string[0]);
-		LLString StrCommand(string[1]);
+		std::string StrComponentName(string[0]);
+		std::string StrCommand(string[1]);
 
-		LLString StrCommandParams = "";
+		std::string StrCommandParams = "";
 		if(string.size() > 2)
 			StrCommandParams = string[2];
 

@@ -20,7 +20,7 @@
 
 extern LLDispatcher gGenericDispatcher;
 
-const LLString RexPreloadAssetsDispatchHandler::key = "RexPreloadAssets";
+const std::string RexPreloadAssetsDispatchHandler::key = "RexPreloadAssets";
 
 RexPreloadAssetsDispatchHandler LLOgreAssetLoader::smRexPreloadAssetsHandler;
 
@@ -161,24 +161,24 @@ bool LLOgreAssetLoader::isMeshLoaded(const LLUUID& meshID)
 }
 
 //! Returns a mesh name constructed from asset UUID
-const LLString LLOgreAssetLoader::getMeshName(const LLUUID& meshID)
+const std::string LLOgreAssetLoader::getMeshName(const LLUUID& meshID)
 {
 	return meshID.asString();
 }
 
 //! Returns a skeleton name constructed from asset UUID
-LLString LLOgreAssetLoader::getSkeletonName(const LLUUID& skeletonID)
+std::string LLOgreAssetLoader::getSkeletonName(const LLUUID& skeletonID)
 {
 	return skeletonID.asString();
 }
 
 //! Returns a material name constructed from asset UUID
-LLString LLOgreAssetLoader::getMaterialName(const LLUUID& materialID)
+std::string LLOgreAssetLoader::getMaterialName(const LLUUID& materialID)
 {
 	return materialID.asString();
 }
 
-LLString LLOgreAssetLoader::getFlashAnimationName(const LLUUID& animationID)
+std::string LLOgreAssetLoader::getFlashAnimationName(const LLUUID& animationID)
 {
 	return animationID.asString();
 }
