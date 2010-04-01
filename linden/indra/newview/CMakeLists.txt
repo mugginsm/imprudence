@@ -65,6 +65,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    floaterstatslogging.cpp
 	importtracker.cpp
     emeraldboobutils.cpp
 	exporttracker.cpp
@@ -489,6 +490,7 @@ endif (LINUX)
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
+    floaterstatslogging.h
     emeraldboobutils.h
     floaterlogin.h
     hippoGridManager.h
@@ -1184,6 +1186,7 @@ set(viewer_XUI_FILES
     skins/default/xui/en-us/floater_snapshot.xml
     skins/default/xui/en-us/floater_sound_preview.xml
     skins/default/xui/en-us/floater_statistics.xml
+	skins/default/xui/en-us/floater_stats_logging.xml
     skins/default/xui/en-us/floater_telehub.xml
     skins/default/xui/en-us/floater_test.xml
     skins/default/xui/en-us/floater_texture_ctrl.xml

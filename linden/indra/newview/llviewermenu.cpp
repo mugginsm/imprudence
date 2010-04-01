@@ -217,6 +217,7 @@
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
 #include "llfloaternotificationsconsole.h"
+#include "floaterstatslogging.h"
 
 #include "lltexlayer.h"
 
@@ -10543,6 +10544,21 @@ class LLAdvancedToggleMultipleViewers : public view_listener_t
 	}
 };
 
+class LLToggleStatsFloater: public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		//open the floater
+		FloaterStatsLog::show(0);
+		
+		bool vis = false;
+		if(FloaterStatsLog::getInstance())
+		{
+			vis = (bool)FloaterStatsLog::getInstance()->getVisible();
+		}
+		return true;
+	}
+};
 
 class LLAdvancedCheckMultipleViewers : public view_listener_t
 {
@@ -10683,6 +10699,8 @@ void initialize_menus()
 	addMenu(new LLViewCheckRenderType(), "View.CheckRenderType");
 	addMenu(new LLViewCheckHUDAttachments(), "View.CheckHUDAttachments");
 	addMenu(new LLViewCheckAdvanced(), "View.CheckAdvanced");
+
+	addMenu(new LLToggleStatsFloater(),"StatsFloater");
 
 	// World menu
 	addMenu(new LLWorldChat(), "World.Chat");
