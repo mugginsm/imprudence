@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<floater bottom="40" can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="false" height="250" left="40" name="StatsFloater" title="Stats Logging"
-     width="200">
+<floater bottom="100" can_close="true" can_drag_on_left="false" can_minimize="true"
+     can_resize="false" height="205" left="100" name="StatsFloater" title="Stats Logging"
+     width="810">
 
   <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
              bottom_delta="-35" drop_shadow_visible="true" follows="left|top"
              font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
              mouse_opaque="true" name="time_left" v_pad="0" width="150">
-    Time left: [MINS]:[SECS]
+    Time left: [SECS]s
+  </text>
+  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+             bottom_delta="-35" drop_shadow_visible="true" follows="left|top"
+             font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+             mouse_opaque="true" name="samples" v_pad="0" width="150">
+    Samples: [TOTAL]
   </text>
   <spinner bottom_delta="-40" decimal_digits="0" follows="left|top" height="16"
                  increment="1" label="Duration (Sec)" label_width="90" left="15"
                  max_val="3000" min_val="2" mouse_opaque="true" name="session_duration"
-                 text_enabled_color="110, 15, 15, 255" width="125" />
-  <button bottom_delta="-50" font="SansSerif" halign="center" height="28" label="Start"
+                 text_enabled_color="110, 15, 15, 255" width="150" initial_val="60" />
+  <button bottom_delta="-40" font="SansSerif" halign="center" height="28" label="Start"
      label_selected="" left="15" mouse_opaque="true" name="start_logging"
      tool_tip="" follows="left|top"
      width="70" />
@@ -25,9 +31,22 @@
      label_selected="" left="115" mouse_opaque="true" name="stop_logging"
      tool_tip="" follows="left|top"
      width="70" />
-  <button bottom_delta="-50" font="SansSerif" halign="center" height="32" label="Generate Graph"
-     label_selected="" left="65" mouse_opaque="true" name="generate_graph"
-     tool_tip="Generate graph" follows="left|top"
-     width="70" />
-
+  <text bottom="-45" follows="left|top" font="SansSerif" height="20" left="200" name="description_label">
+    FPS:
+  </text>
+  <text_editor type="string" length="1" bottom_delta="-30" embedded_items="false" enabled="true" follows="left|top"
+        font="SansSerifSmall" height="50" left_delta="50" max_length="1024"
+        mouse_opaque="true" name="fps_csv" width="550" word_wrap="true" />
+  <text bottom_delta="-30" follows="left|top" font="SansSerif" height="20" left="200" name="description_label">
+    KBPS:
+  </text>
+  <text_editor type="string" length="1" bottom_delta="-30" embedded_items="false" enabled="true" follows="left|top"
+      font="SansSerifSmall" height="50" left_delta="50" max_length="1024"
+      mouse_opaque="true" name="bw_csv" width="550" word_wrap="true" />
+  <text bottom_delta="-30" follows="left|top" font="SansSerif" height="20" left="200" name="description_label">
+    Ping:
+  </text>
+  <text_editor type="string" length="1" bottom_delta="-30" embedded_items="false" enabled="true" follows="left|top"
+      font="SansSerifSmall" height="50" left_delta="50" max_length="1024"
+      mouse_opaque="true" name="ping_csv" width="550" word_wrap="true" />
 </floater>

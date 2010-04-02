@@ -17,16 +17,13 @@ public:
 	static FloaterStatsLog* getInstance(){ return sInstance; }
 	static BOOL session_complete;
 	static S32 sessionDuration;
-	static BOOL logPing;
-	static BOOL logObjectCount;
 	static void stopLogging(void *userdata);
+	static void generateGraph(void *userdata);
  
 private:
 
     static FloaterStatsLog* sInstance;
-	static void onCommitDuration(LLUICtrl* ctrl,void *userdata);
 	static std::string extraURLData;
-	static void generateGraph(void *userdata);
 	static void startLogging(void *userdata);
 };
 class LogTimer : public LLEventTimer 
