@@ -102,7 +102,7 @@ void write_debug(std::string& str)
 
 void show_progress(const std::string& message)
 {
-	std::wstring msg = wstring_to_utf16str(utf8str_to_wstring(message));
+	std::string msg = message;
 	if (gHwndProgress)
 	{
 		SendDlgItemMessage(gHwndProgress,       // handle to destination window 

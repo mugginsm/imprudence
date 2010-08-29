@@ -35,6 +35,7 @@
 #include "linden_common.h"
 #include "llpumpio.h"
 
+#include <iterator>
 #include <map>
 #include <set>
 #include "apr_poll.h"

@@ -232,7 +232,7 @@ BOOL LLFilePicker::getOpenFile(ELoadFilter filter)
 	success = GetOpenFileName(&mOFN);
 	if (success)
 	{
-		std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
+		std::string filename = utf16str_to_utf8str((U16*)mFilesW);
 		mFiles.push_back(filename);
 	}
 	send_agent_resume();
@@ -275,7 +275,7 @@ BOOL LLFilePicker::getMultipleOpenFiles(ELoadFilter filter)
 		// lengths.
 		if( wcslen(mOFN.lpstrFile) > mOFN.nFileOffset )	/*Flawfinder: ignore*/
 		{
-			std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
+			std::string filename = utf16str_to_utf8str((U16*)mFilesW);
 			mFiles.push_back(filename);
 		}
 		else
@@ -289,7 +289,7 @@ BOOL LLFilePicker::getMultipleOpenFiles(ELoadFilter filter)
 					break;
 				if (*tptrw == 0)
 					tptrw++; // shouldn't happen?
-				std::string filename = utf16str_to_utf8str(llutf16string(tptrw));
+				std::string filename = utf16str_to_utf8str((U16*)tptrw);
 				if (dirname.empty())
 					dirname = filename + "\\";
 				else
@@ -317,7 +317,7 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 	if (!filename.empty())
 	{
 		llutf16string tstring = utf8str_to_utf16str(filename);
-		wcsncpy(mFilesW, tstring.c_str(), FILENAME_BUFFER_SIZE);	}	/*Flawfinder: ignore*/
+		wcsncpy(mFilesW, (wchar_t*)tstring.c_str(), FILENAME_BUFFER_SIZE);	}	/*Flawfinder: ignore*/
 	else
 	{
 		mFilesW[0] = '\0';
@@ -496,7 +496,7 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 		success = GetSaveFileName(&mOFN);
 		if (success)
 		{
-			std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
+			std::string filename = utf16str_to_utf8str((U16*)mFilesW);
 			mFiles.push_back(filename);
 		}
 		gKeyboard->resetKeys();

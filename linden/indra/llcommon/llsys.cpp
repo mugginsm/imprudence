@@ -153,7 +153,7 @@ LLOSInfo::LLOSInfo() :
 				}
 			}
 
-			std::string csdversion = utf16str_to_utf8str(osvi.szCSDVersion);
+			std::string csdversion = utf16str_to_utf8str((U16*)osvi.szCSDVersion);
 			// Display version, service pack (if any), and build number.
 			std::string tmpstr;
 			if(osvi.dwMajorVersion <= 4)

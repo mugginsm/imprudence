@@ -78,7 +78,7 @@ LLDir_Win32::LLDir_Win32()
 		{
 			w_str[wcslen(w_str)-1] = '\0'; /* Flawfinder: ignore */ // remove trailing slash
 		}
-		mTempDir = utf16str_to_utf8str((U16*)w_st));
+		mTempDir = utf16str_to_utf8str((U16*)w_str);
 	}
 	else
 	{
@@ -95,7 +95,7 @@ LLDir_Win32::LLDir_Win32()
 	if (size)
 	{
 		w_str[size] = '\0';
-		mExecutablePathAndName = utf16str_to_utf8str((U16*)w_st));
+		mExecutablePathAndName = utf16str_to_utf8str((U16*)w_str);
 		S32 path_end = mExecutablePathAndName.find_last_of('\\');
 		if (path_end != std::string::npos)
 		{
@@ -114,7 +114,7 @@ LLDir_Win32::LLDir_Win32()
 	{
 		fprintf(stderr, "Couldn't get APP path, assuming current directory!");
 		GetCurrentDirectory(MAX_PATH, w_str);
-		mExecutableDir = utf16str_to_utf8str(llutf16string(w_str));
+		mExecutableDir = utf16str_to_utf8str((U16*)w_str);
 		// Assume it's the current directory
 	}
 #else

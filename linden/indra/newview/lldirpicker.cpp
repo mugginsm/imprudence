@@ -99,7 +99,7 @@ BOOL LLDirPicker::getDir(std::string* filename)
       {
 		  	// Set the string value.
 
-   			mDir = utf16str_to_utf8str(llutf16string(buffer));
+   			mDir = utf16str_to_utf8str((U16*)buffer);
 	         success = TRUE;
       }
 

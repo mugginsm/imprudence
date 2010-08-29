@@ -51,7 +51,7 @@ int	LLFile::mkdir(const std::string& dirname, int perms)
 	// permissions are ignored on Windows
 	std::string utf8dirname = dirname;
 	llutf16string utf16dirname = utf8str_to_utf16str(utf8dirname);
-	return _wmkdir(utf16dirname.c_str());
+	return _wmkdir((const wchar_t*)utf16dirname.c_str());
 #else
 	return ::mkdir(dirname.c_str(), (mode_t)perms);
 #endif
@@ -64,7 +64,7 @@ int	LLFile::rmdir(const std::string& dirname)
 	// permissions are ignored on Windows
 	std::string utf8dirname = dirname;
 	llutf16string utf16dirname = utf8str_to_utf16str(utf8dirname);
-	return _wrmdir(utf16dirname.c_str());
+	return _wrmdir((const wchar_t*)utf16dirname.c_str());
 #else
 	return ::rmdir(dirname.c_str());
 #endif
@@ -78,7 +78,7 @@ LLFILE*	LLFile::fopen(const std::string& filename, const char* mode)	/* Flawfind
 	std::string utf8mode = std::string(mode);
 	llutf16string utf16filename = utf8str_to_utf16str(utf8filename);
 	llutf16string utf16mode = utf8str_to_utf16str(utf8mode);
-	return _wfopen(utf16filename.c_str(),utf16mode.c_str());
+	return _wfopen((const wchar_t*)utf16filename.c_str(),(const wchar_t*)utf16mode.c_str());
 #else
 	return ::fopen(filename.c_str(),mode);	/* Flawfinder: ignore */
 #endif
@@ -91,7 +91,7 @@ LLFILE*	LLFile::_fsopen(const std::string& filename, const char* mode, int shari
 	std::string utf8mode = std::string(mode);
 	llutf16string utf16filename = utf8str_to_utf16str(utf8filename);
 	llutf16string utf16mode = utf8str_to_utf16str(utf8mode);
-	return _wfsopen(utf16filename.c_str(),utf16mode.c_str(),sharingFlag);
+	return _wfsopen((const wchar_t*)utf16filename.c_str(),(const wchar_t*)utf16mode.c_str(),sharingFlag);
 #else
 	llassert(0);//No corresponding function on non-windows
 	return NULL;
@@ -103,7 +103,7 @@ int	LLFile::remove(const std::string& filename)
 #if	LL_WINDOWS
 	std::string utf8filename = filename;
 	llutf16string utf16filename = utf8str_to_utf16str(utf8filename);
-	return _wremove(utf16filename.c_str());
+	return _wremove((const wchar_t*)utf16filename.c_str());
 #else
 	return ::remove(filename.c_str());
 #endif
@@ -116,7 +116,7 @@ int	LLFile::rename(const std::string& filename, const std::string& newname)
 	std::string utf8newname = newname;
 	llutf16string utf16filename = utf8str_to_utf16str(utf8filename);
 	llutf16string utf16newname = utf8str_to_utf16str(utf8newname);
-	return _wrename(utf16filename.c_str(),utf16newname.c_str());
+	return _wrename((const wchar_t*)utf16filename.c_str(),(const wchar_t*)utf16newname.c_str());
 #else
 	return ::rename(filename.c_str(),newname.c_str());
 #endif
@@ -127,7 +127,7 @@ int	LLFile::stat(const std::string& filename, llstat* filestatus)
 #if LL_WINDOWS
 	std::string utf8filename = filename;
 	llutf16string utf16filename = utf8str_to_utf16str(utf8filename);
-	return _wstat(utf16filename.c_str(),filestatus);
+	return _wstat((const wchar_t*)utf16filename.c_str(),filestatus);
 #else
 	return ::stat(filename.c_str(),filestatus);
 #endif
@@ -160,7 +160,7 @@ const char *LLFile::tmpdir()
 		DWORD len = GetTempPathW(0, L"");
 		llutf16string utf16path;
 		utf16path.resize(len + 1);
-		len = GetTempPathW(static_cast<DWORD>(utf16path.size()), &utf16path[0]);
+		len = GetTempPathW(static_cast<DWORD>(utf16path.size()), (LPWSTR)&utf16path[0]);
 		utf8path = utf16str_to_utf8str(utf16path);
 #else
 		sep = '/';

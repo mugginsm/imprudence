@@ -80,7 +80,17 @@ extern "C" {
 
 // Force Imprudence to link against the correct boost libraries -- McCabe
 #if defined(_MSC_VER)
-#if _MSC_VER >= 1500
+#if _MSC_VER >= 1600
+#ifdef LL_DEBUG
+#pragma comment( lib, "libboost_signals-vc100-mt-gd-1_41.lib" )
+#pragma comment( lib, "libboost_regex-vc100-mt-gd-1_41.lib" )
+#pragma comment( lib, "libboost_program_options-vc100-mt-gd-1_41.lib" )
+#else
+#pragma comment( lib, "libboost_signals-vc100-mt-1_41.lib" )
+#pragma comment( lib, "libboost_regex-vc100-mt-1_41.lib" )
+#pragma comment( lib, "libboost_program_options-vc100-mt-1_41.lib" )
+#endif
+#elif _MSC_VER >= 1500
 #ifdef LL_DEBUG
 #pragma comment( lib, "libboost_signals-vc90-mt-gd-1_36.lib" )
 #pragma comment( lib, "libboost_regex-vc90-mt-gd-1_36.lib" )
