@@ -1933,44 +1933,24 @@ public:
 			}
 			switch(data->type)
 			{
-			case LLAssetType::AT_NOTECARD:
-				//cmdline_printchat("case notecard @ postinv");
+				case LLAssetType::AT_NOTECARD:
 				{
-					/*
-					// We need to update the asset information
-					LLTransactionID tid;
-					LLAssetID asset_id;
-					tid.generate();
-					asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
-
-					if (gAssetStorage)
-					{
-						cmdline_printchat("using asset storage"); 
-						LLSaveNotecardInfo* info = new LLSaveNotecardInfo(this, inv_item, find(data->localid)->getID(),
-							tid, copyitem);
-						gAssetStorage->storeAssetData(tid, LLAssetType::AT_NOTECARD,
-							NULL,
-							(void*)info,
-							FALSE); 
-					}*/
-
 					std::string agent_url = gAgent.getRegion()->getCapability("UpdateNotecardAgentInventory");
-					//cmdline_printchat("UpdateNotecardAgentInventory = " + agent_url);
 
-					//agent_url = gAgent.getRegion()->getCapability("UpdateNotecardTaskInventory");
-					//cmdline_printchat("UpdateNotecardTaskInventory = " + agent_url);
+					LLTransactionID tid;
+					tid.generate();
+
 					LLSD body;
-					//body["task_id"] = find(data->localid)->getID();
-					body["item_id"] = inv_item;
-					//cmdline_printchat("body[task_id] = " + body["task_id"].asString());
+					body["item_id"] = tid.makeAssetID(gAgent.getSecureSessionID()); //inv_item;
 					cmdline_printchat("body[item_id] = " + body["item_id"].asString());
 
 					cmdline_printchat("posting content as " + data->assetid.asString());
 					LLHTTPClient::post(agent_url, body,
-								new JCPostInvUploadResponder(body, data->assetid, data->type,inv_item,data));
+						new JCPostInvUploadResponder(body, data->assetid, LLAssetType::AT_NOTECARD,inv_item,data));
 				}
 				break;
-			case LLAssetType::AT_LSL_TEXT:
+
+				case LLAssetType::AT_LSL_TEXT:
 				//cmdline_printchat("case lsltext @ postinv");
 				{
 					std::string url = gAgent.getRegion()->getCapability("UpdateScriptAgent");

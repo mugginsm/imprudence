@@ -1003,7 +1003,7 @@ void LLXMLNode::writeToOstream(std::ostream& output_stream, const std::string& i
 		}
 		if (!mValue.empty())
 		{
-			std::string contents = escapeXML(getTextContents());
+			std::string contents = getTextContents();
 			output_stream << contents;
 		}
 		else

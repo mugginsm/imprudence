@@ -1103,9 +1103,10 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 						}
 						else
 						{
-							img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAX_LEVEL);
+							img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
 							img->forceToSaveRawImage(0); //this is required for us to receive the full res image.
-							//img->setAdditionalDecodePriority(1.0f) ;
+							img->addTextureStats( (F32)MAX_IMAGE_AREA );
+							img->setAdditionalDecodePriority(1.0f) ;
 							img->setLoadedCallback( JCExportTracker::onFileLoadedForSave, 
 											0, TRUE, FALSE, info );
 							//llinfos << "Requesting texture " << asset_id.asString() << llendl;
@@ -1152,8 +1153,9 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 					else
 					{
 						img->forceToSaveRawImage(0); //this is required for us to receive the full res image. (snowglobe)
-						img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAX_LEVEL);	
+						img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);	
 						img->addTextureStats( (F32)MAX_IMAGE_AREA );
+						img->setAdditionalDecodePriority(1.0f) ;
 						img->setLoadedCallback( JCExportTracker::onFileLoadedForSave, 
 										0, TRUE, FALSE, info );
 						//llinfos << "Requesting texture " << asset_id.asString() << llendl;
@@ -1310,6 +1312,11 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 	JCAssetInfo* info = (JCAssetInfo*)userdata;
 	if(final)
 	{
+		if (!final)
+		{
+			cmdline_printchat("!final");
+			//return;
+		}
 		if( success )
 		{ /*
 			LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C();
@@ -1339,9 +1346,9 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 				if(!src_vi->readBackRaw(0,src,false))
 				{
 					cmdline_printchat("Failed to readback texture");
-					src->deleteData(); //check me, is this valid?
-					delete info;
-					return;
+					//src->deleteData(); //check me, is this valid?
+					//delete info;
+					//return;
 				}
 			}
 			
@@ -1385,6 +1392,10 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 			if(we_created_raw)
 				src->deleteData();
 
+		}
+		else
+		{
+			cmdline_printchat("!success");
 		}
 		delete info;
 	}
@@ -1915,8 +1926,8 @@ void JCExportTracker::finalize()
 
 				if(props!=NULL)
 				{
-					prim_xml->createChild("name", FALSE)->setStringValue(std::string((*props)["name"]));
-					prim_xml->createChild("description", FALSE)->setStringValue(std::string((*props)["description"]));
+					prim_xml->createChild("name", FALSE)->setValue("<![CDATA[" + std::string((*props)["name"]) + "]]>");
+					prim_xml->createChild("description", FALSE)->setValue("<![CDATA[" + std::string((*props)["description"]) + "]]>");
 					
 					//All done with properties?
 					free(props);
@@ -2249,7 +2260,7 @@ void JCExportTracker::finalize()
 					std::string uuid_string;
 					object.getTE(i)->getID().toString(uuid_string);
 					
-					face_xml->createChild("image_file", FALSE)->setStringValue(uuid_string);
+					face_xml->createChild("image_file", FALSE)->setValue("<![CDATA[" + uuid_string + "]]>");
 					face_xml->createChild("image_uuid", FALSE)->setValue(uuid_string);
 					//<color r="255" g="255" b="255" />
 					LLXMLNodePtr color_xml = face_xml->createChild("color", FALSE);
