@@ -1105,8 +1105,6 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 						{
 							img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
 							img->forceToSaveRawImage(0); //this is required for us to receive the full res image.
-							img->addTextureStats( (F32)MAX_IMAGE_AREA );
-							img->setAdditionalDecodePriority(1.0f) ;
 							img->setLoadedCallback( JCExportTracker::onFileLoadedForSave, 
 											0, TRUE, FALSE, info );
 							//llinfos << "Requesting texture " << asset_id.asString() << llendl;
@@ -1152,10 +1150,8 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 					}
 					else
 					{
-						img->forceToSaveRawImage(0); //this is required for us to receive the full res image. (snowglobe)
 						img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);	
-						img->addTextureStats( (F32)MAX_IMAGE_AREA );
-						img->setAdditionalDecodePriority(1.0f) ;
+						img->forceToSaveRawImage(0); //this is required for us to receive the full res image. (snowglobe)
 						img->setLoadedCallback( JCExportTracker::onFileLoadedForSave, 
 										0, TRUE, FALSE, info );
 						//llinfos << "Requesting texture " << asset_id.asString() << llendl;
@@ -1310,96 +1306,84 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 											void* userdata)
 {
 	JCAssetInfo* info = (JCAssetInfo*)userdata;
-	if(final)
+
+	if(final && success)
 	{
-		if (!final)
+		/*
+		LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C();
+		if(!image_j2c->encode(src,0.0))
 		{
-			cmdline_printchat("!final");
-			//return;
+			//errorencode
+			llinfos << "Failed to encode " << info->path << llendl;
+		}else if(!image_j2c->save( info->path ))
+		{
+			llinfos << "Failed to write " << info->path << llendl;
+			//errorwrite
+		}else
+		{
+			ExportTrackerFloater::mTexturesExported++;
+			llinfos << "Saved texture " << info->path << llendl;
+			//success
+		} */
+
+		//RC
+		//If we have a NULL raw image, then read one back from the GL buffer
+		bool we_created_raw=false;
+		if(src==NULL)
+		{
+			src = new LLImageRaw();
+			we_created_raw=true;
+
+			if(!src_vi->readBackRaw(0,src,false))
+			{
+				cmdline_printchat("Failed to readback texture");
+				src->deleteData(); //check me, is this valid?
+				delete info;
+				return;
+			}
 		}
-		if( success )
-		{ /*
+		
+		if(export_tga)
+		{
+			LLPointer<LLImageTGA> image_tga = new LLImageTGA;
+
+			if( !image_tga->encode( src ) )
+			{
+				llinfos << "Failed to encode " << info->path << ".tga" << llendl;
+			}
+			else if( !image_tga->save( info->path + ".tga" ) )
+			{
+				llinfos << "Failed to write " << info->path << llendl;
+			}
+		}
+
+		if(export_j2c)
+		{
 			LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C();
 			if(!image_j2c->encode(src,0.0))
 			{
 				//errorencode
-				llinfos << "Failed to encode " << info->path << llendl;
-			}else if(!image_j2c->save( info->path ))
+				llinfos << "Failed to encode " << info->path << ".j2c"  << llendl;
+			}else if(!image_j2c->save( info->path+".j2c" ))
 			{
 				llinfos << "Failed to write " << info->path << llendl;
 				//errorwrite
 			}else
 			{
-				ExportTrackerFloater::mTexturesExported++;
-				llinfos << "Saved texture " << info->path << llendl;
+				//llinfos << "Saved texture " << info->path << llendl;
 				//success
-			} */
-
-			//RC
-			//If we have a NULL raw image, then read one back from the GL buffer
-			bool we_created_raw=false;
-			if(src==NULL)
-			{
-				src = new LLImageRaw();
-				we_created_raw=true;
-
-				if(!src_vi->readBackRaw(0,src,false))
-				{
-					cmdline_printchat("Failed to readback texture");
-					//src->deleteData(); //check me, is this valid?
-					//delete info;
-					//return;
-				}
 			}
-			
-			if(export_tga)
-			{
-				LLPointer<LLImageTGA> image_tga = new LLImageTGA;
-
-				if( !image_tga->encode( src ) )
-				{
-					llinfos << "Failed to encode " << info->path << llendl;
-				}
-				else if( !image_tga->save( info->path + ".tga" ) )
-				{
-					llinfos << "Failed to write " << info->path << llendl;
-				}
-			}
-
-			if(export_j2c)
-			{
-				LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C();
-				if(!image_j2c->encode(src,0.0))
-				{
-					//errorencode
-					llinfos << "Failed to encode " << info->path << llendl;
-				}else if(!image_j2c->save( info->path+".j2c" ))
-				{
-					llinfos << "Failed to write " << info->path << llendl;
-					//errorwrite
-				}else
-				{
-					//llinfos << "Saved texture " << info->path << llendl;
-					//success
-				}
-			}
-			mTexturesExported++;
-		
-			//RC
-			//meh if we did a GL readback we created the raw image
-			// so we better delete, but the destructor is private
-			// so this needs checking for a memory leak that this is correct
-			if(we_created_raw)
-				src->deleteData();
-
 		}
-		else
-		{
-			cmdline_printchat("!success");
-		}
-		delete info;
+		mTexturesExported++;
+	
+		//RC
+		//meh if we did a GL readback we created the raw image
+		// so we better delete, but the destructor is private
+		// so this needs checking for a memory leak that this is correct
+		if(we_created_raw)
+			src->deleteData();
 	}
-
+	delete info;
 }
 
 bool JCExportTracker::serializeSelection()

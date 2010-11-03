@@ -1799,7 +1799,7 @@ void LLViewerImage::setForSculpt()
 	mForSculpt = TRUE ;
 	if(isForSculptOnly() && !getBoundRecently())
 	{
-		destroyGLTexture() ; //sculpt image does not need gl texture.
+		//destroyGLTexture() ; //sculpt image does not need gl texture.
 	}
 	checkCachedRawSculptImage() ;
 }
