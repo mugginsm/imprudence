@@ -1096,7 +1096,8 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 						mTotalTextures++;
 						mRequestedTextures.insert(asset_id);
 						LLViewerImage* img = gImageList.getImage(asset_id, MIPMAP_TRUE, FALSE);
-						if(img->getDiscardLevel()==0)
+
+						if(img->getDiscardLevel()==0 && img->getHasGLTexture())
 						{
 							//llinfos << "Already have texture " << asset_id.asString() << " in memory, attemping GL readback" << llendl;
 							onFileLoadedForSave(true,img,NULL,NULL,0,true,info);
@@ -1104,7 +1105,10 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 						else
 						{
 							img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
-							img->forceToSaveRawImage(0); //this is required for us to receive the full res image.
+							img->forceToSaveRawImage(0);
+							img->addTextureStats((F32)MAX_IMAGE_AREA, 1);
+							img->setAdditionalDecodePriority(1.0f) ;
+
 							img->setLoadedCallback( JCExportTracker::onFileLoadedForSave, 
 											0, TRUE, FALSE, info );
 							//llinfos << "Requesting texture " << asset_id.asString() << llendl;
@@ -1150,8 +1154,11 @@ LLSD * JCExportTracker::subserialize(LLViewerObject* linkset)
 					}
 					else
 					{
-						img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);	
-						img->forceToSaveRawImage(0); //this is required for us to receive the full res image. (snowglobe)
+						img->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
+						img->forceToSaveRawImage(0);
+						img->addTextureStats((F32)MAX_IMAGE_AREA);
+						img->setAdditionalDecodePriority(1.0f) ;
+
 						img->setLoadedCallback( JCExportTracker::onFileLoadedForSave, 
 										0, TRUE, FALSE, info );
 						//llinfos << "Requesting texture " << asset_id.asString() << llendl;
@@ -1336,7 +1343,7 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 
 			if(!src_vi->readBackRaw(0,src,false))
 			{
-				cmdline_printchat("Failed to readback texture");
+				cmdline_printchat("Failed to readback texture, " + info->path);
 				src->deleteData(); //check me, is this valid?
 				delete info;
 				return;
@@ -1364,9 +1371,9 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 			{
 				//errorencode
 				llinfos << "Failed to encode " << info->path << ".j2c"  << llendl;
-			}else if(!image_j2c->save( info->path+".j2c" ))
+			}else if(!image_j2c->save( info->path + ".j2c" ))
 			{
-				llinfos << "Failed to write " << info->path << llendl;
+				llinfos << "Failed to write " << info->path << ".j2c"  << llendl;
 				//errorwrite
 			}else
 			{
@@ -1383,7 +1390,8 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 		if(we_created_raw)
 			src->deleteData();
 	}
-	delete info;
+	if (final)
+		delete info;
 }
 
 bool JCExportTracker::serializeSelection()
