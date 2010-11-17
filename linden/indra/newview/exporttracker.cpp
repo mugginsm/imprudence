@@ -1382,6 +1382,7 @@ void JCExportTracker::onFileLoadedForSave(BOOL success,
 			}
 		}
 		mTexturesExported++;
+		ExportTrackerFloater::sInstance->refresh();
 	
 		//RC
 		//meh if we did a GL readback we created the raw image
@@ -1489,7 +1490,6 @@ void JCExportTracker::exportworker(void *userdata)
 		{
 			//req->localID->mPropertiesRecieved = true;		
 			cmdline_printchat("failed to retrieve properties for ");// + req->localID);
-			//mPropertiesReceived++;
 			LLViewerObject *obj = gObjectList.findObject(req->target_prim);
 			if(obj)
 			{
@@ -1745,7 +1745,6 @@ void JCExportTracker::propertyworker(void *userdata)
 		{
 			//req->localID->mPropertiesRecieved = true;		
 			cmdline_printchat("failed to retrieve properties for ");// + req->localID);
-			//mPropertiesReceived++;
 			LLViewerObject *obj = gObjectList.findObject(req->target_prim);
 			if(obj)
 			{
@@ -2303,11 +2302,11 @@ void JCExportTracker::finalize()
 						//<item>
 						LLXMLNodePtr field_xml = inventory_xml->createChild("item", FALSE);
 						   //<description>2008-01-29 05:01:19 note card</description>
-						field_xml->createChild("description", FALSE)->setValue(item["desc"].asString());
+						field_xml->createChild("description", FALSE)->setValue("<![CDATA[" + item["desc"].asString() + "]]>");
 						   //<item_id>673b00e8-990f-3078-9156-c7f7b4a5f86c</item_id>
 						field_xml->createChild("item_id", FALSE)->setValue(item["item_id"].asString());
 						   //<name>blah blah</name>
-						field_xml->createChild("name", FALSE)->setValue(item["name"].asString());
+						field_xml->createChild("name", FALSE)->setValue("<![CDATA[" + item["name"].asString() + "]]>");
 						   //<type>notecard</type>
 						field_xml->createChild("type", FALSE)->setValue(item["type"].asString());
 					} // end for each inventory item
@@ -2401,7 +2400,8 @@ void JCExportTracker::processObjectProperties(LLMessageSystem* msg, void** user_
 			{
 				free(req);
 				requested_properties.erase(iter);
-				mPropertiesReceived++;
+				if (JCExportTracker::mStatus == JCExportTracker::EXPORTING)
+					mPropertiesReceived++;
 				break;
 			}
 		}
