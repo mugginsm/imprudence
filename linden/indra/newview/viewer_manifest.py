@@ -336,6 +336,7 @@ class WindowsManifest(ViewerManifest):
             self.path("iconv.dll")
             self.path("libxml2.dll")
             self.path("libcairo-2.dll")
+            self.path("libfaad-2.dll")
             self.path("libgio-2.0-0.dll")
             self.path("libglib-2.0-0.dll")
             self.path("libgmodule-2.0-0.dll")
@@ -348,6 +349,7 @@ class WindowsManifest(ViewerManifest):
             self.path("libgpg-error-0.dll")
             self.path("libgstapp.dll")
             self.path("libgstaudio.dll")
+            self.path("libgstaudio-0.10.dll")
             self.path("libgstbase-0.10.dll")
             self.path("libgstcdda.dll")
             self.path("libgstcontroller-0.10.dll")
@@ -970,7 +972,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libgstvideo-0.10.so.0")
 
             # Gstreamer plugin dependencies
-	    self.path("libfaad.so.0")
+            self.path("libfaad.so.0")
             self.path("libogg.so.0")
             self.path("libtheora.so.0")
             self.path("libvorbis.so.0")
