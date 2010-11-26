@@ -1659,8 +1659,8 @@ void JCExportTracker::exportworker(void *userdata)
 		{
 			//we have the root properties and inventory now check all children
 			bool got_all_stuff=true;
-			LLViewerObject::child_list_t child_list;
-			llassert(child_list=(*iter)->getChildren());
+			LLViewerObject::child_list_t child_list = (*iter)->getChildren();
+			llassert(!child_list.empty());
 			for (LLViewerObject::child_list_t::const_iterator i = child_list.begin(); i != child_list.end(); i++)
 			{
 				LLViewerObject* child = *i;
@@ -2575,10 +2575,9 @@ void JCExportTracker::inventoryChanged(LLViewerObject* obj,
 					LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
 					LLViewerInventoryItem* new_item = (LLViewerInventoryItem*)item;
 
-					LLPermissions perm;
-					llassert(new_item && new_item->getPermissions());
+					llassert(new_item);
 
-					perm = new_item->getPermissions();
+					LLPermissions perm = new_item->getPermissions();
 
 					if(couldDL(asset->getType())
 						&& perm.allowCopyBy(gAgent.getID())
