@@ -1660,7 +1660,6 @@ void JCExportTracker::exportworker(void *userdata)
 			//we have the root properties and inventory now check all children
 			bool got_all_stuff=true;
 			LLViewerObject::child_list_t child_list = (*iter)->getChildren();
-			llassert(!child_list.empty());
 			for (LLViewerObject::child_list_t::const_iterator i = child_list.begin(); i != child_list.end(); i++)
 			{
 				LLViewerObject* child = *i;
@@ -2569,16 +2568,10 @@ void JCExportTracker::inventoryChanged(LLViewerObject* obj,
 			U32 num = 0;
 			for( ;	it != end;	++it)
 			{
-				LLInventoryObject* asset = (*it);
+				LLInventoryItem* asset = dynamic_cast<LLInventoryItem*>(it->get());
 				if(asset)
 				{
-					LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
-					LLViewerInventoryItem* new_item = (LLViewerInventoryItem*)item;
-
-					llassert(new_item);
-
-					LLPermissions perm = new_item->getPermissions();
-
+					LLPermissions perm(asset->getPermissions());
 					if(couldDL(asset->getType())
 						&& perm.allowCopyBy(gAgent.getID())
 						&& perm.allowModifyBy(gAgent.getID())
@@ -2588,7 +2581,7 @@ void JCExportTracker::inventoryChanged(LLViewerObject* obj,
 						inv_item["name"] = asset->getName();
 						inv_item["type"] = LLAssetType::lookup(asset->getType());
 						//cmdline_printchat("requesting asset "+asset->getName());
-						inv_item["desc"] = ((LLInventoryItem*)((LLInventoryObject*)(*it)))->getDescription();//god help us all
+						inv_item["desc"] = asset->getDescription();
 						inv_item["item_id"] = asset->getUUID().asString();
 						if(!LLFile::isdir(asset_dir+gDirUtilp->getDirDelimiter()+"inventory"))
 						{
