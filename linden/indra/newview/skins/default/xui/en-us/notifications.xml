@@ -1,7 +1,7 @@
 <?xml version="1.0" ?><notifications>
 
-<global name="VIEWER_NAME">Imprudence</global>
-<global name="VIEWER_SITE">imprudenceviewer.org</global>
+<global name="VIEWER_NAME">astra</global>
+<global name="VIEWER_SITE">pleiades.ca</global>
 <global name="SECOND_LIFE">Second Life</global>
 <global name="SECOND_LIFE_SITE">secondlife.com</global>
 

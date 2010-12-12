@@ -10,7 +10,7 @@
       <key>gridname</key><string>Second Life</string>
       <key>platform</key><string>SecondLife</string>
       <key>loginuri</key><string>https://login.agni.lindenlab.com/cgi-bin/login.cgi</string>
-      <key>loginpage</key><string>http://imprudenceviewer.org/app/splash/</string>
+      <!--key>loginpage</key><string>http://imprudenceviewer.org/app/splash/</string-->
       <key>helperuri</key><string>https://secondlife.com/helpers/</string>
       <key>website</key><string>http://secondlife.com/</string>
       <key>support</key><string>http://secondlife.com/support/</string>
@@ -25,7 +25,7 @@
       <key>gridname</key><string>Second Life Beta Grid</string>
       <key>platform</key><string>SecondLife</string>
       <key>loginuri</key><string>https://login.aditi.lindenlab.com/cgi-bin/login.cgi</string>
-      <key>loginpage</key><string>http://imprudenceviewer.org/app/splash/</string>
+      <!--key>loginpage</key><string>http://imprudenceviewer.org/app/splash/</string-->
       <key>helperuri</key><string>http://aditi-secondlife.webdev.lindenlab.com/helpers/</string>
       <key>website</key><string>http://secondlife.com/</string>
       <key>support</key><string>http://secondlife.com/support/</string>

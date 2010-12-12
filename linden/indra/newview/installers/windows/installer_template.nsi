@@ -289,7 +289,7 @@ FunctionEnd
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Function CloseSecondLife
   Push $0
-  FindWindow $0 "ImprudencePLEIADES" ""
+  FindWindow $0 "astra" ""
   IntCmp $0 0 DONE
   MessageBox MB_OKCANCEL $(CloseSecondLifeInstMB) IDOK CLOSE IDCANCEL CANCEL_INSTALL
 
@@ -301,7 +301,7 @@ Function CloseSecondLife
     SendMessage $0 16 0 0
 
   LOOP:
-	  FindWindow $0 "ImprudencePLEIADES" ""
+	  FindWindow $0 "astra" ""
 	  IntCmp $0 0 DONE
 	  Sleep 500
 	  Goto LOOP
@@ -468,13 +468,13 @@ Push $2
 	; Otherwise (preview/dmz etc) just remove cache
     StrCmp $INSTFLAGS "" RM_ALL RM_CACHE
       RM_ALL:
-        RMDir /r "$2\Application Data\NotImprudence"
+        RMDir /r "$2\Application Data\astra"
       RM_CACHE:
         # Local Settings directory is the cache, there is no "cache" subdir
-        RMDir /r "$2\Local Settings\Application Data\NotImprudence"
+        RMDir /r "$2\Local Settings\Application Data\astra"
         # Vista version of the same
-        RMDir /r "$2\AppData\Local\NotImprudence"
-        Delete "$2\Application Data\NotImprudence\user_settings\settings_windlight.xml"
+        RMDir /r "$2\AppData\Local\astra"
+        Delete "$2\Application Data\astra\user_settings\settings_windlight.xml"
 
   CONTINUE:
     IntOp $0 $0 + 1
@@ -489,13 +489,13 @@ Pop $0
 Push $0
   ReadRegStr $0 HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Common AppData"
   StrCmp $0 "" +2
-  RMDir /r "$0\NotImprudence"
+  RMDir /r "$0\astra"
 Pop $0
 
 ; Delete filse in C:\Windows\Application Data\NotImprudence
 ; If the user is running on a pre-NT system, Application Data lives here instead of
 ; in Documents and Settings.
-RMDir /r "$WINDIR\Application Data\NotImprudence"
+RMDir /r "$WINDIR\Application Data\astra"
 
 FunctionEnd
 
@@ -538,7 +538,7 @@ Function un.RemovePassword
 DetailPrint "Removing Second Life password"
 
 SetShellVarContext current
-Delete "$APPDATA\NotImprudence\user_settings\password.dat"
+Delete "$APPDATA\astra\user_settings\password.dat"
 SetShellVarContext all
 
 FunctionEnd

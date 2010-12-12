@@ -1155,7 +1155,7 @@ BOOL LLPrimitive::packTEMessage(LLMessageSystem *mesgsys, int shield) const
 	
 	S32 last_face_index = getNumTEs() - 1;
 
-        LLUUID client_tag = LLUUID("cc7a030f-282f-c165-44d2-b5ee572e72bf");//Imprudence
+        LLUUID client_tag = LLUUID("16d910dc-bf16-40a6-b4a7-2c1e4e7f7d97");//astra
 	if (shield == 2)client_tag = LLUUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97");//IMG_DEFAULT_AVATAR
 
 	if (last_face_index > -1)

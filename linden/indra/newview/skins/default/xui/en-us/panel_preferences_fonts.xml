@@ -25,7 +25,7 @@
     </radio_item>
     
     <radio_item name="Liberation" bottom="-170" left="0" height="20">
-      Liberation Sans (classic Imprudence font)
+      Liberation Sans
     </radio_item>
     
   </radio_group>

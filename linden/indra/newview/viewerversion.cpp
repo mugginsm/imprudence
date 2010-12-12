@@ -40,7 +40,7 @@ S32 ViewerVersion::sVersionMinor = 0;
 S32 ViewerVersion::sVersionPatch = 0;
 std::string ViewerVersion::sVersionTest = "";
 
-const std::string ViewerVersion::sViewerName = "ImprudencePLEIADES";
+const std::string ViewerVersion::sViewerName = "astra";
 
 ViewerVersion::ViewerVersion()
 {

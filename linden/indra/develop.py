@@ -76,7 +76,7 @@ class PlatformSetup(object):
     build_type = build_types['relwithdebinfo']
     standalone = 'OFF'
     unattended = 'OFF'
-    project_name = 'ImprudencePLEIADES'
+    project_name = 'astra'
     distcc = True
     cmake_opts = []
 

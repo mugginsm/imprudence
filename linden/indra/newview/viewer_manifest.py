@@ -168,7 +168,7 @@ class ViewerManifest(LLManifest):
     def channel(self):
         return self.args['channel']
     def channel_unique(self):
-        return self.channel().replace("Imprudence", "").strip()
+        return self.channel().replace("astra", "").strip()
     def channel_oneword(self):
         return "".join(self.channel_unique().split())
     def channel_lowerword(self):
@@ -209,10 +209,7 @@ class ViewerManifest(LLManifest):
 class WindowsManifest(ViewerManifest):
     def final_exe(self):
         if self.default_channel():
-            if self.default_grid():
-                return "imprudence.exe"
-            else:
-                return "imprudencepreview.exe"
+            return "astra.exe"
         else:
             return ''.join(self.channel().split()) + '.exe'
 
@@ -471,14 +468,14 @@ class WindowsManifest(ViewerManifest):
         if self.default_channel():
             if self.default_grid():
                 # release viewer
-                installer_file = "ImprudencePLEIADES_%(version_dashes)s_Setup.exe"
+                installer_file = "astra_%(version_dashes)s_Setup.exe"
                 grid_vars_template = """
                 OutFile "%(installer_file)s"
                 !define INSTFLAGS "%(flags)s"
-                !define INSTNAME   "ImprudencePLEIADES"
-                !define SHORTCUT   "ImprudencePLEIADES"
-                !define URLNAME   "imprudence"
-                Caption "ImprudencePLEIADES ${VERSION}"
+                !define INSTNAME   "astra"
+                !define SHORTCUT   "astra"
+                !define URLNAME   "astra"
+                Caption "astra ${VERSION}"
                 """
             else:
                 # beta grid viewer
@@ -545,7 +542,7 @@ class DarwinManifest(ViewerManifest):
             #  <bundle>/Contents/MacOS/
             self.contents_of_tar(self.args['source']+'/mozilla-universal-darwin.tgz', 'MacOS')
 
-            self.path("Info-Imprudence.plist", dst="Info.plist")
+            self.path("Info-astra.plist", dst="Info.plist")
 
             # copy additional libs in <bundle>/Contents/MacOS/
             if self.prefix(src="../../libraries/universal-darwin/lib_release", dst="MacOS/"):
@@ -842,7 +839,7 @@ class LinuxManifest(ViewerManifest):
             #self.path("client-readme.txt","README-linux.txt")
             self.path("client-readme-voice.txt","README-linux-voice.txt")
             #self.path("client-readme-joystick.txt","README-linux-joystick.txt")
-            self.path("wrapper.sh","imprudence")
+            self.path("wrapper.sh","astra")
             self.path("handle_secondlifeprotocol.sh")
             self.path("register_secondlifeprotocol.sh")
 	    self.path("getvoice.sh")
@@ -863,7 +860,7 @@ class LinuxManifest(ViewerManifest):
         if 'installer_name' in self.args:
             installer_name = self.args['installer_name']
         else:
-            installer_name_components = ['Imprudence_', self.args.get('arch')]
+            installer_name_components = ['astra_', self.args.get('arch')]
             installer_name_components.extend(self.args['version'])
             installer_name = "_".join(installer_name_components)
             if self.default_channel():
