@@ -168,7 +168,7 @@ class ViewerManifest(LLManifest):
     def channel(self):
         return self.args['channel']
     def channel_unique(self):
-        return self.channel().replace("astra", "").strip()
+        return self.channel().replace("astra", "").replace("Imprudence", "").strip()
     def channel_oneword(self):
         return "".join(self.channel_unique().split())
     def channel_lowerword(self):
@@ -208,11 +208,7 @@ class ViewerManifest(LLManifest):
 
 class WindowsManifest(ViewerManifest):
     def final_exe(self):
-        if self.default_channel():
-            return "astra.exe"
-        else:
-            return ''.join(self.channel().split()) + '.exe'
-
+        return "astra.exe"
 
     def construct(self):
         super(WindowsManifest, self).construct()
@@ -465,42 +461,17 @@ class WindowsManifest(ViewerManifest):
         !define VERSION_LONG "%(version)s"
         !define VERSION_DASHES "%(version_dashes)s"
         """ % substitution_strings
-        if self.default_channel():
-            if self.default_grid():
-                # release viewer
-                installer_file = "astra_%(version_dashes)s_Setup.exe"
-                grid_vars_template = """
-                OutFile "%(installer_file)s"
-                !define INSTFLAGS "%(flags)s"
-                !define INSTNAME   "astra"
-                !define SHORTCUT   "astra"
-                !define URLNAME   "astra"
-                Caption "astra ${VERSION}"
-                """
-            else:
-                # beta grid viewer
-                installer_file = "Imprudence_%(version_dashes)s_(%(grid_caps)s)_Setup.exe"
-                grid_vars_template = """
-                OutFile "%(installer_file)s"
-                !define INSTFLAGS "%(flags)s"
-                !define INSTNAME   "Imprudence%(grid_caps)s"
-                !define SHORTCUT   "Imprudence (%(grid_caps)s)"
-                !define URLNAME   "imprudence%(grid)s"
-                !define UNINSTALL_SETTINGS 1
-                Caption "Imprudence %(grid)s ${VERSION}"
-                """
-        else:
-            # some other channel on some grid
-            installer_file = "Imprudence_%(version_dashes)s_%(channel_oneword)s_Setup.exe"
-            grid_vars_template = """
-            OutFile "%(installer_file)s"
-            !define INSTFLAGS "%(flags)s"
-            !define INSTNAME   "Imprudence%(channel_oneword)s"
-            !define SHORTCUT   "%(channel)s"
-            !define URLNAME   "imprudence"
-            !define UNINSTALL_SETTINGS 1
-            Caption "%(channel)s ${VERSION}"
-            """
+        
+        installer_file = "astra_%(version_dashes)s_%(channel_oneword)s_Setup.exe"
+        grid_vars_template = """
+        OutFile "%(installer_file)s"
+        !define INSTFLAGS "%(flags)s"
+        !define INSTNAME   "astra"
+        !define SHORTCUT   "%(channel)s"
+        !define URLNAME   "astra"
+        !define UNINSTALL_SETTINGS 1
+        Caption "%(channel)s ${VERSION}"
+        """
         if 'installer_name' in self.args:
             installer_file = self.args['installer_name']
         else:
@@ -519,8 +490,17 @@ class WindowsManifest(ViewerManifest):
 
         # We use the Unicode version of NSIS, available from
         # http://www.scratchpaper.com/
-        NSIS_path = os.environ['ProgramFiles(X86)'] + '\\NSIS\\Unicode\\makensis.exe'
-        self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+        try:
+          import _winreg as reg
+          NSIS_path = reg.QueryValue(reg.HKEY_LOCAL_MACHINE, r"SOFTWARE\NSIS\Unicode") + '\\makensis.exe'
+          self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+        except:
+          try:
+            NSIS_path = os.environ['ProgramFiles'] + '\\NSIS\\Unicode\\makensis.exe'
+            self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+          except:
+            NSIS_path = os.environ['ProgramFiles(X86)'] + '\\NSIS\\Unicode\\makensis.exe'
+            self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
         # self.remove(self.dst_path_of(tempfile))
         # If we're on a build machine, sign the code using our Authenticode certificate. JC
         sign_py = 'C:\\buildscripts\\code-signing\\sign.py'
@@ -745,11 +725,11 @@ class DarwinManifest(ViewerManifest):
 
 
     def package_finish(self):
-        channel_standin = 'Imprudence'  # hah, our default channel is not usable on its own
+        channel_standin = 'astra'  # hah, our default channel is not usable on its own
         if not self.default_channel():
             channel_standin = self.channel()
 
-        imagename="Imprudence_" + '_'.join(self.args['version'])
+        imagename="astra_" + '_'.join(self.args['version'])
 
         # MBW -- If the mounted volume name changes, it breaks the .DS_Store's background image and icon positioning.
         #  If we really need differently named volumes, we'll need to create multiple DS_Store file images, or use some other trick.
