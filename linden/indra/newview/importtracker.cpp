@@ -1146,26 +1146,32 @@ LLSD ImportTracker::parse_hpa_object(LLXmlTreeNode* prim)
 
 				for (LLXmlTreeNode* item = param->getFirstChild(); item; item = param->getNextChild())
 				{
-					LLSD sd;
-
-					//<item>
-					for (LLXmlTreeNode* param = item->getFirstChild(); param; param = item->getNextChild())
+					if(item->hasName("received"))
 					{
-						//<description>2008-01-29 05:01:19 note card</description>
-						if (param->hasName("description"))
-							sd["desc"] = param->getTextContents();
-						//<item_id>673b00e8-990f-3078-9156-c7f7b4a5f86c</item_id>
-						else if (param->hasName("item_id"))
-							sd["item_id"] = param->getTextContents();
-						//<name>blah blah</name>
-						else if (param->hasName("name"))
-							sd["name"] = param->getTextContents();
-						//<type>notecard</type>
-						else if (param->hasName("type"))
-							sd["type"] = param->getTextContents();
+						//uh, ok, we don't care here
+					}else if(item->hasName("item"))
+					{
+						LLSD sd;
+						
+						//<item>
+						for (LLXmlTreeNode* param = item->getFirstChild(); param; param = item->getNextChild())
+						{
+							//<description>2008-01-29 05:01:19 note card</description>
+							if (param->hasName("description"))
+								sd["desc"] = param->getTextContents();
+							//<item_id>673b00e8-990f-3078-9156-c7f7b4a5f86c</item_id>
+							else if (param->hasName("item_id"))
+								sd["item_id"] = param->getTextContents();
+							//<name>blah blah</name>
+							else if (param->hasName("name"))
+								sd["name"] = param->getTextContents();
+							//<type>notecard</type>
+							else if (param->hasName("type"))
+								sd["type"] = param->getTextContents();
+						}
+						inventory[inventory_count] = sd;
+						inventory_count++;
 					}
-					inventory[inventory_count] = sd;
-					inventory_count++;
 				}
 				prim_llsd["inventory"] = inventory;
 					
@@ -1933,24 +1939,44 @@ public:
 			}
 			switch(data->type)
 			{
-				case LLAssetType::AT_NOTECARD:
+			case LLAssetType::AT_NOTECARD:
+				//cmdline_printchat("case notecard @ postinv");
 				{
-					std::string agent_url = gAgent.getRegion()->getCapability("UpdateNotecardAgentInventory");
-
+					/*
+					// We need to update the asset information
 					LLTransactionID tid;
+					LLAssetID asset_id;
 					tid.generate();
+					asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
 
+					if (gAssetStorage)
+					{
+						cmdline_printchat("using asset storage"); 
+						LLSaveNotecardInfo* info = new LLSaveNotecardInfo(this, inv_item, find(data->localid)->getID(),
+							tid, copyitem);
+						gAssetStorage->storeAssetData(tid, LLAssetType::AT_NOTECARD,
+							NULL,
+							(void*)info,
+							FALSE); 
+					}*/
+
+					std::string agent_url = gAgent.getRegion()->getCapability("UpdateNotecardAgentInventory");
+					//cmdline_printchat("UpdateNotecardAgentInventory = " + agent_url);
+
+					//agent_url = gAgent.getRegion()->getCapability("UpdateNotecardTaskInventory");
+					//cmdline_printchat("UpdateNotecardTaskInventory = " + agent_url);
 					LLSD body;
-					body["item_id"] = tid.makeAssetID(gAgent.getSecureSessionID()); //inv_item;
+					//body["task_id"] = find(data->localid)->getID();
+					body["item_id"] = inv_item;
+					//cmdline_printchat("body[task_id] = " + body["task_id"].asString());
 					cmdline_printchat("body[item_id] = " + body["item_id"].asString());
 
 					cmdline_printchat("posting content as " + data->assetid.asString());
 					LLHTTPClient::post(agent_url, body,
-						new JCPostInvUploadResponder(body, data->assetid, LLAssetType::AT_NOTECARD,inv_item,data));
+								new JCPostInvUploadResponder(body, data->assetid, data->type,inv_item,data));
 				}
 				break;
-
-				case LLAssetType::AT_LSL_TEXT:
+			case LLAssetType::AT_LSL_TEXT:
 				//cmdline_printchat("case lsltext @ postinv");
 				{
 					std::string url = gAgent.getRegion()->getCapability("UpdateScriptAgent");

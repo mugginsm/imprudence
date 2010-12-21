@@ -16,7 +16,7 @@
  *      may be used to endorse or promote products derived from this
  *      software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS LTD AND CONTRIBUTORS “AS IS”
+ * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS LTD AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MODULAR SYSTEMS OR CONTRIBUTORS
@@ -49,6 +49,7 @@ struct InventoryRequest_t
 {
 	time_t	request_time;
 	LLViewerObject * object; // I can't be bothered to itterate the objects list on every kick, so hold the pointer here
+	LLViewerObject * real_object; //for when we need to know what object the request is "actually" for (if using surrogates)
 	U32		num_retries;
 };
 
@@ -89,7 +90,7 @@ public:
 	void buildListDisplays();
 	void addObjectToList(LLUUID id, BOOL checked, std::string name, std::string type, LLUUID owner_id);
 	
-	static void RemoteStart(LLDynamicArray<LLViewerObject*> catfayse, int primcount);
+	static void RemoteStart(LLDynamicArray<LLViewerObject*> catfayse, int primcount, std::string destination);
 
 	//Close button
 	static void onClickClose(void* data);
@@ -136,12 +137,25 @@ public:
 							BOOL final,
 							void* userdata );
 
+	static LLSD* checkInventoryContents(InventoryRequest_t* original_request, InventoryObjectList* inv);
+
 
 	static JCExportTracker* getInstance(){ init(); return sInstance; }
 
 	static bool serialize(LLDynamicArray<LLViewerObject*> objects);
 
 	static bool getAsyncData(LLViewerObject * obj);
+
+	static void requestInventory(LLViewerObject * obj, LLViewerObject * surrogate_obj=NULL);
+
+	static BOOL processSurrogate(LLViewerObject * surrogate_object);
+	static void createSurrogate(LLViewerObject * object);
+	static void removeSurrogates();
+	static void removeObject(LLViewerObject* obj);
+
+	static BOOL isSurrogateDeleteable(LLViewerObject* obj);
+
+	static BOOL exportAllowed(LLPermissions perm);
 
 	static void error(std::string name, U32 localid, LLVector3 object_pos, std::string error_msg);
 
@@ -172,6 +186,8 @@ public:
 
 	static BOOL export_is_avatar;
 
+	static BOOL using_surrogates;
+
 	//static U32 level;
 	static LLVector3 selection_center;
 	static LLVector3 selection_size;
@@ -201,13 +217,15 @@ public:
 	static std::map<LLUUID,LLSD *>received_inventory;
 	static std::map<LLUUID,LLSD *>received_properties;
 
+	static std::map<LLVector3, LLUUID> expected_surrogate_pos;
+	static std::list<LLViewerObject *> surrogate_roots;
+	static std::deque<LLViewerObject *> queued_surrogates;
+
 	static std::string destination;
 private:
 	static LLSD total;
 
 	static std::string asset_dir;
-	//static std::list<S32> copied_objects;
-	//static LLDynamicArray<U32> copied_objects;
 };
 
 // zip a folder. this doesn't work yet.
