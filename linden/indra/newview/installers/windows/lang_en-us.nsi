@@ -25,28 +25,28 @@ LangString CheckWindowsVersionMB ${LANG_ENGLISH} 'Imprudence only supports Windo
 
 ; checkifadministrator function (install)
 LangString CheckAdministratorInstDP ${LANG_ENGLISH} "Checking for permission to install..."
-LangString CheckAdministratorInstMB ${LANG_ENGLISH} 'You appear to be using a "limited" account.$\nYou must be an "administrator" to install Imprudence.'
+LangString CheckAdministratorInstMB ${LANG_ENGLISH} 'You appear to be using a "limited" account.$\nYou must be an "administrator" to install astra.'
 
 ; checkifadministrator function (uninstall)
 LangString CheckAdministratorUnInstDP ${LANG_ENGLISH} "Checking for permission to uninstall..."
-LangString CheckAdministratorUnInstMB ${LANG_ENGLISH} 'You appear to be using a "limited" account.$\nYou must be an "administrator" to uninstall Imprudence.'
+LangString CheckAdministratorUnInstMB ${LANG_ENGLISH} 'You appear to be using a "limited" account.$\nYou must be an "administrator" to uninstall astra.'
 
 ; checkifalreadycurrent
-LangString CheckIfCurrentMB ${LANG_ENGLISH} "It appears that Imprudence ${VERSION_LONG} is already installed.$\n$\nWould you like to install it again?"
+LangString CheckIfCurrentMB ${LANG_ENGLISH} "It appears that astra ${VERSION_LONG} is already installed.$\n$\nWould you like to install it again?"
 
 ; closeimprudence function (install)
-LangString CloseSecondLifeInstDP ${LANG_ENGLISH} "Waiting for Imprudence to shut down..."
-LangString CloseSecondLifeInstMB ${LANG_ENGLISH} "Imprudence can't be installed while it is already running.$\n$\nFinish what you're doing then select OK to close Imprudence and continue.$\nSelect CANCEL to cancel installation."
+LangString CloseSecondLifeInstDP ${LANG_ENGLISH} "Waiting for astra to shut down..."
+LangString CloseSecondLifeInstMB ${LANG_ENGLISH} "astra can't be installed while it is already running.$\n$\nFinish what you're doing then select OK to close astra and continue.$\nSelect CANCEL to cancel installation."
 
 ; closeimprudence function (uninstall)
-LangString CloseSecondLifeUnInstDP ${LANG_ENGLISH} "Waiting for Imprudence to shut down..."
-LangString CloseSecondLifeUnInstMB ${LANG_ENGLISH} "Imprudence can't be uninstalled while it is already running.$\n$\nFinish what you're doing then select OK to close Imprudence and continue.$\nSelect CANCEL to cancel."
+LangString CloseSecondLifeUnInstDP ${LANG_ENGLISH} "Waiting for astra to shut down..."
+LangString CloseSecondLifeUnInstMB ${LANG_ENGLISH} "astra can't be uninstalled while it is already running.$\n$\nFinish what you're doing then select OK to close astra and continue.$\nSelect CANCEL to cancel."
 
 ; removecachefiles
 LangString RemoveCacheFilesDP ${LANG_ENGLISH} "Deleting cache files in Documents and Settings folder"
 
 ; delete program files
-LangString DeleteProgramFilesMB ${LANG_ENGLISH} "There are still files in your Imprudence program directory.$\n$\nThese are possibly files you created or moved to:$\n$INSTDIR$\n$\nDo you want to remove them?"
+LangString DeleteProgramFilesMB ${LANG_ENGLISH} "There are still files in your astra program directory.$\n$\nThese are possibly files you created or moved to:$\n$INSTDIR$\n$\nDo you want to remove them?"
 
 ; uninstall text
-LangString UninstallTextMsg ${LANG_ENGLISH} "This will uninstall Imprudence ${VERSION_LONG} from your system."
+LangString UninstallTextMsg ${LANG_ENGLISH} "This will uninstall astra ${VERSION_LONG} from your system."

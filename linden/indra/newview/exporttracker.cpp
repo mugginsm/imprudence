@@ -1743,8 +1743,9 @@ void JCExportTracker::exportworker(void *userdata)
 		{
 			//we have the root properties and inventory now check all children
 			bool got_all_stuff=true;
-			LLViewerObject::child_list_t child_list;
-			llassert(child_list=(*iter)->getChildren());
+
+			LLViewerObject::child_list_t child_list = (*iter)->getChildren();
+
 			for (LLViewerObject::child_list_t::const_iterator i = child_list.begin(); i != child_list.end(); i++)
 			{
 				LLViewerObject* child = *i;
