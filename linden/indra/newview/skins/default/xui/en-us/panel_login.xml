@@ -132,7 +132,7 @@
 
 
   <!-- ACCOUNT / FORGOT PASSWORD -->
-
+  <!--
 	<text name="create_new_account_text"
 	      bottom="45" left="-210" height="16" width="200"
         follows="right|bottom" h_pad="0" halign="right" v_pad="0"
@@ -152,10 +152,11 @@
         mouse_opaque="true" hover="true" hover_color="50 115 185">
 		Forgot your name or password?
 	</text>
-
+  -->
 
   <!-- CHANNEL & VERSION -->
 
+  <!--
 	<text name="channel_text"
 	      bottom="5" left="-310" height="16" width="300"
         follows="right|bottom" h_pad="0" halign="right" v_pad="0"
@@ -165,4 +166,5 @@
         hover="true" hover_color="50 115 185">
     [CHANNEL] [VERSION]
   </text>
+  -->
 </panel>
