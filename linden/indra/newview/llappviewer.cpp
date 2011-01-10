@@ -767,6 +767,11 @@ bool LLAppViewer::init()
 	//
 	initWindow();
 
+	if (gSavedSettings.getBOOL("CheckForUpdate") && !HippoUpdate::checkUpdate()) {
+		// update tells us to exit the viewer
+		return false;
+	}
+
 	{
 		BOOL download = gSavedSettings.getBOOL("DownloadClientTags");
 
@@ -3229,7 +3234,7 @@ void LLAppViewer::badNetworkHandler()
 		"the issue. \n"
 		" \n"
 		"If the problem continues, please report the issue at: \n"
-		"http://imprudenceviewer.org" << grid_support_msg;
+		"http://astraviewer.com" << grid_support_msg;
 	forceDisconnect(message.str());
 }
 

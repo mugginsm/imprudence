@@ -68,7 +68,7 @@
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
-    <string>http://imprudenceviewer.org</string>
+    <string>http://astraviewer.com/</string>
   </map>
   <key>BrowserLastVisited</key>
   <map>
@@ -1019,6 +1019,17 @@
     <string>Boolean</string>
     <key>Value</key>
     <string>0</string>
+  </map>
+  <key>CheckForUpdate</key>
+  <map>
+    <key>Comment</key>
+    <string>Check for new viewer version on startup</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
   </map>
   <key>CheckForGridUpdates</key>
   <map>
@@ -7367,7 +7378,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>http://imprudenceviewer.org/splash/</string>
+      <string>http://astraviewer.com/splash/</string>
     </map>
     <key>LogTextureDownloadsToViewerLog</key>
     <map>
@@ -13067,7 +13078,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>astra</string>
+      <string>Astra Viewer</string>
     </map>
     <key>VertexShaderEnable</key>
     <map>
