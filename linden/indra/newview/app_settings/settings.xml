@@ -919,7 +919,7 @@
     <key>Type</key>
     <string>Boolean</string>
     <key>Value</key>
-    <integer>0</integer>
+    <integer>1</integer>
   </map>
   <key>WarnFirstAO</key>
   <map>
@@ -1267,7 +1267,7 @@
     <key>Type</key>
     <string>Boolean</string>
     <key>Value</key>
-    <integer>0</integer>
+    <integer>1</integer>
   </map>
 
   <key>ClientTagsListURL</key>
@@ -1291,7 +1291,7 @@
     <key>Type</key>
     <string>Boolean</string>
     <key>Value</key>
-    <integer>1</integer>
+    <integer>0</integer>
   </map>
 
   <key>ClothingLayerProtection</key>

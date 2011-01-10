@@ -2744,7 +2744,8 @@ bool idle_startup()
 			gAOInvTimer = new AOInvTimer();
 		}
 
-		LLFirstUse::ClientTags();
+		if (gSavedSettings.getBOOL("WarnClientTags"))
+			LLFirstUse::ClientTags();
 
 		// Let the map know about the inventory.
 		if(gFloaterWorldMap)
