@@ -87,6 +87,7 @@ set(viewer_SOURCE_FILES
     hippoGridManager.cpp
     hippoLimits.cpp
     hippoRestRequest.cpp
+    hippoUpdate.cpp
     impprefsfonts.cpp
     jcfloater_animation_list.cpp
     jcfloaterareasearch.cpp
@@ -522,6 +523,7 @@ set(viewer_HEADER_FILES
     hippoGridManager.h
     hippoLimits.h
     hippoRestRequest.h
+    hippoUpdate.h
     impprefsfonts.h
     jcfloater_animation_list.h
     jcfloaterareasearch.h

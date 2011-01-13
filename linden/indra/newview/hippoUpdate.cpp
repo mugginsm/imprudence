@@ -1,3 +1,4 @@
+#include "llviewerprecompiledheaders.h"
 
 #include "hippoUpdate.h"
 
@@ -9,9 +10,12 @@
 #include <llhttpclient.h>
 #include <llmemory.h>
 //#include <llversionviewer.h>
+#include "llappviewer.h"
 #include "llviewercontrol.h"
 #include "llviewernetwork.h"
+#include "llsys.h"
 #include "llweb.h"
+#include "viewerversion.h"
 #include <llwindow.h>
 
 
@@ -24,7 +28,17 @@ bool HippoUpdate::checkUpdate()
 	llinfos << "Hippo Update Check..." << llendl;
 
 	// get channel name
-	gHippoChannel = gSavedSettings.getString("ChannelName");
+	gHippoChannel = gSavedSettings.getString("VersionChannelName");
+	
+	//get OS
+	std::string osString;
+#if LL_WINDOWS  
+	osString = "win32";
+#elif LL_DARWIN
+	osString = "mac";
+#elif LL_LINUX
+	osString = "linux";
+#endif
 
 	// get mac address
 	char macAddress[18];
@@ -32,18 +46,17 @@ bool HippoUpdate::checkUpdate()
 		gMACAddress[0], gMACAddress[1], gMACAddress[2], gMACAddress[3], gMACAddress[4], gMACAddress[5]);
 
 	// build URL for update check
-	char url[1000];
-	snprintf(url, 1000, 
-/*		"http://update.mjm.game-host.org/os/viewer.php?"
-		"product=%s&channel=%s&"
-		"version_major=%d&version_minor=%d&version_patch=%d&version_base=%s&"
-		"platform=%s&mac=%s",
-		LL_PRODUCT, LL_CHANNEL_CSTR,
-		LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BASE,
-		LL_PLATFORM*/"", macAddress);
+	std::stringstream sstr;	
+	sstr << "http://astraviewer.com/app/viewerupdate.php?";
+	sstr << "channel=" + gHippoChannel;
+	sstr << "&version_major=" << llformat("%u", ViewerVersion::getImpMajorVersion());
+	sstr << "&version_minor=" << llformat("%u", ViewerVersion::getImpMinorVersion());
+	sstr << "&version_patch=" << llformat("%u", ViewerVersion::getImpPatchVersion());
+	sstr << "&platform=" << osString;
+	sstr << "&mac=" << macAddress;
 
 	// query update server
-	std::string escaped_url = LLWeb::escapeURL(url);
+	std::string escaped_url = LLWeb::escapeURL(sstr.str());
 	LLSD response = LLHTTPClient::blockingGet(escaped_url.c_str());
 
 	// check response, return on error
@@ -80,7 +93,7 @@ bool HippoUpdate::checkUpdate()
 		"Do you want to visit the web site?",
 		yourVersion.c_str(), curVersion.c_str(),
 		mandatory? "\nThis is a mandatory update.\n": "");
-	S32 button = OSMessageBox(msg, "Hippo OpenSim Viewer Update", OSMB_YESNO);
+	S32 button = OSMessageBox(msg, "Astra Viewer Update", OSMB_YESNO);
 	if (button == OSBTN_YES) {
 		llinfos << "Taking user to " << webpage << llendl;
 		LLWeb::loadURLExternal(webpage);
