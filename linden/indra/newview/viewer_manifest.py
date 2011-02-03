@@ -462,7 +462,7 @@ class WindowsManifest(ViewerManifest):
         !define VERSION_DASHES "%(version_dashes)s"
         """ % substitution_strings
         
-        installer_file = "astra_%(version_dashes)s_%(channel_oneword)s_Setup.exe"
+        installer_file = "AstraViewer_%(version_dashes)s_Setup.exe"
         grid_vars_template = """
         OutFile "%(installer_file)s"
         !define INSTFLAGS "%(flags)s"

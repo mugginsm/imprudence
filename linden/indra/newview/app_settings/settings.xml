@@ -1007,7 +1007,7 @@
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
-    <string>osgrid</string>
+    <string>astragrid</string>
   </map>
   <key>KeepAppearance</key>
   <map>

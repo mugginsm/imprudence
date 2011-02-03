@@ -1,9 +1,24 @@
 <llsd>
   <array>
     <map>
-      <key>default_grids_version</key><string>26</string>
+      <key>default_grids_version</key><string>27</string>
     </map>
 
+    <!-- AstraGrid -->
+    <map>
+      <key>gridnick</key><string>astragrid</string>
+      <key>gridname</key><string>AstraGrid</string>
+      <key>platform</key><string>OpenSim</string>
+      <key>loginuri</key><string>http://login.astragrid.com:8003/</string>
+      <key>loginpage</key><string>http://astragrid.com/loginscreen.php</string>
+      <key>helperuri</key><string>http://astragrid.com/index.php?page=help</string>
+      <key>website</key><string>http://astragrid.com/</string>
+      <key>support</key><string>http://astragrid.com/index.php?page=support</string>
+      <key>register</key><string>http://astragrid.com/index.php?page=register</string>
+      <key>password</key><string>http://astragrid.com/index.php?page=forgotpass</string>
+      <key>version</key><string>0</string>
+    </map>
+    
     <!-- Second Life -->
     <map>
       <key>gridnick</key><string>secondlife</string>
@@ -144,20 +159,6 @@
       <key>loginpage</key><string></string>
       <key>helperuri</key><string></string>
       <key>website</key><string>http://www.cyberlandia.net</string>
-      <key>version</key><string>0</string>
-    </map>
-
-    <!-- Role Play Worlds -->
-    <map>
-      <key>gridnick</key><string>roleplayworlds</string>
-      <key>gridname</key><string>Role Play Worlds</string>
-      <key>platform</key><string>OpenSim</string>
-      <key>loginuri</key><string>http://grid.roleplayworlds.net:8002/</string>
-      <key>loginpage</key><string>http://grid.roleplayworlds.net/loginscreen.php</string>
-      <key>helperuri</key><string>http://grid.roleplayworlds.net/</string>
-      <key>website</key><string>http://roleplayworlds.net/</string>
-      <key>register</key><string>http://grid.roleplayworlds.net/index.php?page=create</string>
-      <key>password</key><string>http://grid.roleplayworlds.net/index.php?page=change</string>
       <key>version</key><string>0</string>
     </map>
 
