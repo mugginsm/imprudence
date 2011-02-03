@@ -86,7 +86,7 @@ def get_default_version(srctree):
             patch = re.search("IMP_VERSION_PATCH\s=\s([0-9]+)", contents).group(1)
             #build = re.search("LL_VERSION_BUILD\s=\s([0-9]+)", contents).group(1)
 	    build = re.search('const char \* const IMP_VERSION_TEST = "(.*)";', contents).group(1)
-            return major, minor, patch, build
+            return major, minor, patch
 
 def get_channel(srctree):
     # look up llversionserver.h and parse out the version info

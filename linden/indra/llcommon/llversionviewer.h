@@ -46,13 +46,15 @@ const char * const LL_VIEWER_NAME = "Second Life";
 // The channel is ViewerChannelName in settings.xml
 // The Imprudence version is set in app_settings\viewerversion.xml -- MC
 
+// This is still used by llmanifest.py for the installer version number. - Patrick Sapinski 2/3/2011
+
 /*const char * const LL_CHANNEL = "Imprudence";
 
 const char * const IMP_VIEWER_NAME = "Imprudence";
 
 const S32 IMP_VERSION_MAJOR = 1;
-const S32 IMP_VERSION_MINOR = 3;
+const S32 IMP_VERSION_MINOR = 0;
 const S32 IMP_VERSION_PATCH = 0;
-const char * const IMP_VERSION_TEST = "beta 4";*/
+const char * const IMP_VERSION_TEST = "";*/
 
 #endif
