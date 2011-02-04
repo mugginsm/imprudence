@@ -13078,7 +13078,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>Astra Viewer</string>
+      <string>astra</string>
     </map>
     <key>VertexShaderEnable</key>
     <map>

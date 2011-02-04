@@ -289,7 +289,7 @@ FunctionEnd
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Function CloseSecondLife
   Push $0
-  FindWindow $0 "astra" ""
+  FindWindow $0 "Astra Viewer" ""
   IntCmp $0 0 DONE
   MessageBox MB_OKCANCEL $(CloseSecondLifeInstMB) IDOK CLOSE IDCANCEL CANCEL_INSTALL
 
@@ -301,7 +301,7 @@ Function CloseSecondLife
     SendMessage $0 16 0 0
 
   LOOP:
-	  FindWindow $0 "astra" ""
+	  FindWindow $0 "Astra Viewer" ""
 	  IntCmp $0 0 DONE
 	  Sleep 500
 	  Goto LOOP
@@ -468,13 +468,13 @@ Push $2
 	; Otherwise (preview/dmz etc) just remove cache
     StrCmp $INSTFLAGS "" RM_ALL RM_CACHE
       RM_ALL:
-        RMDir /r "$2\Application Data\astra"
+        RMDir /r "$2\Application Data\Astra Viewer"
       RM_CACHE:
         # Local Settings directory is the cache, there is no "cache" subdir
-        RMDir /r "$2\Local Settings\Application Data\astra"
+        RMDir /r "$2\Local Settings\Application Data\Astra Viewer"
         # Vista version of the same
-        RMDir /r "$2\AppData\Local\astra"
-        Delete "$2\Application Data\astra\user_settings\settings_windlight.xml"
+        RMDir /r "$2\AppData\Local\Astra Viewer"
+        Delete "$2\Application Data\Astra Viewer\user_settings\settings_windlight.xml"
 
   CONTINUE:
     IntOp $0 $0 + 1
@@ -489,13 +489,13 @@ Pop $0
 Push $0
   ReadRegStr $0 HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Common AppData"
   StrCmp $0 "" +2
-  RMDir /r "$0\astra"
+  RMDir /r "$0\Astra Viewer"
 Pop $0
 
 ; Delete filse in C:\Windows\Application Data\NotImprudence
 ; If the user is running on a pre-NT system, Application Data lives here instead of
 ; in Documents and Settings.
-RMDir /r "$WINDIR\Application Data\astra"
+RMDir /r "$WINDIR\Application Data\Astra Viewer"
 
 FunctionEnd
 
@@ -535,10 +535,10 @@ FunctionEnd
 ;
 Function un.RemovePassword
 
-DetailPrint "Removing Second Life password"
+DetailPrint "Removing Astra Viewer password"
 
 SetShellVarContext current
-Delete "$APPDATA\astra\user_settings\password.dat"
+Delete "$APPDATA\Astra Viewer\user_settings\password.dat"
 SetShellVarContext all
 
 FunctionEnd
@@ -962,13 +962,13 @@ CreateShortCut	"$SMPROGRAMS\$INSTSHORTCUT\$INSTSHORTCUT Museum Spanish.lnk" \
 				"$INSTDIR\$INSTEXE" "$INSTFLAGS -simple -spanish"
 !endif
 
-WriteINIStr		"$SMPROGRAMS\$INSTSHORTCUT\SL Create Trial Account.url" \
-				"InternetShortcut" "URL" \
-				"http://www.secondlife.com/registration/"
-WriteINIStr		"$SMPROGRAMS\$INSTSHORTCUT\SL Your Account.url" \
-				"InternetShortcut" "URL" \
-				"http://www.secondlife.com/account/"
-CreateShortCut	"$SMPROGRAMS\$INSTSHORTCUT\SL Scripting Language Help.lnk" \
+;WriteINIStr		"$SMPROGRAMS\$INSTSHORTCUT\SL Create Trial Account.url" \
+;				"InternetShortcut" "URL" \
+;				"http://www.secondlife.com/registration/"
+;WriteINIStr		"$SMPROGRAMS\$INSTSHORTCUT\SL Your Account.url" \
+;				"InternetShortcut" "URL" \
+;				"http://www.secondlife.com/account/"
+CreateShortCut	"$SMPROGRAMS\$INSTSHORTCUT\Scripting Language Help.lnk" \
 				"$INSTDIR\lsl_guide.html"
 CreateShortCut	"$SMPROGRAMS\$INSTSHORTCUT\Uninstall $INSTSHORTCUT.lnk" \
 				'"$INSTDIR\uninst.exe"' '/P="$INSTPROG"'

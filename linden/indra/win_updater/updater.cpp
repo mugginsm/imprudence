@@ -454,11 +454,11 @@ WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nSho
 	if (gTotalBytesRead < (1024 * 1024) && ! cancelled)
 	{
 		MessageBox(gWindow,
-			L"The astra auto-update has failed.\n"
+			L"The Astra Viewer auto-update has failed.\n"
 			L"The problem may be caused by other software installed \n"
 			L"on your computer, such as a firewall.\n"
-			L"Please visit http://pleiades.ca/ \n"
-			L"to download the latest version of astra.\n",
+			L"Please visit http://astraviewer.com/ \n"
+			L"to download the latest version of Astra Viewer.\n",
 			NULL, MB_OK);
 		return 1;
 	}
@@ -472,7 +472,7 @@ WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nSho
 	if (!success)
 	{
 		MessageBox(gWindow, 
-			L"astra download failed.\n"
+			L"Astra Viewer download failed.\n"
 			L"Please try again later.", 
 			NULL, MB_OK);
 		return 1;

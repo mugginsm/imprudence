@@ -216,6 +216,16 @@ class WindowsManifest(ViewerManifest):
         # nor do we have a fixed name for the executable
         self.path('%s/imprudence-bin.exe' % self.args['configuration'], dst=self.final_exe())
 
+      	# need to get the kdu dll from any of the build directories as well
+        try:
+            self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
+                '../../libraries/i686-win32/lib/release/llkdu.dll'), 
+                  dst='llkdu.dll')
+            pass
+        except:
+            print "Skipping llkdu.dll"
+            pass
+
         self.gather_documents()
 
         if self.prefix("../..", dst="doc"):
@@ -236,7 +246,7 @@ class WindowsManifest(ViewerManifest):
         self.path("dbghelp.dll")
 
         # For using FMOD for sound... DJS
-        #self.path("fmod.dll")
+        self.path("fmod.dll")
 
         # For textures
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
@@ -466,11 +476,11 @@ class WindowsManifest(ViewerManifest):
         grid_vars_template = """
         OutFile "%(installer_file)s"
         !define INSTFLAGS "%(flags)s"
-        !define INSTNAME   "astra"
-        !define SHORTCUT   "%(channel)s"
+        !define INSTNAME   "AstraViewer"
+        !define SHORTCUT   "Astra Viewer"
         !define URLNAME   "astra"
         !define UNINSTALL_SETTINGS 1
-        Caption "%(channel)s ${VERSION}"
+        Caption "Astra Viewer ${VERSION_LONG}"
         """
         if 'installer_name' in self.args:
             installer_file = self.args['installer_name']
@@ -725,11 +735,11 @@ class DarwinManifest(ViewerManifest):
 
 
     def package_finish(self):
-        channel_standin = 'astra'  # hah, our default channel is not usable on its own
+        channel_standin = 'Astra Viewer'  # hah, our default channel is not usable on its own
         if not self.default_channel():
             channel_standin = self.channel()
 
-        imagename="astra_" + '_'.join(self.args['version'])
+        imagename="AstraViewer_" + '_'.join(self.args['version'])
 
         # MBW -- If the mounted volume name changes, it breaks the .DS_Store's background image and icon positioning.
         #  If we really need differently named volumes, we'll need to create multiple DS_Store file images, or use some other trick.
@@ -840,7 +850,7 @@ class LinuxManifest(ViewerManifest):
         if 'installer_name' in self.args:
             installer_name = self.args['installer_name']
         else:
-            installer_name_components = ['astra_', self.args.get('arch')]
+            installer_name_components = ['AstraViewer_', self.args.get('arch')]
             installer_name_components.extend(self.args['version'])
             installer_name = "_".join(installer_name_components)
             if self.default_channel():

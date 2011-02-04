@@ -44,4 +44,4 @@ const std::string BUY_CURRENCY_URL (
 
 
 const std::string RELEASE_NOTES_BASE_URL (
-	"http://pleiades.ca/astra/");
+	"http://astraviewer.com/");
