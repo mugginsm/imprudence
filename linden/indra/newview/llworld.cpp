@@ -74,7 +74,7 @@ const S32 WORLD_PATCH_SIZE = 16;
 
 extern LLColor4U MAX_WATER_COLOR;
 
-const U32 LLWorld::mWidth = 256;
+U32 LLWorld::mWidth = 256;
 
 // meters/point, therefore mWidth * mScale = meters per edge
 const F32 LLWorld::mScale = 1.f;
@@ -134,7 +134,7 @@ F32	LLWorld::getRegionMaxHeight() const
 	return gHippoLimits->getMaxHeight();
 }
 
-LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
+LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host, const U32 &region_size_x, const U32 &region_size_y)
 {
 	LLMemType mt(LLMemType::MTYPE_REGIONS);
 	
@@ -166,6 +166,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 
 	U32 iindex = 0;
 	U32 jindex = 0;
+	mWidth = region_size_x;
 	from_region_handle(region_handle, &iindex, &jindex);
 	S32 x = (S32)(iindex/mWidth);
 	S32 y = (S32)(jindex/mWidth);
@@ -1044,9 +1045,15 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 	// which simulator should we modify?
 	LLHost sim(ip_u32, port);
 
+	//Aurora-Sim feature, custom region sizes - Patrick Sapinski (2/7/2011)
+	U32 region_size_x = 256;
+	msg->getU32(_PREHASH_SimulatorInfo, "RegionSizeX", region_size_x);
+	U32 region_size_y = 256;
+	msg->getU32(_PREHASH_SimulatorInfo, "RegionSizeY", region_size_y);
+
 	// Viewer trusts the simulator.
 	msg->enableCircuit(sim, TRUE);
-	LLWorld::getInstance()->addRegion(handle, sim);
+	LLWorld::getInstance()->addRegion(handle, sim, region_size_x, region_size_y);
 
 	// give the simulator a message it can use to get ip and port
 	llinfos << "simulator_enable() Enabling " << sim << " with code " << msg->getOurCircuitCode() << llendl;

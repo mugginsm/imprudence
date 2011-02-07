@@ -3364,6 +3364,12 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	std::string seedCap;
 	msg->getStringFast(_PREHASH_Info, _PREHASH_SeedCapability, seedCap);
 
+	//Aurora-Sim feature, custom region sizes - Patrick Sapinski (2/7/2011)
+	U32 region_size_x = 256;
+	msg->getU32(_PREHASH_RegionData, "RegionSizeX", region_size_x);
+	U32 region_size_y = 256;
+	msg->getU32(_PREHASH_RegionData, "RegionSizeY", region_size_y);
+
 	// update home location if we are teleporting out of prelude - specific to teleporting to welcome area 
 	if((teleport_flags & TELEPORT_FLAGS_SET_HOME_TO_TARGET)
 	   && (!gAgent.isGodlike()))
@@ -3379,7 +3385,7 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 
 	// Viewer trusts the simulator.
 	gMessageSystem->enableCircuit(sim_host, TRUE);
-	LLViewerRegion* regionp =  LLWorld::getInstance()->addRegion(region_handle, sim_host);
+	LLViewerRegion* regionp =  LLWorld::getInstance()->addRegion(region_handle, sim_host, region_size_x, region_size_y);
 
 /*
 	// send camera update to new region
@@ -3678,9 +3684,15 @@ void process_crossed_region(LLMessageSystem* msg, void**)
 	std::string seedCap;
 	msg->getStringFast(_PREHASH_RegionData, _PREHASH_SeedCapability, seedCap);
 
+	//Aurora-Sim feature, custom region sizes - Patrick Sapinski (2/7/2011)
+	U32 region_size_x = 256;
+	msg->getU32(_PREHASH_RegionData, "RegionSizeX", region_size_x);
+	U32 region_size_y = 256;
+	msg->getU32(_PREHASH_RegionData, "RegionSizeY", region_size_y);
+
 	send_complete_agent_movement(sim_host);
 
-	LLViewerRegion* regionp = LLWorld::getInstance()->addRegion(region_handle, sim_host);
+	LLViewerRegion* regionp = LLWorld::getInstance()->addRegion(region_handle, sim_host, region_size_x, region_size_y);
 	regionp->setSeedCapability(seedCap);
 
 	// Tell the LightShare handler that we have changed regions.
