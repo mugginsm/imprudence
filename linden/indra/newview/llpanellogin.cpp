@@ -846,6 +846,10 @@ void LLPanelLogin::loadLoginPage()
 	}
 
 	// Channel and Version
+	//Skip channel & version for now because using a non Linden channel breaks the SL
+	//login page background, and because the info is used to upgrade the viewer, which
+	//we're handling elsewhere now - Patrick Sapinski (2/5/2011)
+	/*
 	std::string version = llformat("%d.%d.%d %s",
 		ViewerVersion::getImpMajorVersion(), ViewerVersion::getImpMinorVersion(),
 		ViewerVersion::getImpPatchVersion(), ViewerVersion::getImpTestVersion().c_str() );
@@ -858,11 +862,12 @@ void LLPanelLogin::loadLoginPage()
 
 	curl_free(curl_channel);
 	curl_free(curl_version);
+	*/
 
 	// Grid
-	char* curl_grid = curl_escape(LLViewerLogin::getInstance()->getGridLabel().c_str(), 0);
-	oStr << "&grid=" << curl_grid;
-	curl_free(curl_grid);
+	//char* curl_grid = curl_escape(LLViewerLogin::getInstance()->getGridLabel().c_str(), 0);
+	//oStr << "&grid=" << curl_grid;
+	//curl_free(curl_grid);
 
 	gViewerWindow->setMenuBackgroundColor(false, !LLViewerLogin::getInstance()->isInProductionGrid());
 	//LLViewerLogin::getInstance()->setMenuColor();
