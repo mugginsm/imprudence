@@ -79,7 +79,7 @@ U32 LLWorld::mWidth = 256;
 // meters/point, therefore mWidth * mScale = meters per edge
 const F32 LLWorld::mScale = 1.f;
 
-const F32 LLWorld::mWidthInMeters = mWidth * mScale;
+F32 LLWorld::mWidthInMeters = mWidth * mScale;
 
 //
 // Functions
@@ -167,9 +167,10 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host,
 	U32 iindex = 0;
 	U32 jindex = 0;
 	mWidth = region_size_x;
+	mWidthInMeters = mWidth * mScale;
 	from_region_handle(region_handle, &iindex, &jindex);
-	S32 x = (S32)(iindex/mWidth);
-	S32 y = (S32)(jindex/mWidth);
+	S32 x = (S32)(iindex/256);
+	S32 y = (S32)(jindex/256);
 	llinfos << "Adding new region (" << x << ":" << y << ")" << llendl;
 	llinfos << "Host: " << host << llendl;
 
@@ -1050,6 +1051,13 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 	msg->getU32(_PREHASH_SimulatorInfo, "RegionSizeX", region_size_x);
 	U32 region_size_y = 256;
 	msg->getU32(_PREHASH_SimulatorInfo, "RegionSizeY", region_size_y);
+
+	//and a little hack for Second Life compatibility
+	if (region_size_y == 0 || region_size_x == 0)
+	{
+		region_size_x = 256;
+		region_size_y = 256;
+	}
 
 	// Viewer trusts the simulator.
 	msg->enableCircuit(sim, TRUE);

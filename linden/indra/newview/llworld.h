@@ -173,7 +173,7 @@ private:
 	// meters/point, therefore mWidth * mScale = meters per edge
 	static const F32 mScale;
 
-	static const F32 mWidthInMeters;
+	static F32 mWidthInMeters;
 
 	F32 mLandFarClip;					// Far clip distance for land.
 	LLPatchVertexArray		mLandPatch;
