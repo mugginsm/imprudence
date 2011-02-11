@@ -137,25 +137,7 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	mHoverParcel = new LLParcel();
 	mCollisionParcel = new LLParcel();
 
-	mParcelsPerEdge = S32(	REGION_WIDTH_METERS / PARCEL_GRID_STEP_METERS );
-	mHighlightSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
-	resetSegments(mHighlightSegments);
-
-	mCollisionSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
-	resetSegments(mCollisionSegments);
-
-	mBlockedImage = gImageList.getImageFromFile("noentrylines.j2c");
-	mPassImage = gImageList.getImageFromFile("noentrypasslines.j2c");
-
-	S32 overlay_size = mParcelsPerEdge * mParcelsPerEdge / PARCEL_OVERLAY_CHUNKS;
-	sPackedOverlay = new U8[overlay_size];
-
-	mAgentParcelOverlay = new U8[mParcelsPerEdge * mParcelsPerEdge];
-	S32 i;
-	for (i = 0; i < mParcelsPerEdge * mParcelsPerEdge; i++)
-	{
-		mAgentParcelOverlay[i] = 0;
-	}
+	init(256);
 }
 
 
@@ -193,6 +175,32 @@ LLViewerParcelMgr::~LLViewerParcelMgr()
 
 	sBlockedImage = NULL;
 	sPassImage = NULL;
+}
+
+//moved this stuff out of the constructor and into a function that we can call again after we get the region size.
+//LLViewerParcelMgr needs to be changed so we either get an instance per region, or it handles various region sizes
+//on a single grid properly - Patrick Sapinski (2/10/2011)
+void LLViewerParcelMgr::init(F32 region_size)
+{
+	mParcelsPerEdge = S32(	region_size / PARCEL_GRID_STEP_METERS );
+	mHighlightSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
+	resetSegments(mHighlightSegments);
+
+	mCollisionSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
+	resetSegments(mCollisionSegments);
+
+	mBlockedImage = gImageList.getImageFromFile("noentrylines.j2c");
+	mPassImage = gImageList.getImageFromFile("noentrypasslines.j2c");
+
+	S32 overlay_size = mParcelsPerEdge * mParcelsPerEdge / PARCEL_OVERLAY_CHUNKS;
+	sPackedOverlay = new U8[overlay_size];
+
+	mAgentParcelOverlay = new U8[mParcelsPerEdge * mParcelsPerEdge];
+	S32 i;
+	for (i = 0; i < mParcelsPerEdge * mParcelsPerEdge; i++)
+	{
+		mAgentParcelOverlay[i] = 0;
+	}
 }
 
 void LLViewerParcelMgr::dump()

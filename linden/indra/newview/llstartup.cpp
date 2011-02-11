@@ -1582,8 +1582,12 @@ bool idle_startup()
 
 			//Aurora-Sim feature, custom region sizes - Patrick Sapinski (2/7/2011)
 			text = LLUserAuth::getInstance()->getResponse("region_size_x");
-			if(!text.empty()) first_sim_size_x = strtoul(text.c_str(), NULL, 10);
+			if(!text.empty()) {
+				first_sim_size_x = strtoul(text.c_str(), NULL, 10);
+				LLViewerParcelMgr::getInstance()->init(first_sim_size_x);
+			}
 
+			//region Y size is currently unused, major refactoring required. - Patrick Sapinski (2/10/2011)
 			text = LLUserAuth::getInstance()->getResponse("region_size_y");
 			if(!text.empty()) first_sim_size_y = strtoul(text.c_str(), NULL, 10);
 			

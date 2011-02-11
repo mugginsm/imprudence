@@ -835,7 +835,7 @@ void LLWorld::updateWaterObjects()
 	S32 max_y = 0;
 	U32 region_x, region_y;
 
-	S32 rwidth = 256;
+	//S32 rwidth = mWidth;
 
 	// We only want to fill in water for stuff that's near us, say, within 256 or 512m
 	S32 range = LLViewerCamera::getInstance()->getFar() > 256.f ? 512 : 256;
@@ -869,7 +869,7 @@ void LLWorld::updateWaterObjects()
 		gObjectList.killObject(waterp);
 	}
 	mHoleWaterObjects.clear();
-
+/* TEMPORARY! disabled void water -Patrick Sapinski (2/11/2011)
 	// Now, get a list of the holes
 	S32 x, y;
 	for (x = min_x; x <= max_x; x += rwidth)
@@ -956,6 +956,7 @@ void LLWorld::updateWaterObjects()
 
 		gObjectList.updateActive(waterp);
 	}
+	*/
 }
 
 void LLWorld::shiftRegions(const LLVector3& offset)
