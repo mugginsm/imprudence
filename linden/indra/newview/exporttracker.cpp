@@ -2602,6 +2602,7 @@ BOOL couldDL(LLAssetType::EType type)
 		return FALSE;
 		break;
 	}
+	return FALSE; // shut up compiler warning
 }
 LLUUID JCExportTracker::getUUIDForAsset(LLInventoryItem* item)
 {
