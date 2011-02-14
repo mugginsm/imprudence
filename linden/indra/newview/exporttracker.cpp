@@ -2598,11 +2598,8 @@ BOOL couldDL(LLAssetType::EType type)
 	case LLAssetType::AT_GESTURE:
 		return TRUE;
 		break;
-	default:
-		return FALSE;
-		break;
 	}
-	return FALSE; // shut up compiler warning
+	return FALSE;
 }
 LLUUID JCExportTracker::getUUIDForAsset(LLInventoryItem* item)
 {
