@@ -682,14 +682,33 @@ void LLSurface::decompressDCTPatch(LLBitPack &bitpack, LLGroupHeader *gopp, BOOL
 
 	while (1)
 	{
-		decode_patch_header(bitpack, &ph);
+		decode_patch_header(bitpack, &ph, b_large_patch);
 		if (ph.quant_wbits == END_OF_PATCHES)
 		{
 			break;
 		}
 
-		i = ph.patchids >> 5;
-		j = ph.patchids & 0x1F;
+		if (b_large_patch)
+		{
+			i = ph.patchids >> 8; //x
+			j = ph.patchids & 0xFF; //y
+		}
+		else
+		{
+			i = ph.patchids >> 5; //x
+			j = ph.patchids & 0x1F; //y
+		}
+
+		//DEBUG REMOVE ME -KOW
+		llwarns << "Received terrain packet" 
+			<< " patches per edge " << mPatchesPerEdge
+			<< " i " << i
+			<< " j " << j
+			<< " dc_offset " << ph.dc_offset
+			<< " range " << (S32)ph.range
+			<< " quant_wbits " << (S32)ph.quant_wbits
+			<< " patchids " << (S32)ph.patchids
+			<< llendl;
 
 		if ((i >= mPatchesPerEdge) || (j >= mPatchesPerEdge))
 		{

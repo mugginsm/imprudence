@@ -235,7 +235,7 @@ void	decode_patch_group_header(LLBitPack &bitpack, LLGroupHeader *gopp)
 	gPatchSize = gopp->patch_size; 
 }
 
-void	decode_patch_header(LLBitPack &bitpack, LLPatchHeader *ph)
+void	decode_patch_header(LLBitPack &bitpack, LLPatchHeader *ph, BOOL b_large_patch)
 {
 	U8 retvalu8;
 
@@ -280,7 +280,10 @@ void	decode_patch_header(LLBitPack &bitpack, LLPatchHeader *ph)
 	bitpack.bitUnpack(&(ret[1]), 8);
 	bitpack.bitUnpack(&(ret[0]), 2);
 #else
-	bitpack.bitUnpack((U8 *)&retvalu16, 10);
+	if (b_large_patch)
+		bitpack.bitUnpack((U8 *)&retvalu16, 16);
+	else
+		bitpack.bitUnpack((U8 *)&retvalu16, 10);
 #endif
 	ph->patchids = retvalu16;
 

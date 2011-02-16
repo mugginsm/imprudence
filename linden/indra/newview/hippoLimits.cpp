@@ -20,7 +20,7 @@ HippoLimits::HippoLimits()
 	mMinHoleSize(0.05f),
 	mMaxHollow(0.95f),
 	mMinPrimScale(0.001f),
-	mMaxPrimScale(256.0f),
+	mMaxPrimScale(4096.0f),
 	mMaxLinkedPrims(-1)
 {
 	setLimits();
@@ -44,7 +44,7 @@ void HippoLimits::setOpenSimLimits()
 {
 	mMaxAgentGroups = gHippoGridManager->getConnectedGrid()->getMaxAgentGroups();
 	if (mMaxAgentGroups < 0) mMaxAgentGroups = 50;
-	mMaxPrimScale = 256.0f;
+	mMaxPrimScale = 4096.0f;
 	mMinPrimScale = 0.001f;
 	mMaxHeight = 10000.0f;
 	mMaxLinkedPrims = -1;
