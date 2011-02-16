@@ -699,17 +699,6 @@ void LLSurface::decompressDCTPatch(LLBitPack &bitpack, LLGroupHeader *gopp, BOOL
 			j = ph.patchids & 0x1F; //y
 		}
 
-		//DEBUG REMOVE ME -KOW
-		llwarns << "Received terrain packet" 
-			<< " patches per edge " << mPatchesPerEdge
-			<< " i " << i
-			<< " j " << j
-			<< " dc_offset " << ph.dc_offset
-			<< " range " << (S32)ph.range
-			<< " quant_wbits " << (S32)ph.quant_wbits
-			<< " patchids " << (S32)ph.patchids
-			<< llendl;
-
 		if ((i >= mPatchesPerEdge) || (j >= mPatchesPerEdge))
 		{
 			llwarns << "Received invalid terrain packet - patch header patch ID incorrect!" 
