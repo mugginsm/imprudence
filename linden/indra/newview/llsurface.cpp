@@ -690,8 +690,8 @@ void LLSurface::decompressDCTPatch(LLBitPack &bitpack, LLGroupHeader *gopp, BOOL
 
 		if (b_large_patch)
 		{
-			i = ph.patchids >> 8; //x
-			j = ph.patchids & 0xFF; //y
+			i = ph.patchids >> 16; //x
+			j = ph.patchids & 0xFFFF; //y
 		}
 		else
 		{
