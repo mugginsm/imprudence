@@ -2597,6 +2597,7 @@ BOOL couldDL(LLAssetType::EType type)
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_GESTURE:
 		return TRUE;
+	default:
 		break;
 	}
 	return FALSE;
