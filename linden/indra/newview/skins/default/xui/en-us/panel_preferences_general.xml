@@ -26,11 +26,7 @@
     </combo_item>
   </combo_box>
   <button name="grid_btn" label="Grid Manager"
-<<<<<<< HEAD
-          bottom_delta="0" left="330" height="16" width="100"
-=======
           bottom_delta="-3" left="330" height="20" width="100"
->>>>>>> remotes/jjacek/weekly
           follows="left|top" font="SansSerifSmall" halign="center"
 		      mouse_opaque="true" scale_image="TRUE" />
   <check_box bottom="-44" enabled="true" follows="left|top"
@@ -175,11 +171,7 @@
 	     mouse_opaque="true" name="maturity_desired_prompt" v_pad="0" width="394">
 		 I want to access content rated:
 	</text>
-<<<<<<< HEAD
-	<combo_box bottom="-318" follows="left|top" height="18" left="320"
-=======
 	<combo_box bottom_delta="-6" follows="left|top" height="18" left="315"
->>>>>>> remotes/jjacek/weekly
 	     mouse_opaque="true" name="maturity_desired_combobox" width="150">
 		<combo_item name="Desired_Adult" value="42">
 			PG, Mature and Adult
@@ -192,13 +184,8 @@
 		</combo_item>
 	</combo_box>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-<<<<<<< HEAD
-	     bottom="-312" drop_shadow_visible="true" enabled="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="320"
-=======
 	     bottom_delta="0" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="315"
->>>>>>> remotes/jjacek/weekly
 	     mouse_opaque="true" name="maturity_desired_textbox" v_pad="0" width="150">
 		 PG only
 	</text>
@@ -223,9 +210,6 @@
 			UTC
 		</combo_item>
 	</combo_box>
-<<<<<<< HEAD
-	<combo_box allow_text_entry="true" bottom="-382" enabled="true"
-=======
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-24" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="18" left="10"
@@ -233,7 +217,6 @@
 		Language:
 	</text>
 	<combo_box allow_text_entry="true" bottom_delta="0" enabled="true"
->>>>>>> remotes/jjacek/weekly
 	     follows="left|top" height="16" left="153" max_chars="135"
 	     mouse_opaque="true" name="language_combobox" width="146">
 		<combo_item type="string" length="1" enabled="true" name="System Default Language" value="default">
