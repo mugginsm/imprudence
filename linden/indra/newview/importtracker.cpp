@@ -27,6 +27,10 @@
 #include "llfocusmgr.h"
 #include "llcallbacklist.h"
 #include "llscrolllistctrl.h"
+#include "llinventorymodel.h"
+#include "llviewercontrol.h"
+#include "llviewerobjectlist.h"
+#include "llselectmgr.h"
 
 #include "llfloaterperms.h"
 
@@ -275,6 +279,7 @@ ImportTrackerFloater::~ImportTrackerFloater()
 	sInstance = NULL;
 }
 
+/*
 void ImportTrackerFloater::close()
 {
 	if(sInstance)
@@ -283,6 +288,7 @@ void ImportTrackerFloater::close()
 		sInstance = NULL;
 	}
 }
+*/
 
 void ImportTrackerFloater::show()
 {

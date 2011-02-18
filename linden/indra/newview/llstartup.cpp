@@ -39,15 +39,17 @@
 #else
 #	include <sys/stat.h>		// mkdir()
 #endif
-
-#include "audioengine.h"
+#include "llpluginclassmediaowner.h"
+#include "llviewermedia_streamingaudio.h"
+#include "kokuastreamingaudio.h"
+#include "llaudioengine.h"
 
 #ifdef LL_FMOD
-# include "audioengine_fmod.h"
+# include "llaudioengine_fmod.h"
 #endif
 
 #ifdef LL_OPENAL
-#include "audioengine_openal.h"
+#include "llaudioengine_openal.h"
 #endif
 
 #include "llares.h"
@@ -100,6 +102,7 @@
 #include "llfloatergesture.h"
 #include "llfloaterhud.h"
 #include "llfloaterland.h"
+#include "llfloaterteleporthistory.h"
 #include "llfloatertopobjects.h"
 #include "llfloatertos.h"
 #include "llfloaterworldmap.h"
@@ -193,9 +196,15 @@
 #include "jcfloater_animation_list.h"
 #include "jcfloaterareasearch.h"
 
-#if LL_LIBXUL_ENABLED
-#include "llmozlib.h"
-#endif // LL_LIBXUL_ENABLED
+#include "llfloaterteleporthistory.h"
+
+#if LL_DARWIN
+#include <Security/Security.h>
+#endif
+
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 #if LL_WINDOWS
 #include "llwindebug.h"
@@ -679,7 +688,11 @@ bool idle_startup()
 				}
 			}
 		}
-		
+
+
+		if (!gAudioStream)
+			gAudioStream =  new KOKUAStreamingAudio(new LLStreamingAudio_MediaPlugins());
+
 		LL_INFOS("AppInit") << "Audio Engine Initialized." << LL_ENDL;
 
 		
@@ -766,7 +779,7 @@ bool idle_startup()
 		std::string msg = LLTrans::getString("LoginInitializingBrowser");
 		set_startup_status(0.03f, msg.c_str(), gAgent.mMOTD.c_str());
 		display_startup();
-		LLViewerMedia::initBrowser();
+		// LLViewerMedia::initBrowser();
 
 		LLStartUp::setStartupState( STATE_LOGIN_SHOW );
 		return FALSE;
@@ -867,7 +880,47 @@ bool idle_startup()
 
 	if (STATE_LOGIN_CLEANUP == LLStartUp::getStartupState())
 	{
+
 		LL_DEBUGS("AppInitStartupState") << "STATE_LOGIN_CLEANUP" << LL_ENDL;
+
+		gDisconnected = TRUE;
+
+		std::string cmd_line_grid_choice = gSavedSettings.getString("CmdLineGridChoice");
+		std::string cmd_line_login_uri = gSavedSettings.getLLSD("CmdLineLoginURI").asString();
+		if(!cmd_line_grid_choice.empty() && cmd_line_login_uri.empty())
+		{
+			gHippoGridManager->setCurrentGrid(cmd_line_grid_choice);
+		}
+
+		gHippoGridManager->setCurrentGridAsConnected();
+		gHippoLimits->setLimits();
+
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+		{
+			LLStartUp::setStartupState( STATE_LECTURE_PRIVACY );
+			LLFirstUse::Privacy();
+		}
+		else
+		{		
+			LLStartUp::setStartupState( STATE_PRIVACY_LECTURED );
+		}
+
+		return FALSE;
+
+	}
+
+	if (STATE_LECTURE_PRIVACY == LLStartUp::getStartupState())
+	{
+		LL_DEBUGS("AppInitStartupState") << "STATE_LECTURE_PRIVACY" << LL_ENDL;
+
+		//wait for the user to decide
+		ms_sleep(1);
+		return FALSE;
+	}
+
+	if (STATE_PRIVACY_LECTURED == LLStartUp::getStartupState())
+	{
+		LL_DEBUGS("AppInitStartupState") << "STATE_PRIVACY_LECTURED" << LL_ENDL;
 		//reset the values that could have come in from a slurl
 		if (!gLoginHandler.getWebLoginKey().isNull())
 		{
@@ -909,15 +962,9 @@ bool idle_startup()
 			gDebugInfo["LoginName"] = firstname + " " + lastname;	
 		}
 
-		std::string cmd_line_grid_choice = gSavedSettings.getString("CmdLineGridChoice");
-		std::string cmd_line_login_uri = gSavedSettings.getLLSD("CmdLineLoginURI").asString();
-		if(!cmd_line_grid_choice.empty() && cmd_line_login_uri.empty())
-		{
-			gHippoGridManager->setCurrentGrid(cmd_line_grid_choice);
-		}
 
-		gHippoGridManager->setCurrentGridAsConnected();
-		gHippoLimits->setLimits();
+
+
 		// create necessary directories
 		// *FIX: these mkdir's should error check
 		gDirUtilp->setLindenUserDir(gHippoGridManager->getCurrentGridNick(), firstname, lastname);
@@ -1071,10 +1118,11 @@ bool idle_startup()
 		// color init must be after saved settings loaded
 		init_colors();
 
-		if (gSavedSettings.getBOOL("VivoxLicenseAccepted"))
+		if (gSavedSettings.getBOOL("VivoxLicenseAccepted") || gHippoGridManager->getConnectedGrid()->isSecondLife())
 		{
 			// skipping over STATE_LOGIN_VOICE_LICENSE since we don't need it
 			// skipping over STATE_UPDATE_CHECK because that just waits for input
+			// We don't do this on non-SL grids either
 			LLStartUp::setStartupState( STATE_LOGIN_AUTH_INIT );
 		}
 		else
@@ -1829,6 +1877,10 @@ bool idle_startup()
 	{
 		LL_DEBUGS("AppInitStartupState") << "STATE_WORLD_INIT" << LL_ENDL;
 		set_startup_status(0.40f, LLTrans::getString("LoginInitializingWorld"), gAgent.mMOTD);
+
+		// Initialize the rest of the world.
+		gViewerWindow->initWorldUI_postLogin();
+
 		gDisconnected=FALSE;
 		display_startup();
 		// We should have an agent id by this point.
@@ -1956,7 +2008,9 @@ bool idle_startup()
 			LLFloaterActiveSpeakers::showInstance();
 		}
 
-		if (gSavedSettings.getBOOL("BeaconsEnabled"))
+		static BOOL* sBeaconsEnabled = rebind_llcontrol<BOOL>("BeaconsEnabled", &gSavedSettings, true);
+
+		if (*sBeaconsEnabled)
 		{
 			LLFloaterBeacons::showInstance();
 		}
@@ -2000,6 +2054,12 @@ bool idle_startup()
 	
 			// Load stored cache if possible
             LLAppViewer::instance()->loadNameCache();
+
+			// Start cache in not-running state until we figure out if we have
+			// capabilities for display name lookup
+			LLAvatarNameCache::initClass(false);
+			LLAvatarNameCache::setUseDisplayNames(gSavedSettings.getU32("DisplayNamesUsage"));
+			LLAvatarName::sOmitResidentAsLastName = (bool)gSavedSettings.getBOOL("OmitResidentAsLastName");
 		}
 
 		// *Note: this is where gWorldMap used to be initialized.
@@ -2252,6 +2312,8 @@ bool idle_startup()
 			LLStringUtil::truncate(gWindowTitle, 255);
 			gViewerWindow->getWindow()->setWindowTitle(gWindowTitle);
 		}
+		// Inform simulator of our language preference
+		LLAgentLanguage::update();
 
 		// unpack thin inventory
 		LLUserAuth::options_t options;
@@ -2438,6 +2500,14 @@ bool idle_startup()
 			LLInventoryView::toggleVisibility(NULL);
 		}
 
+// [RLVa:KB] - Checked: 2009-11-27 (RLVa-1.1.0f) | Added: RLVa-1.1.0f
+		if (rlv_handler_t::isEnabled())
+		{
+			// Regularly process a select subset of retained commands during logon
+			gIdleCallbacks.addFunction(RlvHandler::onIdleStartup, new LLTimer());
+		}
+// [/RLVa:KB]
+
 		LLStartUp::setStartupState( STATE_MISC );
 		return FALSE;
 	}
@@ -2570,9 +2640,6 @@ bool idle_startup()
 		// TODO: Put this into RegisterNewAgent
 		// JC - 7/20/2002
 		gViewerWindow->sendShapeToSim();
-
-		// Inform simulator of our language preference
-		LLAgentLanguage::update();
 
 		
 		// Ignore stipend information for now.  Money history is on the web site.
@@ -2760,6 +2827,14 @@ bool idle_startup()
 		if (gSavedSettings.getBOOL("WarnClientTags"))
 			LLFirstUse::ClientTags();
 
+		// Add login location to teleport history 'teleported-into'
+		LLVector3 agent_pos=gAgent.getPositionAgent();
+		LLViewerRegion* regionp = gAgent.getRegion();
+		if (gFloaterTeleportHistory)
+		{
+			gFloaterTeleportHistory->addEntry(regionp->getName(),(S16)agent_pos.mV[0],(S16)agent_pos.mV[1],(S16)agent_pos.mV[2],false);
+		}
+
 		// Let the map know about the inventory.
 		if(gFloaterWorldMap)
 		{
@@ -2781,8 +2856,11 @@ bool idle_startup()
 		// Have the agent start watching the friends list so we can update proxies
 		gAgent.observeFriends();
 
-		// Start loading inventory
-		gInventory.startBackgroundFetch();
+		if (gSavedSettings.getBOOL("FetchInventoryOnLogin"))
+		{
+			// Start loading inventory
+			gInventory.startBackgroundFetch();
+		}
 
 		if (gSavedSettings.getBOOL("LoginAsGod"))
 		{
@@ -2833,7 +2911,7 @@ bool idle_startup()
 		// reset keyboard focus to sane state of pointing at world
 		gFocusMgr.setKeyboardFocus(NULL);
 
-// [RLVa:KB] - Alternate: Snowglobe-1.0 | Checked: 2009-08-05 (RLVa-1.0.1e) | Modified: RLVa-1.0.1e
+// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-08-05 (RLVa-1.0.1e) | Modified: RLVa-1.0.1e
 		// RELEASE-RLVa: this should go in LLAppViewer::handleLoginComplete() but Imprudence doesn't call that function
 		gRlvHandler.initLookupTables();
 
@@ -2955,17 +3033,29 @@ std::string LLStartUp::loadPasswordFromDisk()
 		return hashed_password;
 	}
 
+	// UUID is 16 bytes, written into ASCII is 32 characters
+	// without trailing \0
+	const S32 HASHED_LENGTH = 32;
+
 	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
 													   "password.dat");
 	LLFILE* fp = LLFile::fopen(filepath, "rb");		/* Flawfinder: ignore */
 	if (!fp)
 	{
+#if LL_DARWIN
+		UInt32 passwordLength;
+		char *passwordData;
+		OSStatus stat = SecKeychainFindGenericPassword(NULL, 10, "Imprudence", 0, NULL, &passwordLength, (void**)&passwordData, NULL);
+		if (stat == noErr)
+		{
+			if (passwordLength == HASHED_LENGTH)
+				hashed_password.assign(passwordData, HASHED_LENGTH);
+			SecKeychainItemFreeContent(NULL, passwordData);
+		}
+#endif
 		return hashed_password;
 	}
 
-	// UUID is 16 bytes, written into ASCII is 32 characters
-	// without trailing \0
-	const S32 HASHED_LENGTH = 32;
 	U8 buffer[HASHED_LENGTH+1];
 
 	if (1 != fread(buffer, HASHED_LENGTH, 1, fp))
@@ -2989,6 +3079,10 @@ std::string LLStartUp::loadPasswordFromDisk()
 	{
 		hashed_password.assign((char*)buffer);
 	}
+#if LL_DARWIN
+	// we're migrating to the keychain
+	LLFile::remove(filepath);
+#endif
 
 	return hashed_password;
 }
@@ -2997,6 +3091,19 @@ std::string LLStartUp::loadPasswordFromDisk()
 // static
 void LLStartUp::savePasswordToDisk(const std::string& hashed_password)
 {
+#if LL_DARWIN
+	SecKeychainItemRef keychainItem;
+	OSStatus status = SecKeychainFindGenericPassword(NULL, 10, "Imprudence", 0, NULL, NULL, NULL, &keychainItem);
+	if (status == noErr)
+	{
+		SecKeychainItemModifyAttributesAndData(keychainItem, NULL, hashed_password.length(), hashed_password.c_str());
+		CFRelease(keychainItem);
+	}
+	else
+	{
+		SecKeychainAddGenericPassword(NULL, 10, "Imprudence", 0, NULL, hashed_password.length(), hashed_password.c_str(), NULL);
+	}
+#else
 	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
 													   "password.dat");
 	LLFILE* fp = LLFile::fopen(filepath, "wb");		/* Flawfinder: ignore */
@@ -3020,12 +3127,22 @@ void LLStartUp::savePasswordToDisk(const std::string& hashed_password)
 	}
 
 	fclose(fp);
+#endif
 }
 
 
 // static
 void LLStartUp::deletePasswordFromDisk()
 {
+#if LL_DARWIN
+	SecKeychainItemRef keychainItem;
+	OSStatus status = SecKeychainFindGenericPassword(NULL, 10, "Imprudence", 0, NULL, NULL, NULL, &keychainItem);
+	if (status == noErr)
+	{
+		SecKeychainItemDelete(keychainItem);
+		CFRelease(keychainItem);
+	}
+#endif
 	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
 														  "password.dat");
 	LLFile::remove(filepath);
@@ -3719,6 +3836,8 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_LOGIN_SHOW );
 		RTNENUM( STATE_LOGIN_WAIT );
 		RTNENUM( STATE_LOGIN_CLEANUP );
+		RTNENUM( STATE_LECTURE_PRIVACY );
+		RTNENUM( STATE_PRIVACY_LECTURED );
 		RTNENUM( STATE_LOGIN_VOICE_LICENSE );
 		RTNENUM( STATE_UPDATE_CHECK );
 		RTNENUM( STATE_LOGIN_AUTH_INIT );
@@ -3804,7 +3923,7 @@ void LLStartUp::multimediaInit()
 	set_startup_status(0.42f, msg.c_str(), gAgent.mMOTD.c_str());
 	display_startup();
 
-	LLViewerMedia::initClass();
+	//LLViewerMedia::initClass();
 	LLViewerParcelMedia::initClass();
 }
 
@@ -3813,7 +3932,7 @@ bool LLStartUp::dispatchURL()
 	// ok, if we've gotten this far and have a startup URL
 	if (!sSLURLCommand.empty())
 	{
-		LLWebBrowserCtrl* web = NULL;
+		LLMediaCtrl* web = NULL;
 		const bool trusted_browser = false;
 		LLURLDispatcher::dispatch(sSLURLCommand, web, trusted_browser);
 	}
@@ -3831,7 +3950,7 @@ bool LLStartUp::dispatchURL()
 			|| (dy*dy > SLOP*SLOP) )
 		{
 			std::string url = LLURLSimString::getURL();
-			LLWebBrowserCtrl* web = NULL;
+			LLMediaCtrl* web = NULL;
 			const bool trusted_browser = false;
 			LLURLDispatcher::dispatch(url, web, trusted_browser);
 		}

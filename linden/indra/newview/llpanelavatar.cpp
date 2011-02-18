@@ -64,6 +64,7 @@
 #include "llmutelist.h"
 #include "llpanelclassified.h"
 #include "llpanelpick.h"
+#include "llpluginclassmedia.h"
 #include "llscrolllistctrl.h"
 #include "llstatusbar.h"
 #include "lltabcontainer.h"
@@ -80,6 +81,10 @@
 #include "llinventorymodel.h"
 #include "roles_constants.h"
 #include "lluictrlfactory.h"
+
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 // Statics
 std::list<LLPanelAvatar*> LLPanelAvatar::sAllPanels;
@@ -410,13 +415,12 @@ BOOL LLPanelAvatarWeb::postBuild(void)
 
 	childSetControlName("auto_load","AutoLoadWebProfiles");
 
-	mWebBrowser = getChild<LLWebBrowserCtrl>("profile_html");
+	mWebBrowser = getChild<LLMediaCtrl>("profile_html");
+
+	mWebBrowser->addObserver(this);
 
 	// links open in internally 
 	mWebBrowser->setOpenInExternalBrowser( false );
-
-	// observe browser events
-	mWebBrowser->addObserver( this );
 
 	return TRUE;
 }
@@ -476,18 +480,32 @@ LLPanelAvatarWeb::LLPanelAvatarWeb(const std::string& name, const LLRect& rect,
 
 LLPanelAvatarWeb::~LLPanelAvatarWeb()
 {
-	// stop observing browser events
-	if  ( mWebBrowser )
+}
+
+void LLPanelAvatarWeb::refresh()
+{
+	if (mNavigateTo != "")
 	{
-		mWebBrowser->remObserver( this );
-	};
+		llinfos << "Loading " << mNavigateTo << llendl;
+		mWebBrowser->navigateTo( mNavigateTo );
+		mNavigateTo = "";
+	}
+}
+void LLPanelAvatarWeb::onVisibilityChange(BOOL new_visibility)
+{
+	LLPluginClassMedia::EPriority new_priority;
+
+	if (new_visibility)
+		new_priority = LLPluginClassMedia::PRIORITY_NORMAL;
+	else
+		new_priority = LLPluginClassMedia::PRIORITY_HIDDEN;
+
+	mWebBrowser->getMediaPlugin()->setPriority(new_priority);
 }
 
 void LLPanelAvatarWeb::enableControls(BOOL self)
 {	
 	childSetEnabled("url_edit",self);
-	childSetVisible("status_text",!self && !mHome.empty());
-	childSetText("status_text", LLStringUtil::null);
 }
 
 void LLPanelAvatarWeb::setWebURL(std::string url)
@@ -511,11 +529,8 @@ void LLPanelAvatarWeb::setWebURL(std::string url)
 	else
 	{
 		childSetVisible("profile_html",false);
+		childSetVisible("status_text", false);
 	}
-
-	BOOL own_avatar = (getPanelAvatar()->getAvatarID() == gAgent.getID() );
-	childSetVisible("status_text",!own_avatar && !mHome.empty());
-	
 }
 
 // static
@@ -538,13 +553,15 @@ void LLPanelAvatarWeb::load(std::string url)
 {
 	bool have_url = (!url.empty());
 
+	
+	childSetVisible("profile_html", have_url);
+	childSetVisible("status_text", have_url);
+	childSetText("status_text", LLStringUtil::null);
+
 	if (have_url)
 	{
-		llinfos << "Loading " << url << llendl;
-		mWebBrowser->navigateTo( url );
+		mNavigateTo = url;
 	}
-
-	childSetVisible("profile_html", have_url);
 }
 
 //static
@@ -586,14 +603,22 @@ void LLPanelAvatarWeb::onCommitLoad(LLUICtrl* ctrl, void* data)
 	}
 }
 
-void LLPanelAvatarWeb::onStatusTextChange( const EventType& eventIn )
+void LLPanelAvatarWeb::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event)
 {
-	childSetText("status_text", eventIn.getStringValue() );
-}
-
-void LLPanelAvatarWeb::onLocationChange( const EventType& eventIn )
-{
-	childSetText("url_edit", eventIn.getStringValue() );
+	switch(event)
+	{
+		case MEDIA_EVENT_STATUS_TEXT_CHANGED:
+			childSetText("status_text", self->getStatusText() );
+		break;
+		
+		case MEDIA_EVENT_LOCATION_CHANGED:
+			childSetText("url_edit", self->getLocation() );
+		break;
+		
+		default:
+			// Having a default case makes the compiler happy.
+		break;
+	}
 }
 
 
@@ -1332,7 +1357,33 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 		{
 			name_edit->setText(name);
 		}
+		childSetVisible("name", TRUE);
 	}
+	LLNameEditor* complete_name_edit = getChild<LLNameEditor>("complete_name");
+	if (complete_name_edit)
+	{
+		if (LLAvatarNameCache::useDisplayNames())
+		{
+			LLAvatarName avatar_name;
+			if (LLAvatarNameCache::get(avatar_id, &avatar_name))
+			{
+				// Always show "Display Name [Legacy Name]" for security reasons
+				complete_name_edit->setText(avatar_name.getNames());
+			}
+			else
+			{
+				complete_name_edit->setText(name_edit->getText());
+				LLAvatarNameCache::get(avatar_id, boost::bind(&LLPanelAvatar::completeNameCallback, _1, _2, this));			
+			}
+			childSetVisible("name", FALSE);
+			childSetVisible("complete_name", TRUE);
+		}
+		else
+		{
+			childSetVisible("complete_name", FALSE);
+		}
+	}
+
 // 	if (avatar_changed)
 	{
 		// While we're waiting for data off the network, clear out the
@@ -1455,6 +1506,22 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 	}
 }
 
+void LLPanelAvatar::completeNameCallback(const LLUUID& agent_id,
+										 const LLAvatarName& avatar_name,
+										 void *userdata)
+{
+	LLPanelAvatar* self = (LLPanelAvatar*)userdata;
+	if (!LLAvatarNameCache::useDisplayNames() || agent_id != self->mAvatarID)
+	{
+		return;
+	}
+	LLLineEditor* complete_name_edit = self->getChild<LLLineEditor>("complete_name");
+	if (complete_name_edit)
+	{
+		// Always show "Display Name [Legacy Name]" for security reasons
+		complete_name_edit->setText(avatar_name.getNames());
+	}
+}
 
 void LLPanelAvatar::resetGroupList()
 {
@@ -1499,13 +1566,15 @@ void LLPanelAvatar::resetGroupList()
 				row["columns"][0]["width"] = 0;
 				if (group_data.mListInProfile)
 				{
+					static LLColor4 *sScrollUnselectedColor = rebind_llcontrol<LLColor4>("ScrollUnselectedColor", LLUI::sColorsGroup, true);
 					row["columns"][0]["value"] = group_string;
-					row["columns"][0]["color"] = gColors.getColor("ScrollUnselectedColor").getValue();
+					row["columns"][0]["color"] = (*sScrollUnselectedColor).getValue();
 				}
 				else
 				{
+					static LLColor4 *sScrollReadOnlyColor = rebind_llcontrol<LLColor4>("ScrollReadOnlyColor", LLUI::sColorsGroup, true);
 					row["columns"][0]["value"] = group_string + " " + getString("HiddenLabel");
-					row["columns"][0]["color"] = gColors.getColor("ScrollReadOnlyColor").getValue();
+					row["columns"][0]["color"] = (*sScrollReadOnlyColor).getValue();
 				}
 				group_list->addElement(row);
 			}
@@ -2063,13 +2132,15 @@ void LLPanelAvatar::processAvatarGroupsReply(LLMessageSystem *msg, void**)
 				// Set normal color if not found or if group is visible in profile
 				if (!group_data || group_data->mListInProfile)
 				{
+					static LLColor4 *sScrollUnselectedColor = rebind_llcontrol<LLColor4>("ScrollUnselectedColor", LLUI::sColorsGroup, true);
 					row["columns"][0]["value"] = group_string;
-					row["columns"][0]["color"] = gColors.getColor("ScrollUnselectedColor").getValue();
+					row["columns"][0]["color"] = (*sScrollUnselectedColor).getValue();
 				}
 				else
 				{
+					static LLColor4 *sScrollReadOnlyColor = rebind_llcontrol<LLColor4>("ScrollReadOnlyColor", LLUI::sColorsGroup, true);
 					row["columns"][0]["value"] = group_string + " " + self->getString("HiddenLabel");
-					row["columns"][0]["color"] = gColors.getColor("ScrollReadOnlyColor").getValue();
+					row["columns"][0]["color"] = (*sScrollReadOnlyColor).getValue();
 				}
 				if (group_list)
 				{

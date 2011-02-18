@@ -32,6 +32,7 @@
 
 #include "llcombobox.h"
 
+#include "floatercommandline.h"
 #include "llagent.h"
 #include "llprefsadvanced.h"
 #include "llviewercontrol.h"
@@ -40,78 +41,11 @@
 #include "lgghunspell_wrapper.h"
 #include "lggautocorrectfloater.h"
 #include "llcombobox.h"
+#include "llcolorswatch.h"
 
 #include "lluictrlfactory.h"
 
-////////begin drop utility/////////////
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class JCInvDropTarget
-//
-// This handy class is a simple way to drop something on another
-// view. It handles drop events, always setting itself to the size of
-// its parent.
-//
-// altered to support a callback so i can slap it in things and it just return the item to a func of my choice
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-JCInvDropTarget::JCInvDropTarget(const std::string& name, const LLRect& rect,
-								 void (*callback)(LLViewerInventoryItem*)) :
-LLView(name, rect, NOT_MOUSE_OPAQUE, FOLLOWS_ALL),
-mDownCallback(callback)
-{
-}
-
-JCInvDropTarget::~JCInvDropTarget()
-{
-}
-
-void JCInvDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
-{
-	llinfos << "JCInvDropTarget::doDrop()" << llendl;
-}
-
-BOOL JCInvDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-										EDragAndDropType cargo_type,
-										void* cargo_data,
-										EAcceptance* accept,
-										std::string& tooltip_msg)
-{
-	BOOL handled = FALSE;
-	if(getParent())
-	{
-		handled = TRUE;
-		// check the type
-		//switch(cargo_type)
-		//{
-		//case DAD_ANIMATION:
-		//{
-		LLViewerInventoryItem* inv_item = (LLViewerInventoryItem*)cargo_data;
-		if(gInventory.getItem(inv_item->getUUID()))
-		{
-			*accept = ACCEPT_YES_COPY_SINGLE;
-			if(drop)
-			{
-				//printchat("accepted");
-				mDownCallback(inv_item);
-			}
-		}
-		else
-		{
-			*accept = ACCEPT_NO;
-		}
-		//	break;
-		//}
-		//default:
-		//	*accept = ACCEPT_NO;
-		//	break;
-		//}
-	}
-	return handled;
-}
-////////end drop utility///////////////
+#include "boost/algorithm/string.hpp"
 
 LLPrefsAdvanced* LLPrefsAdvanced::sInstance;
 
@@ -122,8 +56,10 @@ LLPrefsAdvanced::LLPrefsAdvanced()
 	sInstance = this;
 
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
+	childSetCommitCallback("command_line_check", onCommitCheckBox, this);
 
 	childSetAction("reset_btn", onClickResetPrefs, this);
+	childSetAction("command_line_btn", onClickCommandLine, this);
 }
 
 LLPrefsAdvanced::~LLPrefsAdvanced()
@@ -147,8 +83,10 @@ BOOL LLPrefsAdvanced::postBuild()
 {
 	childSetValue("disable_log_screen_check", gSavedSettings.getBOOL("DisableLoginLogoutScreens"));
 	childSetValue("disable_tp_screen_check", gSavedSettings.getBOOL("DisableTeleportScreens"));
-	childSetValue("client_name_tag_check", gSavedSettings.getBOOL("ShowClientNameTag"));
-	childSetValue("client_name_color_check", gSavedSettings.getBOOL("ShowClientColor"));
+	static BOOL* sShowClientNameTag = rebind_llcontrol<BOOL>("ShowClientNameTag", &gSavedSettings, true);
+	childSetValue("client_name_tag_check", (*sShowClientNameTag));
+	static BOOL* sShowClientColor = rebind_llcontrol<BOOL>("ShowClientColor", &gSavedSettings, true);
+	childSetValue("client_name_color_check", (*sShowClientColor));
 	childSetValue("client_name_hover_check", gSavedSettings.getBOOL("ShowClientNameHoverTip"));
 	childSetValue("client_name_tag_broadcast_check", gSavedSettings.getBOOL("ShowMyClientTagToOthers"));
 	childSetValue("http_texture_check", gSavedSettings.getBOOL("ImagePipelineUseHTTP"));
@@ -160,28 +98,13 @@ BOOL LLPrefsAdvanced::postBuild()
 	childSetValue("allow_mupose", gSavedSettings.getBOOL("AllowMUpose"));
 	childSetValue("auto_close_ooc", gSavedSettings.getBOOL("AutoCloseOOC"));
 	childSetValue("shadows_check", gSavedSettings.getBOOL("ShadowsEnabled"));
+	childSetValue("command_line_check", gSavedSettings.getBOOL("CmdLineChatbarEnabled"));
 
 	childSetValue("lightshare_combo",
 	              LLSD((S32)gSavedSettings.getU32("LightShareAllowed")));
 
 	LLComboBox* crash_behavior_combobox = getChild<LLComboBox>("crash_behavior_combobox");
 	crash_behavior_combobox->setCurrentByIndex(gCrashSettings.getS32(CRASH_BEHAVIOR_SETTING));
-
-	childSetCommitCallback("EmeraldCmdLinePos", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineGround", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineHeight", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineTeleportHome", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineRezPlatform", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineMapTo", onCommitApplyControl);	
-	childSetCommitCallback("EmeraldCmdLineCalc", onCommitApplyControl);
-
-	childSetCommitCallback("EmeraldCmdLineDrawDistance", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdTeleportToCam", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineKeyToName", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineOfferTp", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineTP2", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineAO", onCommitApplyControl);
-	childSetCommitCallback("EmeraldCmdLineClearChat", onCommitApplyControl);
 
 	getChild<LLComboBox>("EmeraldSpellBase")->setCommitCallback(onSpellBaseComboBoxCommit);
 	getChild<LLButton>("EmSpell_EditCustom")->setClickedCallback(onSpellEditCustom, this);
@@ -191,13 +114,12 @@ BOOL LLPrefsAdvanced::postBuild()
 
 	getChild<LLButton>("ac_button")->setClickedCallback(onAutoCorrectButton,this);
 
-	initHelpBtn("EmeraldHelp_CmdLine",			"EmeraldHelp_CmdLine");
 	initHelpBtn("EmeraldHelp_SpellCheck",		"EmeraldHelp_SpellCheck");
 
 	refresh();
 
 	return TRUE;
-}
+}		
 
 void LLPrefsAdvanced::apply()
 {
@@ -215,7 +137,6 @@ void LLPrefsAdvanced::apply()
 	gSavedSettings.setBOOL("AutoCloseOOC", childGetValue("auto_close_ooc"));
 	gSavedSettings.setU32("LightShareAllowed",
 	                      (U32)childGetValue("lightshare_combo").asInteger());
-
 
 	// Need to force a rebake when ClothingLayerProtection toggled for it take effect -- MC
 	if (gSavedSettings.getBOOL("ShowMyClientTagToOthers") != (BOOL)childGetValue("client_name_tag_broadcast_check"))
@@ -277,6 +198,8 @@ void LLPrefsAdvanced::apply()
 		build_pie_menus();
 	}
 
+	gSavedSettings.setBOOL("CmdLineChatbarEnabled", childGetValue("command_line_check").asBoolean());
+
 	LLComboBox* crash_behavior_combobox = getChild<LLComboBox>("crash_behavior_combobox");
 	gCrashSettings.setS32(CRASH_BEHAVIOR_SETTING, crash_behavior_combobox->getCurrentIndex());
 }
@@ -298,42 +221,49 @@ void LLPrefsAdvanced::refresh()
 		childDisable("speed_rez_seconds_text");
 	}
 
+	if (childGetValue("command_line_check").asBoolean())
+	{
+		childEnable("command_line_btn");
+	}
+	else
+	{
+		childDisable("command_line_btn");
+	}
+
 	LLComboBox* comboBox = getChild<LLComboBox>("EmeraldSpellBase");
-	if(comboBox != NULL) 
+	if (comboBox != NULL) 
 	{
 		comboBox->removeall();
 		std::vector<std::string> names = glggHunSpell->getDicts();
-		for(int i=0; i<(int)names.size(); i++) 
+		for (int i = 0; i < (int)names.size(); i++) 
 		{
 			comboBox->add(names[i]);
 		}
 		comboBox->setSimple(gSavedSettings.getString("EmeraldSpellBase"));
 	}
 	comboBox = getChild<LLComboBox>("EmSpell_Avail");
-	if(comboBox != NULL) 
+	if (comboBox != NULL) 
 	{
+		LLSD selected = comboBox->getSelectedValue();
 		comboBox->removeall();
-
-		comboBox->add("");
 		std::vector<std::string> names = glggHunSpell->getAvailDicts();
-		for(int i=0; i<(int)names.size(); i++) 
+		for (int i = 0; i < (int)names.size(); i++) 
 		{
 			comboBox->add(names[i]);
 		}
-		comboBox->setSimple(std::string(""));
+		comboBox->selectByValue(selected);
 	}
 	comboBox = getChild<LLComboBox>("EmSpell_Installed");
-	if(comboBox != NULL) 
+	if (comboBox != NULL) 
 	{
+		LLSD selected = comboBox->getSelectedValue();
 		comboBox->removeall();
-
-		comboBox->add("");
 		std::vector<std::string> names = glggHunSpell->getInstalledDicts();
-		for(int i=0; i<(int)names.size(); i++) 
+		for (int i = 0; i < (int)names.size(); i++) 
 		{
 			comboBox->add(names[i]);
 		}
-		comboBox->setSimple(std::string(""));
+		comboBox->selectByValue(selected);
 	}
 }
 
@@ -362,17 +292,6 @@ bool LLPrefsAdvanced::callbackReset(const LLSD& notification, const LLSD& respon
 	return false;
 }
 
-//workaround for lineeditor dumbness in regards to control_name
-void LLPrefsAdvanced::onCommitApplyControl(LLUICtrl* caller, void* user_data)
-{
-	LLLineEditor* line = (LLLineEditor*)caller;
-	if(line)
-	{
-		LLControlVariable *var = line->findControl(line->getControlName());
-		if(var)var->setValue(line->getValue());
-	}
-}
-
 void LLPrefsAdvanced::onSpellAdd(void* data)
 {
 	LLPrefsAdvanced* panel = (LLPrefsAdvanced*)data;
@@ -382,6 +301,7 @@ void LLPrefsAdvanced::onSpellAdd(void* data)
 	}
 	panel->refresh();
 }
+
 void LLPrefsAdvanced::onSpellRemove(void* data)
 {
 	LLPrefsAdvanced* panel = (LLPrefsAdvanced*)data;
@@ -391,23 +311,29 @@ void LLPrefsAdvanced::onSpellRemove(void* data)
 	}
 	panel->refresh();
 }
+
 void LLPrefsAdvanced::onSpellGetMore(void* data)
 {
 	glggHunSpell->getMoreButton(data);
 }
+
 void LLPrefsAdvanced::onSpellEditCustom(void* data)
 {
 	glggHunSpell->editCustomButton();
 }
+
 void LLPrefsAdvanced::onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata)
 {
 
 	LLComboBox* box = (LLComboBox*)ctrl;
-	if(box)
+	if (box)
 	{
 		glggHunSpell->newDictSelection(box->getValue().asString());
 		//LLPanelEmerald* panel = (LLPanelEmerald*)userdata;//box->getParent();
-		if(sInstance)sInstance->refresh();
+		if (sInstance)
+		{
+			sInstance->refresh();
+		}
 	}
 	//LLPanelEmerald* panel = (LLPanelEmerald*)userdata;
 	//if(panel)panel->refresh();
@@ -416,4 +342,10 @@ void LLPrefsAdvanced::onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata)
 void LLPrefsAdvanced::onAutoCorrectButton(void * data)
 {
 	lggAutoCorrectFloaterStart::show(TRUE,data);
+}
+
+void LLPrefsAdvanced::onClickCommandLine(void* data)
+{
+	FloaterCommandLine::getInstance()->open();
+	FloaterCommandLine::getInstance()->center();
 }

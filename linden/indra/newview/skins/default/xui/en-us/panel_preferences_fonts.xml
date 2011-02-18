@@ -25,7 +25,11 @@
     </radio_item>
     
     <radio_item name="Liberation" bottom="-170" left="0" height="20">
+<<<<<<< HEAD
       Liberation Sans
+=======
+      Liberation Sans (classic Imprudence font)
+>>>>>>> remotes/jjacek/weekly
     </radio_item>
     
   </radio_group>

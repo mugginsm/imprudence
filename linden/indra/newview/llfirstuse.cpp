@@ -47,7 +47,7 @@
 
 #include "floatergriddefault.h"
 #include "floatervoicelicense.h"
-#include "hippoGridManager.h"
+#include "hippogridmanager.h"
 #include "llstartup.h"
 #include "llvoavatar.h"
 
@@ -328,21 +328,6 @@ void LLFirstUse::showRlvFirstUseNotification(const std::string& strName)
 	}
 }
 
-void LLFirstUse::warnRlvGiveToRLV()
-{
-	if ( (gSavedSettings.getWarning(RLV_SETTING_FIRSTUSE_GIVETORLV)) && (RlvSettings::getForbidGiveToRLV()) )
-		LLNotifications::instance().add(RLV_SETTING_FIRSTUSE_GIVETORLV, LLSD(), LLSD(), &LLFirstUse::onRlvGiveToRLVConfirmation);
-}
-
-void LLFirstUse::onRlvGiveToRLVConfirmation(const LLSD& notification, const LLSD& response)
-{
-	gSavedSettings.setWarning(RLV_SETTING_FIRSTUSE_GIVETORLV, FALSE);
-
-	S32 idxOption = LLNotification::getSelectedOption(notification, response);
-	if ( (0 == idxOption) || (1 == idxOption) )
-		gSavedSettings.setBOOL(RLV_SETTING_FORBIDGIVETORLV, (idxOption == 1));
-}
-
 // [/RLVa:KB]
 
 void LLFirstUse::callbackClientTags(const LLSD& notification, const LLSD& response)
@@ -403,5 +388,33 @@ void LLFirstUse::voiceLicenseAgreement()
 	else // currently in STATE_LOGIN_VOICE_LICENSE when arriving here
 	{
 		LLStartUp::setStartupState(STATE_LOGIN_AUTH_INIT);
+	}
+}
+
+void LLFirstUse::callbackPrivacy(const LLSD& notification, const LLSD& response)
+{
+
+	S32 option = LLNotification::getSelectedOption(notification, response);
+	if ( 0 == option )
+	{
+		gSavedSettings.setWarning("FirstPrivacy", FALSE);
+		LLStartUp::setStartupState(STATE_PRIVACY_LECTURED);
+	}
+	if ( 1 == option )
+	{
+		LLStartUp::resetLogin();
+	}
+}
+
+// static
+void LLFirstUse::Privacy()
+{
+	if (gSavedSettings.getWarning("FirstPrivacy"))
+	{
+		LLNotifications::instance().add("FirstPrivacy", LLSD(), LLSD(), callbackPrivacy);
+	}
+	else
+	{
+		LLStartUp::setStartupState(STATE_PRIVACY_LECTURED);
 	}
 }

@@ -62,7 +62,6 @@
 // externs
 //
 extern LLMemoryInfo gSysMemory;
-extern LLCPUInfo gSysCPU;
 
 #if LL_DARWIN
 const char FEATURE_TABLE_FILENAME[] = "featuretable_mac.txt";
@@ -250,22 +249,13 @@ BOOL LLFeatureManager::loadFeatureTables()
 	mTableVersion = version;
 
 	LLFeatureList *flp = NULL;
-	while (!file.eof() && file.good())
+	while (file >> name)
 	{
 		char buffer[MAX_STRING];		 /*Flawfinder: ignore*/
-
-		file >> name;
 		
 		if (name.substr(0,2) == "//")
 		{
 			// This is a comment.
-			file.getline(buffer, MAX_STRING);
-			continue;
-		}
-
-		if (name.empty())
-		{
-			// This is a blank line
 			file.getline(buffer, MAX_STRING);
 			continue;
 		}

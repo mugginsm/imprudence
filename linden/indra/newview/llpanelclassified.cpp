@@ -70,7 +70,11 @@
 #include "llviewerwindow.h"	// for window width, height
 #include "llappviewer.h"	// abortQuit()
 
-#include "hippoGridManager.h"
+#include "hippogridmanager.h"
+
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 const S32 MINIMUM_PRICE_FOR_LISTING = 50;	// L$
 const S32 MATURE_UNDEFINED = -1;
@@ -142,7 +146,7 @@ public:
 		const bool from_search = true;
 		LLPanelClassified::sendClassifiedClickMessage(classified_id, "teleport", from_search);
 		// Invoke teleport
-		LLWebBrowserCtrl* web = NULL;
+		LLMediaCtrl* web = NULL;
 		const bool trusted_browser = true;
 		return LLURLDispatcher::dispatch(url, web, trusted_browser);
 	}

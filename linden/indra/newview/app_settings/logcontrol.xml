@@ -54,6 +54,7 @@
 							<!--<string>BodyPhysics</string>-->
               <!--<string>InitInfo</string>-->
               <!--<string>isOwnedSelf</string>-->
+              <!--<string>Inventory</string>-->
 							<!--<string>HUDEffect</string>-->
               <!--<string>MarkerFile</string>-->
 							<!--<string>MediaImpl</string>-->
@@ -65,6 +66,7 @@
 
 							<!--<string>Messaging</string>-->
 							<!--<string>Notifications</string>-->
+              <!--<string>Plugin</string>-->
               <!--<string>Radar</string>-->
 							<!--<string>ShaderLoading</string>-->
 
@@ -73,10 +75,12 @@
 							<!--<string>VOAvatar</string>-->
 							<!--<string>View</string>-->
 							<!--<string>ViewerImages</string>-->
-							<!--<string>Throttle</string>-->
+              <!--<string>TextureCache</string>-->
+              <!--<string>Throttle</string>-->
 							<!--<string>Voice</string>-->
 							<!--<string>VivoxProtocolParser</string>-->
 							<!--<string>Wearable</string>-->
+              <!--<string>WindLight</string>-->
 
 							<!--<string>XMLNode</string>-->
 

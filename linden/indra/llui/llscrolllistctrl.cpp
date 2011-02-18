@@ -103,6 +103,10 @@ struct SortScrollListItem
 LLScrollListIcon::LLScrollListIcon(LLUIImagePtr icon, S32 width)
 	: LLScrollListCell(width),
 	  mIcon(icon),
+	  // <edit>
+	  mCallback(NULL),
+	  mUserData(NULL),
+	  // </edit>
 	  mColor(LLColor4::white)
 {
 }
@@ -145,6 +149,19 @@ void LLScrollListIcon::setValue(const LLSD& value)
 	}
 }
 
+// <edit>
+void LLScrollListIcon::setClickCallback(BOOL (*callback)(void*), void* user_data)
+{
+	mCallback = callback;
+	mUserData = user_data;
+}
+
+BOOL LLScrollListIcon::handleClick()
+{
+	if(mCallback) return mCallback(mUserData);
+	return FALSE;
+}
+// </edit>
 
 void LLScrollListIcon::setColor(const LLColor4& color)
 {
@@ -588,6 +605,7 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
 	mHighlightedColor( LLUI::sColorsGroup->getColor("ScrollHighlightedColor") ),
 	mBorderThickness( 2 ),
 	mOnDoubleClickCallback( NULL ),
+	mOnRightMouseDownCallback( NULL ),
 	mOnMaximumSelectCallback( NULL ),
 	mOnSortChangedCallback( NULL ),
 	mHighlightedItem(-1),
@@ -2058,6 +2076,27 @@ BOOL LLScrollListCtrl::handleDoubleClick(S32 x, S32 y, MASK mask)
 			if( mCanSelect && mOnDoubleClickCallback )
 			{
 				mOnDoubleClickCallback( mCallbackUserData );
+			}
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL LLScrollListCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	//BOOL handled = FALSE;
+	BOOL handled = handleClick(x, y, mask);
+
+	if (!handled)
+	{
+		// Offer the click to the children, even if we aren't enabled
+		// so the scroll bars will work.
+		if (NULL == LLView::childrenHandleRightMouseDown(x, y, mask))
+		{
+			if( mCanSelect && mOnRightMouseDownCallback )
+			{
+				mOnRightMouseDownCallback( x, y, mCallbackUserData );
 			}
 		}
 	}
@@ -3599,6 +3638,22 @@ void LLColumnHeader::draw()
 }
 
 BOOL LLColumnHeader::handleDoubleClick(S32 x, S32 y, MASK mask)
+{
+	if (canResize() && mResizeBar->getRect().pointInRect(x, y))
+	{
+		// reshape column to max content width
+		LLRect column_rect = getRect();
+		column_rect.mRight = column_rect.mLeft + mColumn->mMaxContentWidth;
+		userSetShape(column_rect);
+	}
+	else
+	{
+		onClick(this);
+	}
+	return TRUE;
+}
+
+BOOL LLColumnHeader::handleRightMouseDown(S32 x, S32 y, MASK mask)
 {
 	if (canResize() && mResizeBar->getRect().pointInRect(x, y))
 	{

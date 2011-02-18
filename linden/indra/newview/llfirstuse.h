@@ -116,7 +116,8 @@ public:
 	static void callbackClientTags(const LLSD& notification, const LLSD& response);
 	static void ClientTags();
 	static void voiceLicenseAgreement();
-	
+	static void callbackPrivacy(const LLSD& notification, const LLSD& response);
+	static void Privacy();
 protected:
 	static std::set<std::string> sConfigVariables;
 
@@ -127,10 +128,6 @@ public:
 	static void useRlvDetach()		{ showRlvFirstUseNotification(RLV_SETTING_FIRSTUSE_DETACH); }
 	static void useRlvEnableWear()	{ showRlvFirstUseNotification(RLV_SETTING_FIRSTUSE_ENABLEWEAR); }
 	static void useRlvFartouch()	{ showRlvFirstUseNotification(RLV_SETTING_FIRSTUSE_FARTOUCH); }
-
-	static void warnRlvGiveToRLV();
-protected:
-	static void onRlvGiveToRLVConfirmation(const LLSD& notification, const LLSD& response);
 // [/RLVa:KB]
 };
 

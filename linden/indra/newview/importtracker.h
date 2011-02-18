@@ -36,7 +36,7 @@ public:
 	static ImportTrackerFloater* getInstance();
 	virtual ~ImportTrackerFloater();
 	//close me
-	static void close();
+	//static void close();
 	void show();
 	ImportTrackerFloater();	
 	static ImportTrackerFloater* sInstance;

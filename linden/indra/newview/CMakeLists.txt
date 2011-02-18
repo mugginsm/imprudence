@@ -21,8 +21,8 @@ include(LLImage)
 include(LLImageJ2COJ)
 include(LLInventory)
 include(LLMath)
-include(LLMedia)
 include(LLMessage)
+include(LLPlugin)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -31,7 +31,6 @@ include(LLWindow)
 include(LLXML)
 include(LScript)
 include(Linking)
-include(Mozlib)
 include(NDOF)
 include(GooglePerfTools)
 include(TemplateCheck)
@@ -55,8 +54,8 @@ include_directories(
     ${LLIMAGE_INCLUDE_DIRS}
     ${LLINVENTORY_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
-    ${LLMEDIA_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
+    ${LLPLUGIN_INCLUDE_DIRS}
     ${LLPRIMITIVE_INCLUDE_DIRS}
     ${LLRENDER_INCLUDE_DIRS}
     ${LLUI_INCLUDE_DIRS}
@@ -65,7 +64,6 @@ include_directories(
     ${LLXML_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
-    ${GSTREAMER_INCLUDE_DIRS}
     )
 
 set(viewer_SOURCE_FILES
@@ -75,22 +73,26 @@ set(viewer_SOURCE_FILES
 	lggdicdownload.cpp
 	aoremotectrl.cpp
 	importtracker.cpp
+	chatbar_as_cmdline.cpp
     emeraldboobutils.cpp
 	exporttracker.cpp
 	chatbar_as_cmdline.cpp
     floaterao.cpp
     floaterbusy.cpp
+    floatercommandline.cpp
     floatergriddefault.cpp
     floatergridmanager.cpp
+    floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
     hbfloatergrouptitles.cpp
-    hippoGridManager.cpp
-    hippoLimits.cpp
-    hippoRestRequest.cpp
-    hippoUpdate.cpp
+    hippogridmanager.cpp
+    hippolimits.cpp
+    hipporestrequest.cpp
+    hippoupdate.cpp
     impprefsfonts.cpp
     jcfloater_animation_list.cpp
     jcfloaterareasearch.cpp
+    kokuastreamingaudio.cpp
     kowopenregionsettings.cpp
     lightshare.cpp
     llagent.cpp
@@ -175,6 +177,7 @@ set(viewer_SOURCE_FILES
     llfloatercustomize.cpp
     llfloaterdaycycle.cpp
     llfloaterdirectory.cpp
+    llfloaterdisplayname.cpp
     llfloatereditui.cpp
     llfloaterenvsettings.cpp
     llfloaterevent.cpp
@@ -187,9 +190,8 @@ set(viewer_SOURCE_FILES
     llfloatergroups.cpp
     llfloaterhandler.cpp
     llfloaterhardwaresettings.cpp
-    llfloaterhtml.cpp
     llfloaterhtmlcurrency.cpp
-    llfloaterhtmlhelp.cpp
+    llfloatermediabrowser.cpp
     llfloaterhtmlsimple.cpp
     llfloaterhud.cpp
     llfloaterimagepreview.cpp
@@ -201,6 +203,8 @@ set(viewer_SOURCE_FILES
     llfloaterlandmark.cpp
     llfloatermap.cpp
     llfloatermemleak.cpp
+    llfloatermessagebuilder.cpp
+    llfloatermessagelog.cpp
     llfloatermute.cpp
     llfloaternamedesc.cpp
     llfloaternewim.cpp
@@ -223,6 +227,7 @@ set(viewer_SOURCE_FILES
     llfloatersnapshot.cpp
     llfloaterstats.cpp
     llfloatertelehub.cpp
+    llfloaterteleporthistory.cpp
     llfloatertest.cpp
     llfloatertools.cpp
     llfloatertopobjects.cpp
@@ -313,10 +318,12 @@ set(viewer_SOURCE_FILES
     llpanelinput.cpp
     llpanelinventory.cpp
     llpanelland.cpp
+    llpanellandaudio.cpp
     llpanellandmedia.cpp
     llpanellandobjects.cpp
     llpanellandoptions.cpp
     llpanellogin.cpp
+    llpanelmediahud.cpp
     llpanelmsgs.cpp
     llpanelnetwork.cpp
     llpanelobject.cpp
@@ -332,6 +339,7 @@ set(viewer_SOURCE_FILES
     llpolymorph.cpp
     llprefsadvanced.cpp
     llprefschat.cpp
+    llprefscolors.cpp
     llprefsim.cpp
     llprefsvoice.cpp
     llpreviewanim.cpp
@@ -407,6 +415,7 @@ set(viewer_SOURCE_FILES
     llviewercamera.cpp
     llviewercontrol.cpp
     llviewerdisplay.cpp
+    llviewerdisplayname.cpp
     llviewergenericmessage.cpp
     llviewergesture.cpp
     llviewerimage.cpp
@@ -422,6 +431,8 @@ set(viewer_SOURCE_FILES
     llviewerkeyboard.cpp
     llviewerlayer.cpp
     llviewermedia.cpp
+    llviewermediafocus.cpp
+    llviewermedia_streamingaudio.cpp
     llviewermenu.cpp
     llviewermenufile.cpp
     llviewermessage.cpp
@@ -468,7 +479,7 @@ set(viewer_SOURCE_FILES
     llwearable.cpp
     llwearablelist.cpp
     llweb.cpp
-    llwebbrowserctrl.cpp
+    llmediactrl.cpp
     llwindlightremotectrl.cpp
     llwind.cpp
     llwlanimator.cpp
@@ -483,13 +494,20 @@ set(viewer_SOURCE_FILES
     panelradar.cpp
     panelradarentry.cpp
     pipeline.cpp
+    qtoolalign.cpp
     rlvhandler.cpp
     rlvhelper.cpp
+    rlvcommon.cpp
     rlvmultistringsearch.cpp
     rlvextensions.cpp
     rlvfloaterbehaviour.cpp
     viewertime.cpp
     viewerversion.cpp
+    windlightsettingsupdate.cpp
+    wlfloatermanager.cpp
+    wlfloaterwindlightsend.cpp
+    wlretrievesettings.cpp
+    wlsettingsmanager.cpp
     )
 
 set(VIEWER_BINARY_NAME "imprudence-bin" CACHE STRING
@@ -513,20 +531,24 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
     aoremotectrl.h
+	chatbar_as_cmdline.h
     emeraldboobutils.h
     floaterao.h
     floaterbusy.h
+    floatercommandline.h
     floatergriddefault.h
     floatergridmanager.h
+    floaterlocalassetbrowse.h
     floatervoicelicense.h
     hbfloatergrouptitles.h
-    hippoGridManager.h
-    hippoLimits.h
-    hippoRestRequest.h
-    hippoUpdate.h
+    hippogridmanager.h
+    hippolimits.h
+    hipporestrequest.h
+    hippoupdate.h
     impprefsfonts.h
     jcfloater_animation_list.h
     jcfloaterareasearch.h
+    kokuastreamingaudio.h
     lightshare.h
 	chatbar_as_cmdline.h
     importtracker.h
@@ -619,6 +641,7 @@ set(viewer_HEADER_FILES
     llfloatercustomize.h
     llfloaterdaycycle.h
     llfloaterdirectory.h
+    llfloaterdisplayname.h
     llfloatereditui.h
     llfloaterenvsettings.h
     llfloaterevent.h
@@ -631,9 +654,8 @@ set(viewer_HEADER_FILES
     llfloatergroups.h
     llfloaterhandler.h
     llfloaterhardwaresettings.h
-    llfloaterhtml.h
     llfloaterhtmlcurrency.h
-    llfloaterhtmlhelp.h
+    llfloatermediabrowser.h
     llfloaterhtmlsimple.h
     llfloaterhud.h
     llfloaterimagepreview.h
@@ -645,6 +667,8 @@ set(viewer_HEADER_FILES
     llfloaterlandmark.h
     llfloatermap.h
     llfloatermemleak.h
+    llfloatermessagebuilder.h
+    llfloatermessagelog.h
     llfloatermute.h
     llfloaternamedesc.h
     llfloaternewim.h
@@ -667,6 +691,7 @@ set(viewer_HEADER_FILES
     llfloatersnapshot.h
     llfloaterstats.h
     llfloatertelehub.h
+    llfloaterteleporthistory.h
     llfloatertest.h
     llfloatertools.h
     llfloatertopobjects.h
@@ -756,11 +781,13 @@ set(viewer_HEADER_FILES
     llpanelinput.h
     llpanelinventory.h
     llpanelland.h
+    llpanellandaudio.h
     llpanellandmedia.h
     llpanellandobjects.h
     llpanellandoptions.h
     llpanelLCD.h
     llpanellogin.h
+    llpanelmediahud.h
     llpanelmsgs.h
     llpanelnetwork.h
     llpanelobject.h
@@ -776,6 +803,7 @@ set(viewer_HEADER_FILES
     llpolymorph.h
     llprefsadvanced.h
     llprefschat.h
+    llprefscolors.h
     llprefsim.h
     llprefsvoice.h
     llpreview.h
@@ -855,6 +883,7 @@ set(viewer_HEADER_FILES
     llviewercamera.h
     llviewercontrol.h
     llviewerdisplay.h
+    llviewerdisplayname.h
     llviewergenericmessage.h
     llviewergesture.h
     llviewerimage.h
@@ -867,6 +896,8 @@ set(viewer_HEADER_FILES
     llviewerkeyboard.h
     llviewerlayer.h
     llviewermedia.h
+    llviewermediaobserver.h
+    llviewermediafocus.h
     llviewermenu.h
     llviewermenufile.h
     llviewermessage.h
@@ -915,7 +946,7 @@ set(viewer_HEADER_FILES
     llwearable.h
     llwearablelist.h
     llweb.h
-    llwebbrowserctrl.h
+    llmediactrl.h
     llwind.h
     llwindebug.h
     llwindlightremotectrl.h
@@ -933,11 +964,12 @@ set(viewer_HEADER_FILES
     panelradar.h
     panelradarentry.h
     pipeline.h
+    qtoolalign.h
     randgauss.h
     rlvdefines.h
-    rlvevent.h
     rlvhandler.h
     rlvhelper.h
+    rlvcommon.h
     rlvmultistringsearch.h
     rlvextensions.h
     rlvfloaterbehaviour.h
@@ -945,6 +977,10 @@ set(viewer_HEADER_FILES
     VorbisFramework.h
     viewertime.h
     viewerversion.h
+    wlfloatermanager.h
+    wlfloaterwindlightsend.h
+    wlretrievesettings.h
+    wlsettingsmanager.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)
@@ -956,11 +992,13 @@ if (DARWIN)
   find_library(APPKIT_LIBRARY AppKit)
   find_library(COCOA_LIBRARY Cocoa)
   find_library(IOKIT_LIBRARY IOKit)
+  find_library(SECURITY_LIBRARY SECURITY)
 
   set(viewer_LIBRARIES
     ${COCOA_LIBRARY}
     ${AGL_LIBRARY}
     ${IOKIT_LIBRARY}
+    ${SECURITY_LIBRARY}
     )
 
   # Add resource files to the project.
@@ -989,7 +1027,7 @@ endif (DARWIN)
 
 if (LINUX)
     LIST(APPEND viewer_SOURCE_FILES llappviewerlinux.cpp)
-    LIST(APPEND CMAKE_EXE_LINKER_FLAGS -Wl,--as-needed)
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
 
     set(viewer_LIBRARIES
         Xinerama
@@ -1115,6 +1153,7 @@ if (WINDOWS)
     if (INTEL_MEMOPS_LIBRARY)
       list(APPEND viewer_LIBRARIES ${INTEL_MEMOPS_LIBRARY})
     endif (INTEL_MEMOPS_LIBRARY)
+    use_prebuilt_binary(dbghelp)
 endif (WINDOWS)
 
 # Add the xui files. This is handy for searching for xui elements
@@ -1142,10 +1181,24 @@ set_source_files_properties(${viewer_XUI_FILES}
 
 list(APPEND viewer_SOURCE_FILES ${viewer_XUI_FILES})
 
+
+set(viewer_LIBRARY_INSTALL_FILES
+    ${CMAKE_SOURCE_DIR}/../install.xml
+    )
+
+source_group("Library Install File" FILES ${viewer_LIBRARY_INSTALL_FILES})
+
+set_source_files_properties(${viewer_LIBRARY_INSTALL_FILES}
+                            PROPERTIES HEADER_FILE_ONLY TRUE)
+                            
+list(APPEND viewer_SOURCE_FILES ${viewer_LIBRARY_INSTALL_FILES})
+
+
 set(viewer_APPSETTINGS_FILES
     app_settings/anim.ini
     app_settings/ao_template.ini
     app_settings/cmd_line.xml
+    app_settings/default_grids.xml
     app_settings/grass.xml
     app_settings/high_graphics.xml
     app_settings/keys.ini
@@ -1315,6 +1368,8 @@ if (WINDOWS)
           --configuration=${CMAKE_CFG_INTDIR}
           --channel=${VIEWER_CHANNEL}
           --login_channel=${VIEWER_LOGIN_CHANNEL}
+          --standalone=${STANDALONE}
+          --buildtype=${CMAKE_BUILD_TYPE}
           --grid=${GRID}
           --source=${CMAKE_CURRENT_SOURCE_DIR}
               --artwork=${ARTWORK_DIR}
@@ -1323,6 +1378,9 @@ if (WINDOWS)
               --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/touched.bat
         DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
+
+    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit) # Removed media_plugin_gstreamer010
+
     if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
       add_dependencies(package windows-updater windows-crash-logger)
@@ -1335,8 +1393,8 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLIMAGE_LIBRARIES}
     ${LLIMAGEJ2COJ_LIBRARIES}
     ${LLINVENTORY_LIBRARIES}
-    ${LLMEDIA_LIBRARIES}
     ${LLMESSAGE_LIBRARIES}
+    ${LLPLUGIN_LIBRARIES}
     ${LLPRIMITIVE_LIBRARIES}
     ${LLRENDER_LIBRARIES}
     ${FREETYPE_LIBRARIES}
@@ -1349,14 +1407,16 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLCOMMON_LIBRARIES}
     ${NDOF_LIBRARY}
     ${viewer_LIBRARIES}
+    ${BOOST_FILESYSTEM_LIBRARY}
     ${BOOST_PROGRAM_OPTIONS_LIBRARY}
     ${BOOST_REGEX_LIBRARY}
     ${BOOST_SIGNALS_LIBRARY}
+    ${BOOST_SYSTEM_LIBRARY}
     ${DBUSGLIB_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${FMODWRAPPER_LIBRARY}
     ${OPENGL_LIBRARIES}
-    ${MOZLIB_LIBRARIES}
+    ${JSONCPP_LIBRARIES}
     ${JSONCPP_LIBRARIES}
     ${SDL_LIBRARY}
     ${SMARTHEAP_LIBRARY}
@@ -1388,6 +1448,8 @@ if (LINUX)
       COMMAND ${PYTHON_EXECUTABLE}
       ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+        --standalone=${STANDALONE}
+        --buildtype=${CMAKE_BUILD_TYPE}
         --grid=${GRID}
         --channel=${VIEWER_CHANNEL}
         --login_channel=${VIEWER_LOGIN_CHANNEL}
@@ -1400,6 +1462,8 @@ if (LINUX)
         --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
       DEPENDS imprudence-stripped ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
+      
+  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_gstreamer010 media_plugin_webkit)
 
   if (NOT INSTALL)
     add_custom_target(package ALL DEPENDS ${product}.tar.bz2)
@@ -1437,6 +1501,8 @@ if (DARWIN)
       --dest=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${product}.app
     DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
     )
+    
+  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit media_plugin_gstreamer010)
 
   if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${VIEWER_BINARY_NAME}) 
@@ -1447,6 +1513,8 @@ if (DARWIN)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+          --standalone=${STANDALONE}
+          --buildtype=${CMAKE_BUILD_TYPE}
           --grid=${GRID}
           --configuration=${CMAKE_CFG_INTDIR}
           --channel=${VIEWER_CHANNEL}
@@ -1456,11 +1524,12 @@ if (DARWIN)
           --build=${CMAKE_CURRENT_BINARY_DIR}
           --dest=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${product}.app
           --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
+
         DEPENDS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
 
-
+      add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit media_plugin_gstreamer010)
       add_custom_command(
         TARGET package POST_BUILD
         COMMAND ${PYTHON_EXECUTABLE}
@@ -1486,4 +1555,91 @@ if (INSTALL)
   include(${CMAKE_CURRENT_SOURCE_DIR}/ViewerInstall.cmake)
 endif (INSTALL)
 
-ADD_VIEWER_BUILD_TEST(llagentaccess viewer)
+#ADD_VIEWER_BUILD_TEST(llagentaccess viewer)
+
+# Don't do these for DARWIN or LINUX here -- they're taken care of by viewer_manifest.py
+if (WINDOWS)
+
+  get_target_property(BUILT_LLCOMMON llcommon LOCATION)
+  add_custom_command(
+      TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+      ARGS
+      -E
+      copy_if_different
+      ${BUILT_LLCOMMON}
+      ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
+      COMMENT "Copying llcommon.dll to the runtime folder."
+      )
+
+  get_target_property(BUILT_SLPLUGIN SLPlugin LOCATION)
+  add_custom_command(
+      TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+      ARGS
+        -E
+        copy_if_different
+        ${BUILT_SLPLUGIN}
+        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
+      COMMENT "Copying SLPlugin executable to the runtime folder."
+      )
+
+  get_target_property(BUILT_WEBKIT_PLUGIN media_plugin_webkit LOCATION)
+    add_custom_command(
+        TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+        ARGS
+          -E
+          copy_if_different
+          ${BUILT_WEBKIT_PLUGIN}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
+        COMMENT "Copying WebKit Plugin to the runtime folder."
+        )
+        
+   #get_target_property(BUILT_GSTREAMER_PLUGIN media_plugin_gstreamer010 LOCATION)
+   # add_custom_command(
+   #     TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+   #     COMMAND ${CMAKE_COMMAND}
+   #     ARGS
+   #       -E
+   #       copy_if_different
+   #       ${BUILT_GSTREAMER_PLUGIN}
+   #       ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
+   #     COMMENT "Copying Gstreamer Plugin to the runtime folder."
+   #     )
+        
+  get_target_property(BUILT_QUICKTIME_PLUGIN media_plugin_quicktime LOCATION)
+    add_custom_command(
+        TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+        ARGS
+          -E
+          copy_if_different
+          ${BUILT_QUICKTIME_PLUGIN}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
+        COMMENT "Copying Quicktime Plugin to the runtime folder."
+        )
+
+  # Copying the mime_types.xml file to app_settings
+  set(mime_types_source "${CMAKE_SOURCE_DIR}/newview/skins/default/xui/en-us")
+  set(mime_types_dest "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/app_settings")
+  add_custom_command(
+      TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+      ARGS 
+	 -E
+	 copy_if_different
+	 ${mime_types_source}/mime_types_windows.xml 
+	 ${mime_types_dest}/mime_types_windows.xml
+      COMMENT "Copying mime_types_windows.xml to the runtime app_settings folder."
+      )
+  
+endif (WINDOWS)
+
+if (DARWIN)
+# Don't do this here -- it's taken care of by viewer_manifest.py
+#  add_custom_command(TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/../libraries/universal-darwin/lib_release/libllqtwebkit.dylib ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin/
+#    DEPENDS ${CMAKE_SOURCE_DIR}/../libraries/universal-darwin/lib_release/libllqtwebkit.dylib
+#  )
+endif (DARWIN)

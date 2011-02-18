@@ -47,7 +47,7 @@
 #include "llviewerimagelist.h"
 #include "llviewerregion.h"
 #include "llregionflags.h"
- #include "hippoGridManager.h"
+ #include "hippogridmanager.h"
 bool LLWorldMap::sGotMapURL =  false;
 const F32 REQUEST_ITEMS_TIMER =  10.f * 60.f; // 10 minutes
 
@@ -733,6 +733,13 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 				LLWorldMap::getInstance()->mSLURLRegionHandle = 0;
 
 				callback(handle, LLWorldMap::getInstance()->mSLURL, image_id, LLWorldMap::getInstance()->mSLURLTeleport);
+			}
+		}
+		if(gAgent.mLureShow)
+		{
+			if((x_regions == gAgent.mLureGlobalX) && (y_regions == gAgent.mLureGlobalY))
+			{
+				gAgent.onFoundLureDestination();
 			}
 		}
 	}

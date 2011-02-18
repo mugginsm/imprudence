@@ -6,7 +6,6 @@ set(Boost_FIND_REQUIRED ON)
 
 if (STANDALONE)
   include(FindBoost)
-
   set(BOOST_PROGRAM_OPTIONS_LIBRARY boost_program_options-mt)
   set(BOOST_REGEX_LIBRARY boost_regex-mt)
   set(BOOST_SIGNALS_LIBRARY boost_signals-mt)

@@ -47,6 +47,7 @@
     
 #include "llvfs.h"
 #include "llstl.h"
+#include "lltimer.h"
     
 const S32 FILE_BLOCK_MASK = 0x000003FF;	 // 1024-byte blocks
 const S32 VFS_CLEANUP_SIZE = 5242880;  // how much space we free up in a single stroke
@@ -583,8 +584,9 @@ LLVFS::LLVFS(const std::string& index_filename, const std::string& data_filename
 		}
 	}
 
-	LL_WARNS("VFS") << "Using index file " << mIndexFilename << LL_ENDL;
-	LL_WARNS("VFS") << "Using data file " << mDataFilename << LL_ENDL;
+	// Success!
+	LL_INFOS("VFS") << "Using index file " << mIndexFilename << LL_ENDL;
+	LL_INFOS("VFS") << "Using data file " << mDataFilename << LL_ENDL;
 
 	mValid = VFSVALID_OK;
 }

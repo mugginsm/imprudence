@@ -50,6 +50,11 @@
 #include "llcurl.h"
 #include "llviewerimagelist.h"
 #include "llscrolllistctrl.h"
+#include "llselectmgr.h"
+#include "llappviewer.h"
+#include "llviewercontrol.h"
+#include "llinventorymodel.h"
+#include "viewerversion.h"
 
 #include "llimagej2c.h"
 
@@ -700,6 +705,7 @@ ExportTrackerFloater::~ExportTrackerFloater()
 	sInstance = NULL;
 }
 
+/*
 void ExportTrackerFloater::close()
 {
 	if(sInstance)
@@ -708,6 +714,7 @@ void ExportTrackerFloater::close()
 		sInstance = NULL;
 	}
 }
+*/
 
 void ExportTrackerFloater::show()
 {
@@ -1824,8 +1831,8 @@ void JCExportTracker::finalize()
 	project_xml->createChild("schema", FALSE)->setValue("1.0");
 	project_xml->createChild("name", FALSE)->setValue(gDirUtilp->getBaseFileName(destination, false));
 	project_xml->createChild("date", FALSE)->setValue(LLLogChat::timestamp(1));
-	project_xml->createChild("software", FALSE)->setValue(llformat("%s %d.%d.%d.%d",
-	LLAppViewer::instance()->getSecondLifeTitle().c_str(), LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BUILD));
+	project_xml->createChild("software", FALSE)->setValue(llformat("%s %d.%d.%d",
+	LLAppViewer::instance()->getSecondLifeTitle().c_str(), ViewerVersion::getImpMajorVersion(), ViewerVersion::getImpMinorVersion(), ViewerVersion::getImpPatchVersion()));
 	project_xml->createChild("platform", FALSE)->setValue("Second Life");
 	std::vector<std::string> uris;
 	LLViewerLogin* vl = LLViewerLogin::getInstance();

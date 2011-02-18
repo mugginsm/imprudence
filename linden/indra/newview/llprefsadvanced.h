@@ -34,25 +34,6 @@
 #include "llpanel.h"
 #include "llviewerinventory.h"
 
-class JCInvDropTarget : public LLView
-{
-public:
-	JCInvDropTarget(const std::string& name, const LLRect& rect, void (*callback)(LLViewerInventoryItem*));
-	~JCInvDropTarget();
-
-	void doDrop(EDragAndDropType cargo_type, void* cargo_data);
-
-	//
-	// LLView functionality
-	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-		EDragAndDropType cargo_type,
-		void* cargo_data,
-		EAcceptance* accept,
-		std::string& tooltip_msg);
-protected:
-	void	(*mDownCallback)(LLViewerInventoryItem*);
-};
-
 class LLPrefsAdvanced : public LLPanel
 {
 public:
@@ -70,10 +51,9 @@ private:
 
 	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
 	static void onClickResetPrefs(void* user_data);
+	static void onClickCommandLine(void* data);
 
 	static bool	callbackReset(const LLSD& notification, const LLSD& response, LLPrefsAdvanced *self);
-
-	static void onCommitApplyControl(LLUICtrl* caller, void* user_data);
 
 	static void onSpellAdd(void* data);
 	static void onSpellRemove(void* data);

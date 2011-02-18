@@ -64,6 +64,10 @@
 #include "llselectmgr.h"
 #include "pipeline.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 const S32 MIN_QUIET_FRAMES_COALESCE = 30;
 const F32 FORCE_SIMPLE_RENDER_AREA = 512.f;
 const F32 FORCE_CULL_AREA = 8.f;
@@ -1694,7 +1698,7 @@ void LLVOVolume::generateSilhouette(LLSelectNode* nodep, const LLVector3& view_p
 			trans_mat.translate(getRegion()->getOriginAgent());
 		}
 
-		volume->generateSilhouetteVertices(nodep->mSilhouetteVertices, nodep->mSilhouetteNormals, nodep->mSilhouetteSegments, view_vector, trans_mat, mRelativeXformInvTrans);
+		volume->generateSilhouetteVertices(nodep->mSilhouetteVertices, nodep->mSilhouetteNormals, nodep->mSilhouetteSegments, view_vector, trans_mat, mRelativeXformInvTrans, nodep->getTESelectMask());
 
 		nodep->mSilhouetteExists = TRUE;
 	}
@@ -2231,8 +2235,13 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	std::vector<LLFace*> alpha_faces;
 	U32 useage = group->mSpatialPartition->mBufferUsage;
 
-	U32 max_vertices = (gSavedSettings.getS32("RenderMaxVBOSize")*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
-	U32 max_total = (gSavedSettings.getS32("RenderMaxNodeSize")*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
+
+	static S32* sRenderMaxVBOSize = rebind_llcontrol<S32>("RenderMaxVBOSize", &gSavedSettings, true);
+	static S32* sRenderMaxNodeSize = rebind_llcontrol<S32>("RenderMaxNodeSize", &gSavedSettings, true);
+
+
+	U32 max_vertices = ((*sRenderMaxVBOSize)*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
+	U32 max_total = ((*sRenderMaxNodeSize)*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
 	max_vertices = llmin(max_vertices, (U32) 65535);
 
 	U32 cur_total = 0;
@@ -2505,8 +2514,9 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort)
 {
+	static S32* sRenderMaxVBOSize = rebind_llcontrol<S32>("RenderMaxVBOSize", &gSavedSettings, true);
 	//calculate maximum number of vertices to store in a single buffer
-	U32 max_vertices = (gSavedSettings.getS32("RenderMaxVBOSize")*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
+	U32 max_vertices = ((*sRenderMaxVBOSize)*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
 	max_vertices = llmin(max_vertices, (U32) 65535);
 
 	if (!distance_sort)

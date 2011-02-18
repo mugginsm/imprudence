@@ -69,10 +69,6 @@
 #include "llfollowcam.h"
 // end Ventrella
 
-// [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d)
-#include "rlvhandler.h"
-// [/RLVa:KB]
-
 const U8 AGENT_STATE_TYPING =	0x04;			//  Typing indication
 const U8 AGENT_STATE_EDITING =  0x10;			//  Set when agent has objects selected
 
@@ -176,6 +172,11 @@ public:
 	void			setRenderState(U8 newstate);
 	void			clearRenderState(U8 clearstate);
 	U8				getRenderState();
+
+	// get/set last region data
+	std::string		getLastRegion();
+	LLVector3		getLastCoords();
+	void			setLastRegionData(std::string regionName,LLVector3 agentCoords);
 
 	// Set the home data
 	void			setRegion(LLViewerRegion *regionp);
@@ -491,7 +492,8 @@ public:
 	// go to a named location home
 	void teleportRequest(
 		const U64& region_handle,
-		const LLVector3& pos_local);
+		const LLVector3& pos_local,
+		bool keep_look_at);
 
 	// teleport to a landmark
 	void teleportViaLandmark(const LLUUID& landmark_id);
@@ -508,6 +510,9 @@ public:
 	// deprecated.
 	void teleportViaLocation(const LLVector3d& pos_global); 
 
+	// to a global location, preserving camera rotation
+	void teleportViaLocationLookAt(const LLVector3d& pos_global);
+
 	// cancel the teleport, may or may not be allowed by server
 	void teleportCancel();
 
@@ -516,6 +521,8 @@ public:
 
 	const std::string getTeleportSourceSLURL() const { return mTeleportSourceSLURL; }
 
+	// whether look-at resets after this teleport
+	bool getTeleportKeepsLookAt() const { return mbTeleportKeepsLookAt; }
 
 	// Setting the ability for this avatar to proxy for another avatar.
 	//static void processAddModifyAbility(LLMessageSystem* msg, void**);
@@ -577,6 +584,7 @@ public:
 	EPointAtType	getPointAtType();
 
 	void			setHomePosRegion( const U64& region_handle, const LLVector3& pos_region );
+	void			takeHomeScreenshot();
 	BOOL			getHomePosGlobal( LLVector3d* pos_global );
 	void			setCameraAnimating( BOOL b )	{ mCameraAnimating = b; }
 	BOOL			getCameraAnimating( )			{ return mCameraAnimating; }
@@ -735,6 +743,7 @@ public:
 	LLUUID			mSecureSessionID;			// secure token for this login session
 
 	F32				mDrawDistance;
+	BOOL            mLockedDrawDistance;
 
 	U64				mGroupPowers;
 	BOOL			mHideGroupTitle;
@@ -775,7 +784,21 @@ public:
 	LLFrameTimer mDoubleTapRunTimer;
 	EDoubleTapRunMode mDoubleTapRunMode;
 
+	BOOL mLureShow;
+	std::string mLureName;
+	LLVector3d mLurePosGlobal;
+	U16 mLureGlobalX;
+	U16 mLureGlobalY;
+	S32 mLureX;
+	S32 mLureY;
+	S32 mLureZ;
+	std::string mLureMaturityString;
+
+	void showLureDestination(const std::string fromname, const S32 global_x, const S32 global_y, const S32 x, const S32 y, const S32 z, const std::string maturity);
+	void onFoundLureDestination();
+
 private:
+	bool mbTeleportKeepsLookAt;
 	bool mbAlwaysRun; // should the avatar run by default rather than walk
 	bool mbRunning;	// is the avatar trying to run right now
 
@@ -915,7 +938,9 @@ private:
 	BOOL			mFirstLogin;
 	BOOL			mGenderChosen;
 
-	
+	std::string		mLastRegion;
+	LLVector3		mLastCoordinates;
+
 	//--------------------------------------------------------------------
 	// Wearables
 	//--------------------------------------------------------------------

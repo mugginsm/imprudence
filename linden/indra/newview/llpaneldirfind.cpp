@@ -50,6 +50,7 @@
 #include "llviewercontrol.h"
 #include "llmenucommands.h"
 #include "llmenugl.h"
+#include "llpluginclassmedia.h"
 #include "lltextbox.h"
 #include "lluiconstants.h"
 #include "llviewerimagelist.h"
@@ -61,6 +62,7 @@
 #include "lluictrlfactory.h"
 #include "llfloaterdirectory.h"
 #include "llpaneldirbrowser.h"
+#include "llpluginclassmedia.h"
 
 #include <boost/tokenizer.hpp>
 #if LL_WINDOWS
@@ -72,7 +74,7 @@
 #include "boost/lexical_cast.hpp"
 #endif
 
-#include "hippoGridManager.h"
+#include "hippogridmanager.h"
 
 //---------------------------------------------------------------------------
 // LLPanelDirFindAll - Google search appliance based search
@@ -143,9 +145,11 @@ BOOL LLPanelDirFind::postBuild()
 	}
 	
 	
-	mWebBrowser = getChild<LLWebBrowserCtrl>(mBrowserName);
+	mWebBrowser = getChild<LLMediaCtrl>(mBrowserName);
 	if (mWebBrowser)
 	{
+		mWebBrowser->addObserver(this);
+		
 		// new pages appear in same window as the results page now
 		mWebBrowser->setOpenInInternalBrowser( false );
 		mWebBrowser->setOpenInExternalBrowser( false );	
@@ -156,9 +160,6 @@ BOOL LLPanelDirFind::postBuild()
 		// redirect 404 pages from S3 somewhere else
 		mWebBrowser->set404RedirectUrl( getString("redirect_404_url") );
 
-		// Track updates for progress display.
-		mWebBrowser->addObserver(this);
-
 		navigateToDefaultPage();
 	}
 
@@ -167,8 +168,6 @@ BOOL LLPanelDirFind::postBuild()
 
 LLPanelDirFind::~LLPanelDirFind()
 {
-	if (mWebBrowser) 
-		mWebBrowser->remObserver(this);
 }
 
 // virtual
@@ -198,10 +197,17 @@ void LLPanelDirFind::draw()
 // virtual
 void LLPanelDirFind::onVisibilityChange(BOOL new_visibility)
 {
+	LLPluginClassMedia::EPriority new_priority;
 	if (new_visibility)
 	{
 		mFloaterDirectory->hideAllDetailPanels();
+		new_priority = LLPluginClassMedia::PRIORITY_NORMAL;
 	}
+	else
+		new_priority = LLPluginClassMedia::PRIORITY_HIDDEN;
+
+	mWebBrowser->getMediaPlugin()->setPriority(new_priority);
+
 	LLPanel::onVisibilityChange(new_visibility);
 }
 
@@ -485,19 +491,27 @@ void LLPanelDirFind::onClickSearch(void* data)
 	LLFloaterDirectory::sNewSearchCount++;
 }
 
-void LLPanelDirFind::onNavigateBegin( const EventType& eventIn )
+void LLPanelDirFind::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event)
 {
-	childSetText("status_text", getString("loading_text"));
-}
+	switch(event)
+	{
+		case MEDIA_EVENT_NAVIGATE_BEGIN:
+			childSetText("status_text", getString("loading_text"));
+		break;
+		
+		case MEDIA_EVENT_NAVIGATE_COMPLETE:
+			childSetText("status_text", getString("done_text"));
+		break;
+		
+		case MEDIA_EVENT_LOCATION_CHANGED:
+			// Debugging info to console
+			llinfos << self->getLocation() << llendl;
+		break;
 
-void LLPanelDirFind::onNavigateComplete( const EventType& eventIn )
-{
-	childSetText("status_text", getString("done_text"));
-}
-
-void LLPanelDirFind::onLocationChange( const EventType& eventIn )
-{
-	llinfos << eventIn.getStringValue() << llendl;
+		default:
+			// Having a default case makes the compiler happy.
+		break;
+	}
 }
 
 //---------------------------------------------------------------------------

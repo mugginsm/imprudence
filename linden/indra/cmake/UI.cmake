@@ -31,14 +31,16 @@ if (STANDALONE)
     add_definitions(${${pkg}_CFLAGS_OTHERS})
   endforeach(pkg)
 else (STANDALONE)
-  use_prebuilt_binary(gtk-etc)
   if (LINUX)
+    use_prebuilt_binary(glib)		# gtk-etc needs glib
+    use_prebuilt_binary(gtk-etc)
     set(UI_LIBRARIES
         atk-1.0
         cairo
         gdk-x11-2.0
         gdk_pixbuf-2.0
         glib-2.0
+        gio-2.0
         gmodule-2.0
         gobject-2.0
         gthread-2.0
@@ -48,6 +50,7 @@ else (STANDALONE)
         pangox-1.0
         pangoxft-1.0
         pixman-1
+        pangocairo-1.0
         )
   endif (LINUX)
 

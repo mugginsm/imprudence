@@ -32,6 +32,7 @@
 
 #include "llagent.h"
 #include "llfloater.h"
+#include "llselectmgr.h"
 
 #define FOLLOW_PERMS 1
 #define PROP_REQUEST_KICK 10
@@ -61,7 +62,7 @@ public:
 	static ExportTrackerFloater* getInstance() { return sInstance; }
 	virtual ~ExportTrackerFloater();
 	//close me
-	static void close();
+	//static void close();
 	void refresh();
 	BOOL postBuild(void);
 
