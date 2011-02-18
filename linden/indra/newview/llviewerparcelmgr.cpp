@@ -1363,8 +1363,8 @@ void LLViewerParcelMgr::processParcelOverlay(LLMessageSystem *msg, void **user)
 	S32 expected_size = parcels_per_edge * parcels_per_edge / PARCEL_OVERLAY_CHUNKS;
 	if (packed_overlay_size != expected_size)
 	{
-		llwarns << "Got parcel overlay size " << packed_overlay_size
-			<< " expecting " << expected_size << llendl;
+		//llwarns << "Got parcel overlay size " << packed_overlay_size
+		//	<< " expecting " << expected_size << llendl;
 		return;
 	}
 
