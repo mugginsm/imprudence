@@ -1,7 +1,7 @@
 <?xml version="1.0" ?><notifications>
 
 <global name="VIEWER_NAME">Astra Viewer</global>
-<global name="VIEWER_SITE">pleiades.ca</global>
+<global name="VIEWER_SITE">astraviewer.com</global>
 <global name="SECOND_LIFE">Second Life</global>
 <global name="SECOND_LIFE_SITE">secondlife.com</global>
 
@@ -7302,29 +7302,6 @@ Apply this region's settings? (&quot;Ignore&quot; will ignore all region setting
  type="notify">
 The new font will appear after you restart [VIEWER_NAME].
 </notification>
-<<<<<<< HEAD
-
-<notification
- icon="alertmodal.tga"
- label="Emerald Help"
- name="EmeraldHelp_CmdLine"
- type="alertmodal">
-Various Options For Command Line features.
-To use a command, type it in your chat bar (Local chat) and press enter.
-</notification>
-  
-<notification
- icon="alertmodal.tga"
- label="Emerald Help"
- name="EmeraldHelp_SpellCheck"
- type="alertmodal">
-To Spell Check a word, right click on it and choose its replacement.
-You may choose a base dictionary which stores the language style and basic words
-You may also choose to install other word lists by choosing them from the list and "Install"
-</notification>
-
-=======
->>>>>>> remotes/jjacek/weekly
 
 <notification
  icon="alertmodal.tga"
