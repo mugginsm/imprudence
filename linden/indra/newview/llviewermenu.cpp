@@ -230,8 +230,8 @@
 #include "llfloaterassetbrowser.h"
 #include "exporttracker.h"
 
-#include "hippoGridManager.h"
-#include "hippoLimits.h"
+#include "hippogridmanager.h"
+#include "hippolimits.h"
 
 #include "llfloaterteleporthistory.h"
 
